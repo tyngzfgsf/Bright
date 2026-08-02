@@ -1,0 +1,39 @@
+name: Build and Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Get tag name
+        id: tag
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release with APK
+        env:
+          GH_TOKEN: ${{ secrets.BRIGHT_APP_RELEASE_TOKEN }}
+        run: |
+          gh release create "${{ steps.tag.outputs.tag }}" \
+            app/build/outputs/apk/debug/app-debug.apk \
+            --repo tyngzfgsf/Bright-app \
+            --title "Bright ${{ steps.tag.outputs.tag }}" \
+            --notes "Automated build from tag ${{ steps.tag.outputs.tag }}"
