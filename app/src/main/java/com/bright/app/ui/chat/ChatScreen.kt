@@ -1,6 +1,5 @@
 package com.bright.app.ui.chat
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +47,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
 import com.bright.app.R
 import com.bright.app.ui.components.BrightTextField
+import com.bright.app.ui.components.SelectableChip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +67,7 @@ fun ChatScreen(
     val uiState by viewModel.uiState.collectAsState()
     var input by remember { mutableStateOf("") }
     var showEndDialog by remember { mutableStateOf(false) }
+    var isAskMode by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
     LaunchedEffect(uiState.messages.size, uiState.isSending) {
@@ -160,17 +161,31 @@ fun ChatScreen(
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    BrightTextField(
-                        value = input,
-                        onValueChange = { input = it },
-                        placeholder = stringResource(R.string.chat_input_placeholder),
-                        modifier = Modifier.weight(1f)
+                    SelectableChip(
+                        text = stringResource(R.string.chat_ask_toggle),
+                        selected = isAskMode,
+                        onClick = { isAskMode = !isAskMode }
                     )
+                    Box(modifier = Modifier.padding(start = 8.dp).weight(1f)) {
+                        BrightTextField(
+                            value = input,
+                            onValueChange = { input = it },
+                            placeholder = stringResource(
+                                if (isAskMode) R.string.chat_ask_placeholder else R.string.chat_input_placeholder
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                     Box(modifier = Modifier.padding(start = 8.dp)) {
                         IconButton(
                             enabled = input.isNotBlank() && !uiState.isSending,
                             onClick = {
-                                viewModel.sendMessage(input)
+                                if (isAskMode) {
+                                    viewModel.askQuestion(input)
+                                    isAskMode = false
+                                } else {
+                                    viewModel.sendMessage(input)
+                                }
                                 input = ""
                             }
                         ) {

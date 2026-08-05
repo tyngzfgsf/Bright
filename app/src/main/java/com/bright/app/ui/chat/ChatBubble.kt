@@ -21,8 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.bright.app.R
 import com.bright.app.domain.model.ChatMessage
 import com.bright.app.domain.model.MessageRole
 import com.bright.app.ui.theme.BrightMotion
@@ -31,22 +34,27 @@ import com.bright.app.ui.theme.BrightMotion
 fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val isUser = message.role == MessageRole.USER
+    val isUserAsk = message.role == MessageRole.USER_ASK
     val isFeedback = message.role == MessageRole.AI_FEEDBACK
     val isSummary = message.role == MessageRole.SYSTEM_SUMMARY
+    val isAiAnswer = message.role == MessageRole.AI_ANSWER
+    val isRightAligned = isUser || isUserAsk
 
     val bubbleColor = when {
-        isUser -> colors.primary
+        isRightAligned -> colors.primary
         isFeedback -> colors.surfaceVariant
         isSummary -> colors.surfaceVariant
+        isAiAnswer -> colors.surfaceVariant
         else -> colors.surface // AI_QUESTION
     }
-    val textColor = if (isUser) colors.onPrimary else colors.onBackground
+    val textColor = if (isRightAligned) colors.onPrimary else colors.onBackground
+    val captionColor = if (isRightAligned) colors.onPrimary.copy(alpha = 0.7f) else colors.onSurfaceVariant
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
-        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+        horizontalArrangement = if (isRightAligned) Arrangement.End else Arrangement.Start
     ) {
         Box(
             modifier = Modifier
@@ -55,27 +63,45 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                     RoundedCornerShape(
                         topStart = 18.dp,
                         topEnd = 18.dp,
-                        bottomStart = if (isUser) 18.dp else 4.dp,
-                        bottomEnd = if (isUser) 4.dp else 18.dp
+                        bottomStart = if (isRightAligned) 18.dp else 4.dp,
+                        bottomEnd = if (isRightAligned) 4.dp else 18.dp
                     )
                 )
                 .background(bubbleColor)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            if (isFeedback) {
-                Column {
+            when {
+                isFeedback -> Column {
                     if (message.score != null) {
                         ScoreBadge(score = message.score)
                         Spacer(Modifier.height(6.dp))
                     }
+                    Text(text = message.text, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                }
+                isUserAsk -> Column {
+                    Text(
+                        text = stringResource(R.string.chat_ask_label),
+                        color = captionColor,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(text = message.text, color = textColor, style = MaterialTheme.typography.bodyLarge)
+                }
+                isAiAnswer -> Column {
+                    Text(
+                        text = stringResource(R.string.chat_answer_label),
+                        color = captionColor,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Spacer(Modifier.height(2.dp))
                     Text(
                         text = message.text,
                         color = textColor,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontStyle = FontStyle.Italic
                     )
                 }
-            } else {
-                Text(
+                else -> Text(
                     text = message.text,
                     color = textColor,
                     style = if (isSummary) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
@@ -104,6 +130,5 @@ private fun ScoreBadge(score: Int) {
     }
 }
 
-/** Entrance animation applied by the caller (LazyColumn item) via animateItem() in Compose 1.7+. */
 val chatBubbleEnter = fadeIn(animationSpec = tween(BrightMotion.MEDIUM)) +
     slideInVertically(animationSpec = tween(BrightMotion.MEDIUM)) { it / 4 }

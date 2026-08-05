@@ -33,7 +33,8 @@ data class ChatUiState(
     val isSending: Boolean = false,
     val isCompleted: Boolean = false,
     val errorMessage: String? = null,
-    val averageScore: Double? = null
+    val averageScore: Double? = null,
+    val language: Language = Language.ENGLISH
 )
 
 class ChatViewModel(
@@ -61,7 +62,8 @@ class ChatViewModel(
             errorMessage = error,
             averageScore = currentSession?.let {
                 if (it.answeredCount > 0) it.totalScore.toDouble() / it.answeredCount else null
-            }
+            },
+            language = Language.fromCode(currentSession?.languageCode)
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatUiState())
 
@@ -106,8 +108,9 @@ class ChatViewModel(
     private suspend fun historyAsGroqMessages(): List<GroqMessage> {
         val current = messagesFlow.first()
         return current.map {
+            val isUserTurn = it.role == MessageRole.USER.name || it.role == MessageRole.USER_ASK.name
             GroqMessage(
-                role = if (it.role == MessageRole.USER.name) "user" else "assistant",
+                role = if (isUserTurn) "user" else "assistant",
                 content = it.text
             )
         }
@@ -212,6 +215,48 @@ class ChatViewModel(
             )
             touchSession()
             requestAiReply()
+        }
+    }
+
+    /**
+     * Side-channel: answers a trainee question without grading it or advancing the scenario.
+     * The pending scenario question (if any) stays exactly as it was.
+     */
+    fun askQuestion(text: String) {
+        if (text.isBlank() || _isSending.value) return
+        viewModelScope.launch {
+            _errorMessage.value = null
+            dao.insertMessage(
+                MessageEntity(
+                    id = UUID.randomUUID().toString(),
+                    sessionId = sessionId,
+                    role = MessageRole.USER_ASK.name,
+                    text = text.trim(),
+                    timestampMillis = System.currentTimeMillis()
+                )
+            )
+            _isSending.value = true
+            val apiKey = preferences.groqApiKey.first().orEmpty()
+            val model = preferences.groqModel.first()
+            val messages = listOf(
+                GroqMessage(role = "system", content = ScenarioPromptBuilder.askAsideSystemPrompt(currentLanguage()))
+            ) + historyAsGroqMessages()
+
+            when (val result = groqRepository.sendConversation(apiKey, model, messages, jsonMode = false)) {
+                is ApiResult.Success -> {
+                    dao.insertMessage(
+                        MessageEntity(
+                            id = UUID.randomUUID().toString(),
+                            sessionId = sessionId,
+                            role = MessageRole.AI_ANSWER.name,
+                            text = result.data.trim(),
+                            timestampMillis = System.currentTimeMillis()
+                        )
+                    )
+                }
+                is ApiResult.Error -> _errorMessage.value = result.message
+            }
+            _isSending.value = false
         }
     }
 

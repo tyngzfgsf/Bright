@@ -53,9 +53,24 @@
 
     <!-- 채팅 -->
     <string name="chat_input_placeholder">응답을 입력하세요…</string>
+    <string name="chat_ask_placeholder">질문을 입력하세요…</string>
+    <string name="chat_ask_toggle">질문</string>
+    <string name="chat_ask_label">질문</string>
+    <string name="chat_answer_label">답변</string>
     <string name="chat_thinking">생각 중…</string>
     <string name="chat_end_session">세션 종료</string>
     <string name="chat_shuffle_scenario">새로운 무작위 시나리오</string>
+    <string name="chat_voice_input">답변 말하기</string>
+    <string name="chat_voice_toggle">음성 답변 전환</string>
+    <string name="chat_voice_unavailable">이 기기에서는 음성 인식을 사용할 수 없어요.</string>
+    <string name="voice_mode_enter">음성 모드</string>
+    <string name="voice_mode_listening">듣고 있어요…</string>
+    <string name="voice_mode_speaking">말하는 중…</string>
+    <string name="voice_mode_paused">일시정지됨</string>
+    <string name="voice_mode_session_complete">세션 완료</string>
+    <string name="voice_mode_error">문제가 발생했어요. 마이크를 눌러 다시 시도하세요.</string>
+    <string name="voice_mode_permission_needed">음성 모드를 사용하려면 마이크 권한이 필요해요.</string>
+    <string name="voice_mode_mic_toggle">마이크 켜기/끄기</string>
     <string name="chat_end_session_confirm_title">세션을 종료할까요?</string>
     <string name="chat_end_session_confirm_body">세션이 끝나기 전에 AI가 최종 요약을 제공해요.</string>
     <string name="chat_end_session_confirm_yes">종료하고 요약 받기</string>

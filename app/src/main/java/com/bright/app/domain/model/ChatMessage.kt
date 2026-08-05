@@ -1,6 +1,6 @@
 package com.bright.app.domain.model
 
-enum class MessageRole { USER, AI_QUESTION, AI_FEEDBACK, SYSTEM_SUMMARY }
+enum class MessageRole { USER, USER_ASK, AI_QUESTION, AI_FEEDBACK, AI_ANSWER, SYSTEM_SUMMARY }
 
 data class ChatMessage(
     val id: String,

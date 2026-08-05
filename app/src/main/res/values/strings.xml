@@ -53,9 +53,24 @@
 
     <!-- Chat -->
     <string name="chat_input_placeholder">Type your response…</string>
+    <string name="chat_ask_placeholder">Ask a question…</string>
+    <string name="chat_ask_toggle">Ask</string>
+    <string name="chat_ask_label">Question</string>
+    <string name="chat_answer_label">Answer</string>
     <string name="chat_thinking">Thinking…</string>
     <string name="chat_end_session">End session</string>
     <string name="chat_shuffle_scenario">New random scenario</string>
+    <string name="chat_voice_input">Speak your answer</string>
+    <string name="chat_voice_toggle">Toggle voice replies</string>
+    <string name="chat_voice_unavailable">Speech recognition isn\'t available on this device.</string>
+    <string name="voice_mode_enter">Voice mode</string>
+    <string name="voice_mode_listening">Listening…</string>
+    <string name="voice_mode_speaking">Speaking…</string>
+    <string name="voice_mode_paused">Paused</string>
+    <string name="voice_mode_session_complete">Session complete</string>
+    <string name="voice_mode_error">Something went wrong. Tap the mic to try again.</string>
+    <string name="voice_mode_permission_needed">Microphone access is needed for Voice Mode.</string>
+    <string name="voice_mode_mic_toggle">Toggle microphone</string>
     <string name="chat_end_session_confirm_title">End this session?</string>
     <string name="chat_end_session_confirm_body">The AI will give you a final summary before the session closes.</string>
     <string name="chat_end_session_confirm_yes">End and get summary</string>
