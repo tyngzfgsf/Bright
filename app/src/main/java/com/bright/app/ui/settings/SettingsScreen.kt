@@ -1,5 +1,6 @@
 package com.bright.app.ui.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -54,12 +57,15 @@ fun SettingsScreen(
     onReplayTutorial: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as BrightApplication
+    val context = LocalContext.current
     val viewModel: SettingsViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { SettingsViewModel(app.database.chatDao(), app.userPreferences) }
+            initializer { SettingsViewModel(app.database.chatDao(), app.userPreferences, BuildConfig.VERSION_NAME) }
         }
     )
     val uiState by viewModel.uiState.collectAsState()
+    val isDownloadingUpdate by viewModel.isDownloadingUpdate.collectAsState()
+    val updateErrorMessage by viewModel.updateErrorMessage.collectAsState()
     var apiKeyInput by remember(uiState.apiKey) { mutableStateOf(uiState.apiKey) }
     var modelInput by remember(uiState.model) { mutableStateOf(uiState.model) }
     var showClearDialog by remember { mutableStateOf(false) }
@@ -156,6 +162,44 @@ fun SettingsScreen(
 
             SectionLabel(stringResource(R.string.settings_section_about))
             Spacer(Modifier.height(10.dp))
+
+            uiState.updateInfo?.let { update ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_update_available, update.versionTag),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.settings_update_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    BrightButton(
+                        text = stringResource(R.string.settings_update_download),
+                        loading = isDownloadingUpdate,
+                        onClick = { viewModel.downloadAndInstallUpdate(context) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    updateErrorMessage?.let { error ->
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

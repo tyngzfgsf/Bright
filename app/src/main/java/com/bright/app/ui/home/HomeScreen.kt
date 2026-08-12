@@ -19,6 +19,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +44,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
+import com.bright.app.BuildConfig
 import com.bright.app.R
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.ScenarioType
@@ -71,7 +74,7 @@ fun HomeScreen(
     val app = LocalContext.current.applicationContext as BrightApplication
     val viewModel: HomeViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences) }
+            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, BuildConfig.VERSION_NAME) }
         }
     )
     val uiState by viewModel.uiState.collectAsState()
@@ -88,7 +91,15 @@ fun HomeScreen(
                         Icon(Icons.Filled.History, contentDescription = stringResource(R.string.history_title))
                     }
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_title))
+                        BadgedBox(
+                            badge = {
+                                if (uiState.updateAvailable) {
+                                    Badge(containerColor = MaterialTheme.colorScheme.onBackground)
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_title))
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

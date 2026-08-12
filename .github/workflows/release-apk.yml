@@ -21,12 +21,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
-
       - name: Get tag name
         id: tag
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug -PversionNameOverride=${{ steps.tag.outputs.tag }}
 
       - name: Create GitHub Release with APK
         env:

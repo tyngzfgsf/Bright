@@ -1,9 +1,11 @@
 package com.bright.app.ui.home
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.bright.app.data.local.ChatDao
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
+import com.bright.app.data.remote.UpdateChecker
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.Difficulty
 import com.bright.app.domain.model.Language
@@ -12,6 +14,7 @@ import com.bright.app.domain.model.TraineeRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 data class HomeUiState(
@@ -20,17 +23,28 @@ data class HomeUiState(
     val selectedRole: TraineeRole = TraineeRole.DOCTOR,
     val selectedAiRole: AiCharacterRole = AiCharacterRole.RANDOM,
     val customAiRole: String = "",
-    val difficultyIndex: Int = 1, // 0=Beginner, 1=Intermediate, 2=Advanced
-    val isStarting: Boolean = false
+    val difficultyIndex: Int = 1,
+    val isStarting: Boolean = false,
+    val updateAvailable: Boolean = false
 )
 
 class HomeViewModel(
     private val dao: ChatDao,
-    private val preferences: UserPreferences
+    private val preferences: UserPreferences,
+    currentVersionName: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState
+
+    init {
+        viewModelScope.launch {
+            val update = UpdateChecker.checkForUpdate(currentVersionName)
+            if (update != null) {
+                _uiState.value = _uiState.value.copy(updateAvailable = true)
+            }
+        }
+    }
 
     fun selectScenario(scenario: ScenarioType) {
         _uiState.value = _uiState.value.copy(selectedScenario = scenario, customScenario = "")
@@ -63,7 +77,6 @@ class HomeViewModel(
         )
     }
 
-    /** Creates a new session row and returns its id so the caller can navigate to Chat. */
     suspend fun startSession(): String {
         val state = _uiState.value
         val difficulty = Difficulty.entries.getOrElse(state.difficultyIndex) { Difficulty.INTERMEDIATE }
@@ -74,7 +87,6 @@ class HomeViewModel(
         val trimmedCustomScenario = state.customScenario.trim()
         val trimmedCustomAiRole = state.customAiRole.trim()
 
-        // RANDOM is resolved once here and stored, so it doesn't re-roll on every AI request.
         val resolvedAiRole = if (state.selectedAiRole == AiCharacterRole.RANDOM) {
             if (kotlin.random.Random.nextBoolean()) AiCharacterRole.PATIENT else AiCharacterRole.DOCTOR
         } else {
