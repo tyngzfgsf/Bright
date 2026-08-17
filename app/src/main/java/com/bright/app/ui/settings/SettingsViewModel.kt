@@ -10,13 +10,17 @@ import com.bright.app.R
 import com.bright.app.data.local.ChatDao
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.ApkDownloader
+import com.bright.app.data.remote.GroqRepository
+import com.bright.app.data.remote.GroqUsageInfo
 import com.bright.app.data.remote.UpdateChecker
 import com.bright.app.domain.model.Language
+import com.bright.app.util.ApiResult
 import com.bright.app.util.LocaleUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -30,6 +34,7 @@ data class SettingsUiState(
 class SettingsViewModel(
     private val dao: ChatDao,
     private val preferences: UserPreferences,
+    private val groqRepository: GroqRepository,
     private val currentVersionName: String
 ) : ViewModel() {
 
@@ -39,6 +44,16 @@ class SettingsViewModel(
 
     val isDownloadingUpdate: StateFlow<Boolean> = _isDownloadingUpdate
     val updateErrorMessage: StateFlow<String?> = _updateErrorMessage
+
+    private val _availableModels = MutableStateFlow<List<String>>(emptyList())
+    private val _isFetchingModels = MutableStateFlow(false)
+    private val _modelsFetchError = MutableStateFlow<String?>(null)
+    private val _usage = MutableStateFlow<GroqUsageInfo?>(null)
+
+    val availableModels: StateFlow<List<String>> = _availableModels
+    val isFetchingModels: StateFlow<Boolean> = _isFetchingModels
+    val modelsFetchError: StateFlow<String?> = _modelsFetchError
+    val usage: StateFlow<GroqUsageInfo?> = _usage
 
     val uiState: StateFlow<SettingsUiState> = combine(
         preferences.languageCode, preferences.groqApiKey, preferences.groqModel, _updateInfo
@@ -55,6 +70,12 @@ class SettingsViewModel(
         viewModelScope.launch {
             _updateInfo.value = UpdateChecker.checkForUpdate(currentVersionName)
         }
+        viewModelScope.launch {
+            val existingKey = preferences.groqApiKey.first()
+            if (!existingKey.isNullOrBlank()) {
+                fetchModelsAndUsage()
+            }
+        }
     }
 
     fun setLanguage(language: Language) {
@@ -65,11 +86,39 @@ class SettingsViewModel(
     }
 
     fun setApiKey(key: String) {
-        viewModelScope.launch { preferences.setGroqApiKey(key) }
+        viewModelScope.launch {
+            preferences.setGroqApiKey(key)
+            fetchModelsAndUsage()
+        }
     }
 
     fun setModel(model: String) {
         viewModelScope.launch { preferences.setGroqModel(model) }
+    }
+
+    /** Fetches the current key's available chat models and this-minute rate-limit usage. */
+    fun fetchModelsAndUsage() {
+        viewModelScope.launch {
+            val key = preferences.groqApiKey.first().orEmpty()
+            if (key.isBlank()) {
+                _modelsFetchError.value = null
+                _availableModels.value = emptyList()
+                _usage.value = null
+                return@launch
+            }
+            _isFetchingModels.value = true
+            _modelsFetchError.value = null
+            when (val result = groqRepository.fetchModelsAndUsage(key)) {
+                is ApiResult.Success -> {
+                    _availableModels.value = result.data.models
+                    _usage.value = result.data.usage
+                }
+                is ApiResult.Error -> {
+                    _modelsFetchError.value = result.message
+                }
+            }
+            _isFetchingModels.value = false
+        }
     }
 
     fun clearAllHistory() {

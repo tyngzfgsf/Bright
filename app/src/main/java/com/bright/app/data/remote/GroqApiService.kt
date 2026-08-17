@@ -2,6 +2,7 @@ package com.bright.app.data.remote
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 
@@ -11,4 +12,9 @@ interface GroqApiService {
         @Header("Authorization") bearerToken: String,
         @Body request: GroqChatRequest
     ): Response<GroqChatResponse>
+
+    @GET("openai/v1/models")
+    suspend fun listModels(
+        @Header("Authorization") bearerToken: String
+    ): Response<GroqModelsResponse>
 }

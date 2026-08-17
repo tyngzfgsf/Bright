@@ -1,7 +1,10 @@
 package com.bright.app.ui.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,12 +12,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,7 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -60,14 +68,27 @@ fun SettingsScreen(
     val context = LocalContext.current
     val viewModel: SettingsViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { SettingsViewModel(app.database.chatDao(), app.userPreferences, BuildConfig.VERSION_NAME) }
+            initializer {
+                SettingsViewModel(
+                    app.database.chatDao(),
+                    app.userPreferences,
+                    app.groqRepository,
+                    BuildConfig.VERSION_NAME
+                )
+            }
         }
     )
     val uiState by viewModel.uiState.collectAsState()
     val isDownloadingUpdate by viewModel.isDownloadingUpdate.collectAsState()
     val updateErrorMessage by viewModel.updateErrorMessage.collectAsState()
+    val availableModels by viewModel.availableModels.collectAsState()
+    val isFetchingModels by viewModel.isFetchingModels.collectAsState()
+    val modelsFetchError by viewModel.modelsFetchError.collectAsState()
+    val usage by viewModel.usage.collectAsState()
+
     var apiKeyInput by remember(uiState.apiKey) { mutableStateOf(uiState.apiKey) }
-    var modelInput by remember(uiState.model) { mutableStateOf(uiState.model) }
+    var manualModelInput by remember(uiState.model) { mutableStateOf(uiState.model) }
+    var showManualModelEntry by remember { mutableStateOf(false) }
     var showClearDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -126,22 +147,99 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // --- Usage readout ---
+            usage?.let { u ->
+                Spacer(Modifier.height(14.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(16.dp)
+                ) {
+                    if (u.remainingRequests != null && u.limitRequests != null) {
+                        Text(
+                            text = stringResource(R.string.settings_usage_requests, u.remainingRequests, u.limitRequests),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    if (u.remainingTokens != null && u.limitTokens != null) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.settings_usage_tokens, u.remainingTokens, u.limitTokens),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+
             Spacer(Modifier.height(20.dp))
             Text(stringResource(R.string.settings_model), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
-            BrightTextField(
-                value = modelInput,
-                onValueChange = { modelInput = it },
-                placeholder = "openai/gpt-oss-120b",
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            BrightButton(
-                text = stringResource(R.string.common_save),
-                style = BrightButtonStyle.OUTLINED,
-                onClick = { viewModel.setModel(modelInput) },
-                modifier = Modifier.fillMaxWidth()
-            )
+
+            when {
+                isFetchingModels -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                    Text(
+                        text = stringResource(R.string.settings_model_fetching),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                }
+                availableModels.isNotEmpty() && !showManualModelEntry -> {
+                    ModelDropdown(
+                        selected = uiState.model,
+                        options = availableModels,
+                        onSelect = { viewModel.setModel(it) }
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = { showManualModelEntry = true }) {
+                        Text(stringResource(R.string.settings_model_manual_toggle))
+                    }
+                }
+                else -> {
+                    BrightTextField(
+                        value = manualModelInput,
+                        onValueChange = { manualModelInput = it },
+                        placeholder = "openai/gpt-oss-120b",
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    BrightButton(
+                        text = stringResource(R.string.common_save),
+                        style = BrightButtonStyle.OUTLINED,
+                        onClick = { viewModel.setModel(manualModelInput) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = { viewModel.fetchModelsAndUsage() }) {
+                        Text(stringResource(R.string.settings_model_fetch_button))
+                    }
+                    if (availableModels.isNotEmpty()) {
+                        TextButton(onClick = { showManualModelEntry = false }) {
+                            Text(stringResource(R.string.settings_model_use_list))
+                        }
+                    }
+                    modelsFetchError?.let { error ->
+                        Text(
+                            text = error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    } ?: run {
+                        if (uiState.apiKey.isBlank()) {
+                            Text(
+                                text = stringResource(R.string.settings_model_no_key),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
 
             Spacer(Modifier.height(28.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
@@ -238,6 +336,60 @@ fun SettingsScreen(
                 TextButton(onClick = { showClearDialog = false }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
+    }
+}
+
+/**
+ * A tappable field that opens a plain DropdownMenu of options — deliberately not
+ * ExposedDropdownMenuBox, which has had a churning experimental API across recent
+ * Compose Material3 releases. This uses only long-stable primitives.
+ */
+@Composable
+private fun ModelDropdown(
+    selected: String,
+    options: List<String>,
+    onSelect: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val colors = MaterialTheme.colorScheme
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .border(1.dp, colors.outline, RoundedCornerShape(16.dp))
+                .background(colors.surface)
+                .clickable { expanded = true }
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = selected,
+                color = colors.onBackground,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(Icons.Filled.ArrowDropDown, contentDescription = null, tint = colors.onSurfaceVariant)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth(0.92f)
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
     }
 }
 

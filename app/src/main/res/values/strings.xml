@@ -99,6 +99,13 @@
     <string name="settings_api_key_saved">Key saved</string>
     <string name="settings_api_key_not_set">Not set</string>
     <string name="settings_model">AI model</string>
+    <string name="settings_model_fetching">Checking your Groq account…</string>
+    <string name="settings_model_fetch_button">Fetch available models</string>
+    <string name="settings_model_manual_toggle">Enter manually instead</string>
+    <string name="settings_model_use_list">Choose from list instead</string>
+    <string name="settings_model_no_key">Save your API key first to fetch available models.</string>
+    <string name="settings_usage_requests">Requests left this minute: %1$d/%2$d</string>
+    <string name="settings_usage_tokens">Tokens left this minute: %1$d/%2$d</string>
     <string name="settings_section_data">Data</string>
     <string name="settings_clear_history">Clear all history</string>
     <string name="settings_clear_history_confirm">This deletes every saved session on this device. This can\'t be undone.</string>

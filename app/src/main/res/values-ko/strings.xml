@@ -99,6 +99,13 @@
     <string name="settings_api_key_saved">키 저장됨</string>
     <string name="settings_api_key_not_set">설정되지 않음</string>
     <string name="settings_model">AI 모델</string>
+    <string name="settings_model_fetching">Groq 계정을 확인하는 중…</string>
+    <string name="settings_model_fetch_button">사용 가능한 모델 가져오기</string>
+    <string name="settings_model_manual_toggle">직접 입력하기</string>
+    <string name="settings_model_use_list">목록에서 선택하기</string>
+    <string name="settings_model_no_key">모델을 가져오려면 먼저 API 키를 저장하세요.</string>
+    <string name="settings_usage_requests">이번 분 남은 요청 수: %1$d/%2$d</string>
+    <string name="settings_usage_tokens">이번 분 남은 토큰 수: %1$d/%2$d</string>
     <string name="settings_section_data">데이터</string>
     <string name="settings_clear_history">전체 기록 삭제</string>
     <string name="settings_clear_history_confirm">이 기기에 저장된 모든 세션이 삭제돼요. 이 작업은 되돌릴 수 없어요.</string>
