@@ -14,6 +14,8 @@
     <string name="onboarding_page2_body">AI가 환자, 보호자, 동료 의료진 역할을 맡아요. 당신은 자신의 말로 응답하고, 정확도와 임상적 판단력을 평가받습니다.</string>
     <string name="onboarding_page3_title">기록으로 성장 확인하기</string>
     <string name="onboarding_page3_body">모든 세션은 기기에 저장돼요. 언제든 지난 시나리오를 다시 보며 어떻게 대응했는지 확인할 수 있어요.</string>
+    <string name="onboarding_page4_title">취약점을 찾아내는 앱</string>
+    <string name="onboarding_page4_body">Bright는 채점된 모든 답변으로 실력 프로필을 만들어요. 응급 상황별 평균 점수를 확인하고, 홈 화면에서 탭 한 번으로 가장 약한 분야를 집중 훈련하세요.</string>
     <string name="onboarding_get_started">시작하기</string>
     <string name="onboarding_next">다음</string>
     <string name="onboarding_skip">건너뛰기</string>
@@ -50,6 +52,19 @@
     <string name="home_ai_role_doctor">의사 / 시험관</string>
     <string name="home_custom_scenario_hint">또는 직접 시나리오 입력…</string>
     <string name="home_custom_ai_role_hint">또는 AI 역할 직접 입력…</string>
+    <string name="home_weak_spot_label">취약 분야</string>
+    <string name="home_weak_spot_avg">평균 %1$s/10</string>
+    <string name="home_weak_spot_drill">지금 훈련하기</string>
+    <string name="stats_title">실력 프로필</string>
+    <string name="stats_overall_label">전체 평균</string>
+    <string name="stats_overall_answered">지금까지 채점된 답변 %1$d개</string>
+    <string name="stats_answered_count">답변 %1$d개 · 세션 %2$d회</string>
+    <string name="stats_weakest_badge">최약점</string>
+    <string name="stats_trend_improving">상승 중 ↑</string>
+    <string name="stats_trend_declining">하락 중 ↓</string>
+    <string name="stats_empty_title">아직 데이터가 없어요</string>
+    <string name="stats_empty_body">채점된 세션을 몇 번 완료하면 시나리오별 실력 프로필이 여기에 자동으로 만들어져요.</string>
+    <string name="stats_threshold_note">시나리오가 최약점으로 표시되려면 채점된 답변이 최소 %1$d개 필요해요.</string>
 
     <!-- 채팅 -->
     <string name="chat_input_placeholder">응답을 입력하세요…</string>

@@ -6,14 +6,18 @@ import com.bright.app.data.local.ChatDao
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.UpdateChecker
+import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.Difficulty
 import com.bright.app.domain.model.Language
 import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.TraineeRole
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -36,6 +40,11 @@ class HomeViewModel(
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState
+
+    /** The trainee's current weakest scenario type, or null until there's enough data. */
+    val weakestStat: StateFlow<SkillProfile.ScenarioStat?> = dao.observeScoredSessions()
+        .map { sessions -> SkillProfile.weakestOf(SkillProfile.compute(sessions)) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     init {
         viewModelScope.launch {
@@ -77,14 +86,22 @@ class HomeViewModel(
         )
     }
 
-    suspend fun startSession(): String {
+    suspend fun startSession(): String = startSessionInternal(_uiState.value.selectedScenario, _uiState.value.customScenario)
+
+    /**
+     * One-tap weak-spot drill: starts a session on the given scenario type directly,
+     * ignoring whatever is selected in the grid, using the user's current role/difficulty.
+     */
+    suspend fun startWeakSpotSession(type: ScenarioType): String = startSessionInternal(type, customScenarioOverride = "")
+
+    private suspend fun startSessionInternal(scenario: ScenarioType, customScenarioOverride: String): String {
         val state = _uiState.value
         val difficulty = Difficulty.entries.getOrElse(state.difficultyIndex) { Difficulty.INTERMEDIATE }
         val languageCode = preferences.languageCode.first() ?: Language.fromSystemDefault().code
         val now = System.currentTimeMillis()
         val id = UUID.randomUUID().toString()
 
-        val trimmedCustomScenario = state.customScenario.trim()
+        val trimmedCustomScenario = customScenarioOverride.trim()
         val trimmedCustomAiRole = state.customAiRole.trim()
 
         val resolvedAiRole = if (state.selectedAiRole == AiCharacterRole.RANDOM) {
@@ -96,7 +113,7 @@ class HomeViewModel(
         dao.insertSession(
             SessionEntity(
                 id = id,
-                scenarioType = if (trimmedCustomScenario.isBlank()) state.selectedScenario.name else null,
+                scenarioType = if (trimmedCustomScenario.isBlank()) scenario.name else null,
                 customScenario = trimmedCustomScenario.ifBlank { null },
                 aiRole = resolvedAiRole.name,
                 customAiRole = trimmedCustomAiRole.ifBlank { null },

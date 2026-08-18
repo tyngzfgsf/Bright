@@ -1,5 +1,9 @@
 package com.bright.app.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,9 +18,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Badge
@@ -36,9 +42,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -54,6 +63,7 @@ import com.bright.app.ui.components.BrightDiscreteSlider
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 private fun scenarioLabel(scenario: ScenarioType) = stringResource(scenario.stringRes)
@@ -69,7 +79,8 @@ private fun aiRoleLabel(role: AiCharacterRole) = stringResource(role.stringRes)
 fun HomeScreen(
     onStartSession: (String) -> Unit,
     onOpenHistory: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onOpenStats: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as BrightApplication
     val viewModel: HomeViewModel = viewModel(
@@ -78,6 +89,7 @@ fun HomeScreen(
         }
     )
     val uiState by viewModel.uiState.collectAsState()
+    val weakestStat by viewModel.weakestStat.collectAsState()
     var isStarting by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val difficultyDisplayLabels = listOf("Beginner", "Intermediate", "Advanced")
@@ -87,6 +99,9 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.home_title), style = MaterialTheme.typography.headlineMedium) },
                 actions = {
+                    IconButton(onClick = onOpenStats) {
+                        Icon(Icons.Filled.Insights, contentDescription = stringResource(R.string.stats_title))
+                    }
                     IconButton(onClick = onOpenHistory) {
                         Icon(Icons.Filled.History, contentDescription = stringResource(R.string.history_title))
                     }
@@ -121,6 +136,76 @@ fun HomeScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // --- Weak-spot drill card ---
+            AnimatedVisibility(
+                visible = weakestStat != null,
+                enter = fadeIn() + expandVertically()
+            ) {
+                weakestStat?.let { weak ->
+                    Column {
+                        Spacer(Modifier.height(16.dp))
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(MaterialTheme.colorScheme.onBackground)
+                                .padding(20.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.home_weak_spot_label),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(weak.type.stringRes),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.background
+                                )
+                                Text(
+                                    text = stringResource(
+                                        R.string.home_weak_spot_avg,
+                                        String.format(Locale.US, "%.1f", weak.averageScore)
+                                    ),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                                )
+                            }
+                            Spacer(Modifier.height(14.dp))
+                            TextButton(
+                                onClick = {
+                                    if (!isStarting) {
+                                        isStarting = true
+                                        scope.launch {
+                                            val id = viewModel.startWeakSpotSession(weak.type)
+                                            isStarting = false
+                                            onStartSession(id)
+                                        }
+                                    }
+                                },
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(50))
+                                    .background(MaterialTheme.colorScheme.background)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.home_weak_spot_drill),
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    fontWeight = FontWeight.SemiBold,
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(20.dp))
 
             Text(

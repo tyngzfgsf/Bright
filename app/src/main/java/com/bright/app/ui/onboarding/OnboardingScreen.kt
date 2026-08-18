@@ -139,6 +139,7 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
             OnboardingPage(R.string.onboarding_page1_title, R.string.onboarding_page1_body, PageKind.FEATURE),
             OnboardingPage(R.string.onboarding_page2_title, R.string.onboarding_page2_body, PageKind.FEATURE),
             OnboardingPage(R.string.onboarding_page3_title, R.string.onboarding_page3_body, PageKind.FEATURE),
+            OnboardingPage(R.string.onboarding_page4_title, R.string.onboarding_page4_body, PageKind.FEATURE),
             OnboardingPage(null, null, PageKind.API_KEY)
         )
     }

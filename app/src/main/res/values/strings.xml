@@ -14,6 +14,8 @@
     <string name="onboarding_page2_body">The AI plays the patient, a family member, or fellow staff. Respond in your own words and get evaluated on accuracy and clinical reasoning.</string>
     <string name="onboarding_page3_title">Track your progress</string>
     <string name="onboarding_page3_body">Every session is saved to your device. Revisit past scenarios anytime to see how you handled them.</string>
+    <string name="onboarding_page4_title">It learns your weak spots</string>
+    <string name="onboarding_page4_body">Bright builds a skill profile from every graded answer — see your average per emergency type, and drill your weakest area with one tap from the home screen.</string>
     <string name="onboarding_get_started">Get started</string>
     <string name="onboarding_next">Next</string>
     <string name="onboarding_skip">Skip</string>
@@ -50,6 +52,19 @@
     <string name="home_ai_role_doctor">Doctor / Examiner</string>
     <string name="home_custom_scenario_hint">Or describe your own scenario…</string>
     <string name="home_custom_ai_role_hint">Or type a custom AI role…</string>
+    <string name="home_weak_spot_label">Your weak spot</string>
+    <string name="home_weak_spot_avg">avg %1$s/10</string>
+    <string name="home_weak_spot_drill">Drill it now</string>
+    <string name="stats_title">Skill profile</string>
+    <string name="stats_overall_label">Overall average</string>
+    <string name="stats_overall_answered">%1$d answers graded, all time</string>
+    <string name="stats_answered_count">%1$d answers · %2$d sessions</string>
+    <string name="stats_weakest_badge">Weakest</string>
+    <string name="stats_trend_improving">Improving ↑</string>
+    <string name="stats_trend_declining">Slipping ↓</string>
+    <string name="stats_empty_title">No data yet</string>
+    <string name="stats_empty_body">Finish a few graded sessions and your per-scenario skill profile will build itself here.</string>
+    <string name="stats_threshold_note">A scenario needs at least %1$d graded answers before it can be marked as your weakest.</string>
 
     <!-- Chat -->
     <string name="chat_input_placeholder">Type your response…</string>

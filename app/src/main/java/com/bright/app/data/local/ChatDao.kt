@@ -1,7 +1,6 @@
 package com.bright.app.data.local
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -20,6 +19,10 @@ interface ChatDao {
 
     @Query("SELECT * FROM sessions ORDER BY lastUpdatedAtMillis DESC")
     fun observeSessions(): Flow<List<SessionEntity>>
+
+    /** Sessions with at least one graded answer — the input to the skill profile. */
+    @Query("SELECT * FROM sessions WHERE answeredCount > 0")
+    fun observeScoredSessions(): Flow<List<SessionEntity>>
 
     @Query("SELECT * FROM sessions WHERE id = :sessionId")
     suspend fun getSession(sessionId: String): SessionEntity?

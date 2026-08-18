@@ -16,9 +16,10 @@ import com.bright.app.ui.history.HistoryScreen
 import com.bright.app.ui.home.HomeScreen
 import com.bright.app.ui.onboarding.OnboardingScreen
 import com.bright.app.ui.settings.SettingsScreen
+import com.bright.app.ui.stats.StatsScreen
 import com.bright.app.ui.theme.BrightMotion
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@androidx.compose.material3.ExperimentalMaterial3Api
 @Composable
 fun BrightNavGraph(
     startDestination: String,
@@ -46,7 +47,8 @@ fun BrightNavGraph(
             HomeScreen(
                 onStartSession = { sessionId -> navController.navigate(Screen.chat(sessionId)) },
                 onOpenHistory = { navController.navigate(Screen.HISTORY) },
-                onOpenSettings = { navController.navigate(Screen.SETTINGS) }
+                onOpenSettings = { navController.navigate(Screen.SETTINGS) },
+                onOpenStats = { navController.navigate(Screen.STATS) }
             )
         }
 
@@ -65,6 +67,12 @@ fun BrightNavGraph(
                         popUpTo(0) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        composable(Screen.STATS) {
+            StatsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
