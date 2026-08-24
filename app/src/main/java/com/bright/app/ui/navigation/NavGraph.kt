@@ -19,7 +19,7 @@ import com.bright.app.ui.settings.SettingsScreen
 import com.bright.app.ui.stats.StatsScreen
 import com.bright.app.ui.theme.BrightMotion
 
-@androidx.compose.material3.ExperimentalMaterial3Api
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun BrightNavGraph(
     startDestination: String,
