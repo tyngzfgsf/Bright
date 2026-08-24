@@ -126,7 +126,10 @@ class SettingsViewModel(
     }
 
     fun resetOnboarding() {
-        viewModelScope.launch { preferences.setOnboardingCompleted(false) }
+        viewModelScope.launch {
+            preferences.setOnboardingCompleted(false)
+            preferences.setHomeTourCompleted(false)
+        }
     }
 
     fun downloadAndInstallUpdate(context: Context) {

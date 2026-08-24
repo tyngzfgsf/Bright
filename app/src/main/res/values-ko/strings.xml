@@ -8,14 +8,6 @@
     <string name="onboarding_choose_language_subtitle">나중에 설정에서 언제든지 바꿀 수 있어요</string>
     <string name="onboarding_lang_english">English</string>
     <string name="onboarding_lang_korean">한국어</string>
-    <string name="onboarding_page1_title">실제 같은 응급 상황 연습</string>
-    <string name="onboarding_page1_body">Bright는 AI가 만들어내는 현실적인 환자 시나리오 속으로 당신을 데려갑니다. 무엇을 말하고 행동할지는 실제 상황처럼 당신이 직접 결정해요.</string>
-    <string name="onboarding_page2_title">직접 입력해서 대응하기</string>
-    <string name="onboarding_page2_body">AI가 환자, 보호자, 동료 의료진 역할을 맡아요. 당신은 자신의 말로 응답하고, 정확도와 임상적 판단력을 평가받습니다.</string>
-    <string name="onboarding_page3_title">기록으로 성장 확인하기</string>
-    <string name="onboarding_page3_body">모든 세션은 기기에 저장돼요. 언제든 지난 시나리오를 다시 보며 어떻게 대응했는지 확인할 수 있어요.</string>
-    <string name="onboarding_page4_title">취약점을 찾아내는 앱</string>
-    <string name="onboarding_page4_body">Bright는 채점된 모든 답변으로 실력 프로필을 만들어요. 응급 상황별 평균 점수를 확인하고, 홈 화면에서 탭 한 번으로 가장 약한 분야를 집중 훈련하세요.</string>
     <string name="onboarding_get_started">시작하기</string>
     <string name="onboarding_next">다음</string>
     <string name="onboarding_skip">건너뛰기</string>
@@ -26,6 +18,17 @@
     <string name="onboarding_api_key_continue">계속</string>
     <string name="onboarding_api_key_error">키가 올바르지 않은 것 같아요. 다시 확인해 주세요.</string>
 
+    <!-- 홈 둘러보기 -->
+    <string name="tour_scenario_title">시나리오 고르기</string>
+    <string name="tour_scenario_body">훈련할 응급 상황을 여기서 선택해요. 무작위로 고르거나, 세부 옵션에서 직접 만들 수도 있어요.</string>
+    <string name="tour_options_title">세부 옵션</string>
+    <string name="tour_options_body">내 역할, AI 역할, 난이도, 커스텀 시나리오는 여기에 접혀 있어요. 기본 설정만으로도 바로 시작할 수 있어요.</string>
+    <string name="tour_insights_title">실력 프로필</string>
+    <string name="tour_insights_body">채점이 쌓이면 시나리오별 평균 점수와 취약 분야를 여기서 확인할 수 있어요.</string>
+    <string name="tour_start_title">세션 시작</string>
+    <string name="tour_start_body">준비 끝 — 이 버튼을 누르면 첫 훈련이 시작돼요.</string>
+    <string name="tour_skip">둘러보기 건너뛰기</string>
+
     <!-- 홈 -->
     <string name="home_title">Bright</string>
     <string name="home_greeting">훈련할 준비 되셨나요?</string>
@@ -33,6 +36,7 @@
     <string name="home_choose_role">내 역할</string>
     <string name="home_start_session">세션 시작</string>
     <string name="home_random_scenario">무작위로 시작</string>
+    <string name="home_options_label">세부 옵션</string>
     <string name="home_scenario_cardiac_arrest">심정지</string>
     <string name="home_scenario_anaphylaxis">아나필락시스</string>
     <string name="home_scenario_stroke">뇌졸중</string>
@@ -55,6 +59,11 @@
     <string name="home_weak_spot_label">취약 분야</string>
     <string name="home_weak_spot_avg">평균 %1$s/10</string>
     <string name="home_weak_spot_drill">지금 훈련하기</string>
+    <string name="difficulty_beginner">초급</string>
+    <string name="difficulty_intermediate">중급</string>
+    <string name="difficulty_advanced">고급</string>
+
+    <!-- 통계 -->
     <string name="stats_title">실력 프로필</string>
     <string name="stats_overall_label">전체 평균</string>
     <string name="stats_overall_answered">지금까지 채점된 답변 %1$d개</string>

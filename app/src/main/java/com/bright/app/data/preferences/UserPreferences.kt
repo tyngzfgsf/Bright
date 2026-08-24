@@ -21,13 +21,12 @@ class UserPreferences(private val context: Context) {
     private object Keys {
         val LANGUAGE_CODE = stringPreferencesKey("language_code")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+        val HOME_TOUR_COMPLETED = booleanPreferencesKey("home_tour_completed")
         val GROQ_API_KEY = stringPreferencesKey("groq_api_key")
         val GROQ_MODEL = stringPreferencesKey("groq_model")
     }
 
     companion object {
-        // openai/gpt-oss-120b is Groq's current general-purpose flagship model as of 2026.
-        // Change this in Settings if Groq deprecates it later — no code change needed.
         const val DEFAULT_MODEL = "openai/gpt-oss-120b"
     }
 
@@ -35,6 +34,10 @@ class UserPreferences(private val context: Context) {
 
     val onboardingCompleted: Flow<Boolean> = context.dataStore.data.map {
         it[Keys.ONBOARDING_COMPLETED] ?: false
+    }
+
+    val homeTourCompleted: Flow<Boolean> = context.dataStore.data.map {
+        it[Keys.HOME_TOUR_COMPLETED] ?: false
     }
 
     val groqApiKey: Flow<String?> = context.dataStore.data.map { it[Keys.GROQ_API_KEY] }
@@ -49,6 +52,10 @@ class UserPreferences(private val context: Context) {
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
         context.dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = completed }
+    }
+
+    suspend fun setHomeTourCompleted(completed: Boolean) {
+        context.dataStore.edit { it[Keys.HOME_TOUR_COMPLETED] = completed }
     }
 
     suspend fun setGroqApiKey(key: String) {

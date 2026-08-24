@@ -46,6 +46,16 @@ class HomeViewModel(
         .map { sessions -> SkillProfile.weakestOf(SkillProfile.compute(sessions)) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    /** Whether the one-time interactive tour of the Home screen should be showing. */
+    val showHomeTour: StateFlow<Boolean> = preferences.homeTourCompleted
+        .map { !it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    /** True once a Groq API key is saved. Sessions can't run without one. */
+    val hasApiKey: StateFlow<Boolean> = preferences.groqApiKey
+        .map { !it.isNullOrBlank() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     init {
         viewModelScope.launch {
             val update = UpdateChecker.checkForUpdate(currentVersionName)
@@ -53,6 +63,10 @@ class HomeViewModel(
                 _uiState.value = _uiState.value.copy(updateAvailable = true)
             }
         }
+    }
+
+    fun completeHomeTour() {
+        viewModelScope.launch { preferences.setHomeTourCompleted(true) }
     }
 
     fun selectScenario(scenario: ScenarioType) {

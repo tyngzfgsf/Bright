@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,7 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -50,7 +48,6 @@ import com.bright.app.BrightApplication
 import com.bright.app.R
 import com.bright.app.domain.model.Language
 import com.bright.app.ui.components.BrightButton
-import com.bright.app.ui.components.BrightButtonStyle
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
 import kotlinx.coroutines.launch
@@ -128,52 +125,27 @@ private fun CinematicIntro(onFinished: () -> Unit) {
     }
 }
 
-private data class OnboardingPage(val titleRes: Int?, val bodyRes: Int?, val kind: PageKind)
-private enum class PageKind { LANGUAGE, FEATURE, API_KEY }
+private enum class PageKind { LANGUAGE, API_KEY }
 
 @Composable
 private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Unit) {
-    val pages = remember {
-        listOf(
-            OnboardingPage(null, null, PageKind.LANGUAGE),
-            OnboardingPage(R.string.onboarding_page1_title, R.string.onboarding_page1_body, PageKind.FEATURE),
-            OnboardingPage(R.string.onboarding_page2_title, R.string.onboarding_page2_body, PageKind.FEATURE),
-            OnboardingPage(R.string.onboarding_page3_title, R.string.onboarding_page3_body, PageKind.FEATURE),
-            OnboardingPage(R.string.onboarding_page4_title, R.string.onboarding_page4_body, PageKind.FEATURE),
-            OnboardingPage(null, null, PageKind.API_KEY)
-        )
-    }
+    val pages = remember { listOf(PageKind.LANGUAGE, PageKind.API_KEY) }
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     var apiKeyInput by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 20.dp, end = 20.dp),
-            horizontalArrangement = Arrangement.End
-        ) {
-            if (pagerState.currentPage < pages.lastIndex) {
-                TextButton(onClick = {
-                    scope.launch { pagerState.animateScrollToPage(pages.lastIndex) }
-                }) {
-                    Text(stringResource(R.string.onboarding_skip))
-                }
-            }
-        }
+        Spacer(Modifier.height(56.dp))
 
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.weight(1f).fillMaxWidth()
         ) { pageIndex ->
-            when (pages[pageIndex].kind) {
+            when (pages[pageIndex]) {
                 PageKind.LANGUAGE -> LanguagePage(
                     selectedLanguage = selectedLanguage,
                     onSelect = { viewModel.selectLanguage(it) }
-                )
-                PageKind.FEATURE -> FeaturePage(
-                    titleRes = pages[pageIndex].titleRes!!,
-                    bodyRes = pages[pageIndex].bodyRes!!
                 )
                 PageKind.API_KEY -> ApiKeyPage(
                     value = apiKeyInput,
@@ -238,29 +210,6 @@ private fun LanguagePage(selectedLanguage: Language, onSelect: (Language) -> Uni
                 modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
             )
         }
-    }
-}
-
-@Composable
-private fun FeaturePage(titleRes: Int, bodyRes: Int) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = stringResource(titleRes),
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(Modifier.height(14.dp))
-        Text(
-            text = stringResource(bodyRes),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
     }
 }
 
