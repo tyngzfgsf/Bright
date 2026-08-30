@@ -20,9 +20,9 @@
 
     <!-- Home tour -->
     <string name="tour_scenario_title">Pick a scenario</string>
-    <string name="tour_scenario_body">Choose the emergency you want to train on. You can shuffle for a random one, or write your own under More options.</string>
+    <string name="tour_scenario_body">Tap a card to choose the emergency you\'ll train on — try one now. You can also shuffle for a random pick, or write your own below.</string>
     <string name="tour_options_title">More options</string>
-    <string name="tour_options_body">Your role, the AI\'s role, difficulty, and custom scenarios live in here — the defaults work fine, so you can start right away.</string>
+    <string name="tour_options_body">Your role, the AI\'s role, and difficulty live in here — tap to peek in. The defaults already work great.</string>
     <string name="tour_insights_title">Your skill profile</string>
     <string name="tour_insights_body">As your answers get graded, this is where your per-scenario averages and weak spots show up.</string>
     <string name="tour_start_title">Start a session</string>

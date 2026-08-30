@@ -20,9 +20,9 @@
 
     <!-- 홈 둘러보기 -->
     <string name="tour_scenario_title">시나리오 고르기</string>
-    <string name="tour_scenario_body">훈련할 응급 상황을 여기서 선택해요. 무작위로 고르거나, 세부 옵션에서 직접 만들 수도 있어요.</string>
-    <string name="tour_options_title">세부 옵션</string>
-    <string name="tour_options_body">내 역할, AI 역할, 난이도, 커스텀 시나리오는 여기에 접혀 있어요. 기본 설정만으로도 바로 시작할 수 있어요.</string>
+    <string name="tour_scenario_body">카드를 탭해서 훈련할 응급 상황을 골라보세요. 무작위로 고르거나, 아래에서 직접 적을 수도 있어요.</string>
+    <string name="tour_options_title">더 많은 옵션</string>
+    <string name="tour_options_body">내 역할, AI 역할, 난이도가 여기에 있어요 — 탭해서 열어보세요. 기본 설정만으로도 충분해요.</string>
     <string name="tour_insights_title">실력 프로필</string>
     <string name="tour_insights_body">채점이 쌓이면 시나리오별 평균 점수와 취약 분야를 여기서 확인할 수 있어요.</string>
     <string name="tour_start_title">세션 시작</string>
