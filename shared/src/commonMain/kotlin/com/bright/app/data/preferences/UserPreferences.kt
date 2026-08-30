@@ -1,22 +1,24 @@
 package com.bright.app.data.preferences
 
-import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.bright.app.domain.model.Language
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private val Context.dataStore by preferencesDataStore(name = "bright_prefs")
-
 /**
  * NOTE: the Groq API key is stored in plain DataStore for simplicity (this is a local,
  * single-user personal project with no backend). If you plan to distribute this app
- * publicly, move the key into EncryptedSharedPreferences or the Android Keystore instead.
+ * publicly, move the key into EncryptedSharedPreferences/Keychain instead.
+ *
+ * Takes an already-built [DataStore] rather than a platform Context — actually opening the
+ * on-disk store (deciding *where* the file lives) is a per-platform concern and happens at
+ * each platform's app-entry-point instead (see `BrightApplication.kt` on Android).
  */
-class UserPreferences(private val context: Context) {
+class UserPreferences(private val dataStore: DataStore<Preferences>) {
 
     private object Keys {
         val LANGUAGE_CODE = stringPreferencesKey("language_code")
@@ -30,39 +32,39 @@ class UserPreferences(private val context: Context) {
         const val DEFAULT_MODEL = "openai/gpt-oss-120b"
     }
 
-    val languageCode: Flow<String?> = context.dataStore.data.map { it[Keys.LANGUAGE_CODE] }
+    val languageCode: Flow<String?> = dataStore.data.map { it[Keys.LANGUAGE_CODE] }
 
-    val onboardingCompleted: Flow<Boolean> = context.dataStore.data.map {
+    val onboardingCompleted: Flow<Boolean> = dataStore.data.map {
         it[Keys.ONBOARDING_COMPLETED] ?: false
     }
 
-    val homeTourCompleted: Flow<Boolean> = context.dataStore.data.map {
+    val homeTourCompleted: Flow<Boolean> = dataStore.data.map {
         it[Keys.HOME_TOUR_COMPLETED] ?: false
     }
 
-    val groqApiKey: Flow<String?> = context.dataStore.data.map { it[Keys.GROQ_API_KEY] }
+    val groqApiKey: Flow<String?> = dataStore.data.map { it[Keys.GROQ_API_KEY] }
 
-    val groqModel: Flow<String> = context.dataStore.data.map {
+    val groqModel: Flow<String> = dataStore.data.map {
         it[Keys.GROQ_MODEL] ?: DEFAULT_MODEL
     }
 
     suspend fun setLanguage(language: Language) {
-        context.dataStore.edit { it[Keys.LANGUAGE_CODE] = language.code }
+        dataStore.edit { it[Keys.LANGUAGE_CODE] = language.code }
     }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
-        context.dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = completed }
+        dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = completed }
     }
 
     suspend fun setHomeTourCompleted(completed: Boolean) {
-        context.dataStore.edit { it[Keys.HOME_TOUR_COMPLETED] = completed }
+        dataStore.edit { it[Keys.HOME_TOUR_COMPLETED] = completed }
     }
 
     suspend fun setGroqApiKey(key: String) {
-        context.dataStore.edit { it[Keys.GROQ_API_KEY] = key.trim() }
+        dataStore.edit { it[Keys.GROQ_API_KEY] = key.trim() }
     }
 
     suspend fun setGroqModel(model: String) {
-        context.dataStore.edit { it[Keys.GROQ_MODEL] = model }
+        dataStore.edit { it[Keys.GROQ_MODEL] = model }
     }
 }
