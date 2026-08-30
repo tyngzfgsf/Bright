@@ -45,6 +45,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
 import com.bright.app.R
+import com.bright.app.domain.model.stringRes
 import java.text.DateFormat
 import java.util.Date
 

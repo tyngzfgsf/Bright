@@ -47,6 +47,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
 import com.bright.app.R
 import com.bright.app.domain.SkillProfile
+import com.bright.app.domain.model.stringRes
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)

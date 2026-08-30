@@ -1,18 +1,23 @@
 package com.bright.app.domain.model
 
-import com.bright.app.R
-
-enum class ScenarioType(val stringRes: Int) {
-    CARDIAC_ARREST(R.string.home_scenario_cardiac_arrest),
-    ANAPHYLAXIS(R.string.home_scenario_anaphylaxis),
-    STROKE(R.string.home_scenario_stroke),
-    TRAUMA(R.string.home_scenario_trauma),
-    CHOKING(R.string.home_scenario_choking),
-    SEIZURE(R.string.home_scenario_seizure),
-    DIABETIC(R.string.home_scenario_diabetic),
-    ASTHMA(R.string.home_scenario_asthma),
-    SEPSIS(R.string.home_scenario_sepsis),
-    BURNS(R.string.home_scenario_burns);
+/**
+ * Display strings for these enums are NOT here — they used to be a `stringRes: Int` pointing
+ * at Android's generated `R.string.*`, which doesn't exist in commonMain or on iOS. Each
+ * platform now supplies its own display-string mapping as an extension (see
+ * `ScenarioDisplay.kt` in the Android app module for the Android side); this file only carries
+ * what's actually platform-neutral about a scenario/role.
+ */
+enum class ScenarioType {
+    CARDIAC_ARREST,
+    ANAPHYLAXIS,
+    STROKE,
+    TRAUMA,
+    CHOKING,
+    SEIZURE,
+    DIABETIC,
+    ASTHMA,
+    SEPSIS,
+    BURNS;
 
     /** Short English keyword injected into the AI system prompt — kept language-neutral for the model. */
     val promptKeyword: String
@@ -30,17 +35,17 @@ enum class ScenarioType(val stringRes: Int) {
         }
 }
 
-enum class TraineeRole(val stringRes: Int, val promptLabel: String) {
-    DOCTOR(R.string.home_role_doctor, "doctor"),
-    NURSE(R.string.home_role_nurse, "nurse"),
-    EMT(R.string.home_role_emt, "EMT/paramedic")
+enum class TraineeRole(val promptLabel: String) {
+    DOCTOR("doctor"),
+    NURSE("nurse"),
+    EMT("EMT/paramedic")
 }
 
 /** Who the AI plays. RANDOM is resolved to PATIENT or DOCTOR once, at session creation. */
-enum class AiCharacterRole(val stringRes: Int, val promptLabel: String) {
-    RANDOM(R.string.home_ai_role_random, ""),
-    PATIENT(R.string.home_ai_role_patient, "the patient"),
-    DOCTOR(R.string.home_ai_role_doctor, "a supervising doctor/examiner quizzing the trainee directly")
+enum class AiCharacterRole(val promptLabel: String) {
+    RANDOM(""),
+    PATIENT("the patient"),
+    DOCTOR("a supervising doctor/examiner quizzing the trainee directly")
 }
 
 enum class Difficulty(val promptInstruction: String) {

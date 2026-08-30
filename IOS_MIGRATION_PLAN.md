@@ -23,13 +23,37 @@ phases of unverified change on top of each other.
 
 ## Phase 2 — Move pure logic to `commonMain` (lowest risk, do first)
 
-These have little to no Android dependency already:
-- `domain/SkillProfile.kt`
-- `domain/model/*` (ScenarioType, Language, Difficulty, TraineeRole, AiCharacterRole)
-- `data/remote/GroqModels.kt` (kotlinx.serialization data classes)
+**Done**, with two corrections to what this phase originally assumed:
 
-Verify Android build after this phase — these should compile into `commonMain` with
-little to no modification.
+- `domain/model/*` (ScenarioType, Language, Difficulty, TraineeRole, AiCharacterRole) and
+  `data/remote/GroqModels.kt` are in `commonMain` now.
+- These were **not** actually dependency-free as assumed:
+  - `ScenarioType`/`TraineeRole`/`AiCharacterRole` carried `val stringRes: Int` pointing at
+    `com.bright.app.R.string.*` — Android's generated resource class, unavailable outside
+    the Android target. Stripped from the enums; the Android app module now supplies the
+    mapping itself as an extension property (`app/.../domain/model/ScenarioDisplay.kt`) in
+    the same package, so every existing `foo.stringRes` call site kept working with just an
+    added import. iOS gets its own equivalent mapping in Phase 5/6.
+  - `Language.fromSystemDefault()` called `java.util.Locale.getDefault()`, JVM-only. Pulled
+    into `expect fun currentSystemLanguageCode()`, with `actual` implementations in
+    `androidMain` (`java.util.Locale`) and `iosMain` (`NSLocale.currentLocale`).
+- `domain/SkillProfile.kt` **stayed in the Android app module** — deferred to Phase 3.
+  `SkillProfile.compute()` takes `List<SessionEntity>`, a Room `@Entity`; moving
+  `SkillProfile` now would require moving `SessionEntity` too, which is explicitly Phase 3
+  work (and stacking that in early would violate this plan's own ground rule about not
+  combining unverified phases). Decoupling `SkillProfile` from the Room entity — e.g. having
+  it take a plain data class instead, mapped from `SessionEntity` at the call site — is an
+  option worth considering when Phase 3 gets to Room, but that's a call for that phase, not
+  a silent scope-add to this one.
+- Also discovered in verification, unrelated to the file moves themselves: Kotlin disallows
+  smart-casting a nullable `val` on a type declared in a *different Gradle module* — code in
+  `SettingsScreen.kt` that did `if (u.remainingRequests != null) { ...u.remainingRequests... }`
+  stopped compiling once `GroqUsageInfo` moved to `shared`. Fixed by capturing into local
+  `val`s first. Worth knowing about going forward: any other cross-module nullable-property
+  smart-cast in the app will hit the same thing as more types move to `shared`.
+
+Verified: `./gradlew clean assembleDebug` passes, and all three iOS targets
+(iosArm64, iosX64, iosSimulatorArm64) compile `shared` including the new files.
 
 ## Phase 3 — Replace Android-only libraries with KMP-compatible ones (in `commonMain`)
 
@@ -41,6 +65,11 @@ little to no modification.
   a rewrite is needed.
 - **DataStore → also has official KMP support** — check current version compatibility
   before assuming `UserPreferences` needs replacing.
+- **`domain/SkillProfile.kt`** — carried over from Phase 2 (see that section): it takes
+  `List<SessionEntity>` directly, so it can't move to `commonMain` until `SessionEntity`
+  does. Once Room's KMP move above happens, either move `SkillProfile` alongside it, or take
+  the opportunity to decouple it to a plain data class input first — pure functions
+  shouldn't really take a Room `@Entity` as a parameter regardless of KMP.
 
 Verify Android build after this phase.
 

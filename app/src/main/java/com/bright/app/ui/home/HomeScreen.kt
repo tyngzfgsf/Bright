@@ -76,6 +76,7 @@ import com.bright.app.R
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.TraineeRole
+import com.bright.app.domain.model.stringRes
 import com.bright.app.ui.components.BrightButton
 import com.bright.app.ui.components.BrightDiscreteSlider
 import com.bright.app.ui.components.BrightTextField

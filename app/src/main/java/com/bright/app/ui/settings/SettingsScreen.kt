@@ -157,16 +157,20 @@ fun SettingsScreen(
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(16.dp)
                 ) {
-                    if (u.remainingRequests != null && u.limitRequests != null) {
+                    val remainingRequests = u.remainingRequests
+                    val limitRequests = u.limitRequests
+                    if (remainingRequests != null && limitRequests != null) {
                         Text(
-                            text = stringResource(R.string.settings_usage_requests, u.remainingRequests, u.limitRequests),
+                            text = stringResource(R.string.settings_usage_requests, remainingRequests, limitRequests),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    if (u.remainingTokens != null && u.limitTokens != null) {
+                    val remainingTokens = u.remainingTokens
+                    val limitTokens = u.limitTokens
+                    if (remainingTokens != null && limitTokens != null) {
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.settings_usage_tokens, u.remainingTokens, u.limitTokens),
+                            text = stringResource(R.string.settings_usage_tokens, remainingTokens, limitTokens),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
