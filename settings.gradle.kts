@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Bright"
 include(":app")
+include(":shared")

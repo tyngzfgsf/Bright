@@ -12,3 +12,12 @@ local.properties
 *.aab
 /app/build
 /app/release
+
+# Gradle build output for any module (the KMP `shared` module included) — the two
+# rules above only covered /build and /app/build.
+build/
+
+# Kotlin/Native/KMP
+.kotlin/
+*.klib
+
