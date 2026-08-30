@@ -23,10 +23,10 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
             implementation("androidx.datastore:datastore-preferences-core:1.1.2")
 
-            implementation("io.ktor:ktor-client-core:3.5.2")
-            implementation("io.ktor:ktor-client-content-negotiation:3.5.2")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.2")
-            implementation("io.ktor:ktor-client-logging:3.5.2")
+            implementation("io.ktor:ktor-client-core:3.2.2")
+            implementation("io.ktor:ktor-client-content-negotiation:3.2.2")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
+            implementation("io.ktor:ktor-client-logging:3.2.2")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -34,11 +34,11 @@ kotlin {
         androidMain.dependencies {
             // OkHttp engine — keeps the same underlying HTTP stack the app already used via
             // Retrofit, so connection pooling/timeout behavior on Android doesn't change.
-            implementation("io.ktor:ktor-client-okhttp:3.5.2")
+            implementation("io.ktor:ktor-client-okhttp:3.2.2")
         }
         iosMain.dependencies {
             // Darwin engine — NSURLSession under the hood, the native choice on iOS.
-            implementation("io.ktor:ktor-client-darwin:3.5.2")
+            implementation("io.ktor:ktor-client-darwin:3.2.2")
         }
     }
 }

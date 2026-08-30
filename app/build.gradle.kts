@@ -87,10 +87,9 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences-core:1.1.2")
     implementation("com.squareup.okio:okio:3.9.0")
 
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
+    // Still used directly (not via Retrofit) by UpdateChecker/ApkDownloader — those stay
+    // Android-only (Phase 4: no iOS equivalent, App Store handles updates there).
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")

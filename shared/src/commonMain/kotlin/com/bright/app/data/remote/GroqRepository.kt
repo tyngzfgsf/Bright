@@ -1,25 +1,31 @@
 package com.bright.app.data.remote
 
 import com.bright.app.util.ApiResult
+import io.ktor.client.call.body
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.IOException
 
 class GroqRepository(
-    private val apiService: GroqApiService = NetworkModule.groqApiService
+    private val apiClient: GroqApiClient = GroqApiClient()
 ) {
+    // Dispatchers.IO isn't public commonMain API on Kotlin/Native with this coroutines
+    // version (it's `internal` there) — Default is the portable choice. Ktor's engines are
+    // already non-blocking, so this isn't giving up much versus a dedicated IO pool anyway.
 
     suspend fun sendConversation(
         apiKey: String,
         model: String,
         messages: List<GroqMessage>,
         jsonMode: Boolean = false
-    ): ApiResult<String> = withContext(Dispatchers.IO) {
+    ): ApiResult<String> = withContext(Dispatchers.Default) {
         if (apiKey.isBlank()) {
             return@withContext ApiResult.Error("Missing Groq API key.")
         }
         try {
-            val response = apiService.createChatCompletion(
+            val response = apiClient.createChatCompletion(
                 bearerToken = "Bearer $apiKey",
                 request = GroqChatRequest(
                     model = model,
@@ -28,24 +34,27 @@ class GroqRepository(
                 )
             )
 
-            if (!response.isSuccessful) {
-                val errorBody = response.errorBody()?.string()
+            if (!response.status.isSuccess()) {
                 return@withContext ApiResult.Error(
-                    parseErrorMessage(errorBody) ?: "Request failed (HTTP ${response.code()})."
+                    parseErrorMessage(response.bodyAsText()) ?: "Request failed (HTTP ${response.status.value})."
                 )
             }
 
-            val body = response.body()
-            val reply = body?.choices?.firstOrNull()?.message?.content
+            val body: GroqChatResponse = response.body()
+            val reply = body.choices.firstOrNull()?.message?.content
 
             if (reply.isNullOrBlank()) {
-                ApiResult.Error(body?.error?.message ?: "Empty response from the model.")
+                ApiResult.Error(body.error?.message ?: "Empty response from the model.")
             } else {
                 ApiResult.Success(reply.trim())
             }
-        } catch (e: IOException) {
-            ApiResult.Error("Network error — check your connection and try again.")
         } catch (e: Exception) {
+            // Deliberately one catch-all rather than a typed "network error" branch: Ktor's
+            // OkHttp (Android) and Darwin (iOS) engines don't share one common connectivity
+            // exception type, so trying to special-case "no network" here would only work
+            // reliably on one platform. e.message from either engine is usually already a
+            // readable reason (e.g. "Unable to resolve host", or the wrapped NSError's
+            // description on iOS), so surface that instead of a hardcoded guess.
             ApiResult.Error(e.message ?: "Unexpected error talking to Groq.")
         }
     }
@@ -55,34 +64,31 @@ class GroqRepository(
      * read straight from the response headers Groq attaches to every request. One call
      * serves both — the model picker and the usage readout in Settings.
      */
-    suspend fun fetchModelsAndUsage(apiKey: String): ApiResult<ModelsAndUsage> = withContext(Dispatchers.IO) {
+    suspend fun fetchModelsAndUsage(apiKey: String): ApiResult<ModelsAndUsage> = withContext(Dispatchers.Default) {
         if (apiKey.isBlank()) {
             return@withContext ApiResult.Error("Missing Groq API key.")
         }
         try {
-            val response = apiService.listModels(bearerToken = "Bearer $apiKey")
+            val response: HttpResponse = apiClient.listModels(bearerToken = "Bearer $apiKey")
 
-            if (!response.isSuccessful) {
-                val errorBody = response.errorBody()?.string()
+            if (!response.status.isSuccess()) {
                 return@withContext ApiResult.Error(
-                    parseErrorMessage(errorBody) ?: "Request failed (HTTP ${response.code()})."
+                    parseErrorMessage(response.bodyAsText()) ?: "Request failed (HTTP ${response.status.value})."
                 )
             }
 
-            val body = response.body()
-            val chatModels = body?.data
-                .orEmpty()
+            val body: GroqModelsResponse = response.body()
+            val chatModels = body.data
                 .filter { it.active }
                 .map { it.id }
                 .filterNot { id -> NON_CHAT_KEYWORDS.any { id.contains(it, ignoreCase = true) } }
                 .sorted()
 
-            val headers = response.headers()
             val usage = GroqUsageInfo(
-                remainingRequests = headers["x-ratelimit-remaining-requests"]?.toIntOrNull(),
-                limitRequests = headers["x-ratelimit-limit-requests"]?.toIntOrNull(),
-                remainingTokens = headers["x-ratelimit-remaining-tokens"]?.toIntOrNull(),
-                limitTokens = headers["x-ratelimit-limit-tokens"]?.toIntOrNull()
+                remainingRequests = response.headers["x-ratelimit-remaining-requests"]?.toIntOrNull(),
+                limitRequests = response.headers["x-ratelimit-limit-requests"]?.toIntOrNull(),
+                remainingTokens = response.headers["x-ratelimit-remaining-tokens"]?.toIntOrNull(),
+                limitTokens = response.headers["x-ratelimit-limit-tokens"]?.toIntOrNull()
             )
 
             if (chatModels.isEmpty()) {
@@ -90,8 +96,6 @@ class GroqRepository(
             } else {
                 ApiResult.Success(ModelsAndUsage(chatModels, usage))
             }
-        } catch (e: IOException) {
-            ApiResult.Error("Network error — check your connection and try again.")
         } catch (e: Exception) {
             ApiResult.Error(e.message ?: "Unexpected error talking to Groq.")
         }

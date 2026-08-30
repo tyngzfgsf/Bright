@@ -3,6 +3,7 @@ package com.bright.app.data.remote
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -37,7 +38,16 @@ class GroqApiClient(enableLogging: Boolean = false) {
             )
         }
         if (enableLogging) {
-            install(Logging) { level = LogLevel.BODY }
+            // Plain println logger rather than Logger.DEFAULT — the default tries an SLF4J
+            // binding on JVM, which this app doesn't depend on and would just warn.
+            install(Logging) {
+                level = LogLevel.BODY
+                logger = object : Logger {
+                    override fun log(message: String) {
+                        println(message)
+                    }
+                }
+            }
         }
     }
 

@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.preferences.UserPreferences
+import com.bright.app.data.remote.GroqApiClient
 import com.bright.app.data.remote.GroqRepository
 import okio.Path.Companion.toOkioPath
 
@@ -23,5 +24,8 @@ class BrightApplication : Application() {
             )
         )
     }
-    val groqRepository: GroqRepository by lazy { GroqRepository() }
+    // BuildConfig.DEBUG-gated body logging, same as the old OkHttp/Retrofit setup had.
+    val groqRepository: GroqRepository by lazy {
+        GroqRepository(GroqApiClient(enableLogging = BuildConfig.DEBUG))
+    }
 }
