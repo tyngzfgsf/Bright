@@ -37,7 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,7 +45,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 import com.bright.app.domain.model.Language
 import com.bright.app.ui.components.BrightButton
 import com.bright.app.ui.components.BrightTextField
@@ -104,7 +105,7 @@ private fun CinematicIntro(onFinished: () -> Unit) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = stringResource(R.string.app_name),
+                text = stringResource(Res.string.app_name),
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -116,7 +117,7 @@ private fun CinematicIntro(onFinished: () -> Unit) {
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                text = stringResource(R.string.app_slogan),
+                text = stringResource(Res.string.app_slogan),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.graphicsLayer { alpha = sloganAlpha.value }
@@ -169,9 +170,9 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
                 // characters were typed, which made it a wall rather than a skippable step.
                 text = stringResource(
                     when {
-                        !isLastPage -> R.string.onboarding_next
-                        hasKey -> R.string.onboarding_get_started
-                        else -> R.string.onboarding_skip_key
+                        !isLastPage -> Res.string.onboarding_next
+                        hasKey -> Res.string.onboarding_get_started
+                        else -> Res.string.onboarding_skip_key
                     }
                 ),
                 onClick = {
@@ -197,13 +198,13 @@ private fun LanguagePage(selectedLanguage: Language, onSelect: (Language) -> Uni
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            stringResource(R.string.onboarding_choose_language_title),
+            stringResource(Res.string.onboarding_choose_language_title),
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            stringResource(R.string.onboarding_choose_language_subtitle),
+            stringResource(Res.string.onboarding_choose_language_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -228,13 +229,13 @@ private fun ApiKeyPage(value: String, onValueChange: (String) -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            stringResource(R.string.onboarding_api_key_title),
+            stringResource(Res.string.onboarding_api_key_title),
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            stringResource(R.string.onboarding_api_key_subtitle),
+            stringResource(Res.string.onboarding_api_key_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -243,13 +244,13 @@ private fun ApiKeyPage(value: String, onValueChange: (String) -> Unit) {
         BrightTextField(
             value = value,
             onValueChange = onValueChange,
-            placeholder = stringResource(R.string.onboarding_api_key_hint),
+            placeholder = stringResource(Res.string.onboarding_api_key_hint),
             isPassword = true,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(10.dp))
         Text(
-            stringResource(R.string.onboarding_api_key_get_one),
+            stringResource(Res.string.onboarding_api_key_get_one),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

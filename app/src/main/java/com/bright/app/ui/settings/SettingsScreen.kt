@@ -43,7 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,7 +51,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
 import com.bright.app.BuildConfig
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 import com.bright.app.domain.model.Language
 import com.bright.app.ui.components.BrightButton
 import com.bright.app.ui.components.BrightButtonStyle
@@ -94,10 +95,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.settings_title)) },
+                title = { Text(stringResource(Res.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -114,10 +115,10 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
-            SectionLabel(stringResource(R.string.settings_section_general))
+            SectionLabel(stringResource(Res.string.settings_section_general))
             Spacer(Modifier.height(10.dp))
 
-            Text(stringResource(R.string.settings_language), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(Res.string.settings_language), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Language.entries.forEach { lang ->
@@ -130,7 +131,7 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(20.dp))
-            Text(stringResource(R.string.settings_api_key), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(Res.string.settings_api_key), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             BrightTextField(
                 value = apiKeyInput,
@@ -141,7 +142,7 @@ fun SettingsScreen(
             )
             Spacer(Modifier.height(8.dp))
             BrightButton(
-                text = stringResource(R.string.common_save),
+                text = stringResource(Res.string.common_save),
                 style = BrightButtonStyle.OUTLINED,
                 onClick = { viewModel.setApiKey(apiKeyInput) },
                 modifier = Modifier.fillMaxWidth()
@@ -161,7 +162,7 @@ fun SettingsScreen(
                     val limitRequests = u.limitRequests
                     if (remainingRequests != null && limitRequests != null) {
                         Text(
-                            text = stringResource(R.string.settings_usage_requests, remainingRequests, limitRequests),
+                            text = stringResource(Res.string.settings_usage_requests, remainingRequests, limitRequests),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -170,7 +171,7 @@ fun SettingsScreen(
                     if (remainingTokens != null && limitTokens != null) {
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.settings_usage_tokens, remainingTokens, limitTokens),
+                            text = stringResource(Res.string.settings_usage_tokens, remainingTokens, limitTokens),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -178,14 +179,14 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(20.dp))
-            Text(stringResource(R.string.settings_model), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(Res.string.settings_model), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
 
             when {
                 isFetchingModels -> Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                     Text(
-                        text = stringResource(R.string.settings_model_fetching),
+                        text = stringResource(Res.string.settings_model_fetching),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = 10.dp)
@@ -199,7 +200,7 @@ fun SettingsScreen(
                     )
                     Spacer(Modifier.height(8.dp))
                     TextButton(onClick = { showManualModelEntry = true }) {
-                        Text(stringResource(R.string.settings_model_manual_toggle))
+                        Text(stringResource(Res.string.settings_model_manual_toggle))
                     }
                 }
                 else -> {
@@ -211,18 +212,18 @@ fun SettingsScreen(
                     )
                     Spacer(Modifier.height(8.dp))
                     BrightButton(
-                        text = stringResource(R.string.common_save),
+                        text = stringResource(Res.string.common_save),
                         style = BrightButtonStyle.OUTLINED,
                         onClick = { viewModel.setModel(manualModelInput) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(Modifier.height(8.dp))
                     TextButton(onClick = { viewModel.fetchModelsAndUsage() }) {
-                        Text(stringResource(R.string.settings_model_fetch_button))
+                        Text(stringResource(Res.string.settings_model_fetch_button))
                     }
                     if (availableModels.isNotEmpty()) {
                         TextButton(onClick = { showManualModelEntry = false }) {
-                            Text(stringResource(R.string.settings_model_use_list))
+                            Text(stringResource(Res.string.settings_model_use_list))
                         }
                     }
                     modelsFetchError?.let { error ->
@@ -235,7 +236,7 @@ fun SettingsScreen(
                     } ?: run {
                         if (uiState.apiKey.isBlank()) {
                             Text(
-                                text = stringResource(R.string.settings_model_no_key),
+                                text = stringResource(Res.string.settings_model_no_key),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = 4.dp)
@@ -249,10 +250,10 @@ fun SettingsScreen(
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             Spacer(Modifier.height(20.dp))
 
-            SectionLabel(stringResource(R.string.settings_section_data))
+            SectionLabel(stringResource(Res.string.settings_section_data))
             Spacer(Modifier.height(10.dp))
             BrightButton(
-                text = stringResource(R.string.settings_clear_history),
+                text = stringResource(Res.string.settings_clear_history),
                 style = BrightButtonStyle.OUTLINED,
                 onClick = { showClearDialog = true },
                 modifier = Modifier.fillMaxWidth()
@@ -262,7 +263,7 @@ fun SettingsScreen(
             HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             Spacer(Modifier.height(20.dp))
 
-            SectionLabel(stringResource(R.string.settings_section_about))
+            SectionLabel(stringResource(Res.string.settings_section_about))
             Spacer(Modifier.height(10.dp))
 
             uiState.updateInfo?.let { update ->
@@ -274,18 +275,18 @@ fun SettingsScreen(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.settings_update_available, update.versionTag),
+                        text = stringResource(Res.string.settings_update_available, update.versionTag),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.settings_update_body),
+                        text = stringResource(Res.string.settings_update_body),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(12.dp))
                     BrightButton(
-                        text = stringResource(R.string.settings_update_download),
+                        text = stringResource(Res.string.settings_update_download),
                         loading = isDownloadingUpdate,
                         onClick = { viewModel.downloadAndInstallUpdate(context) },
                         modifier = Modifier.fillMaxWidth()
@@ -307,7 +308,7 @@ fun SettingsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(stringResource(R.string.settings_version), style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(Res.string.settings_version), style = MaterialTheme.typography.bodyLarge)
                 Text(
                     BuildConfig.VERSION_NAME,
                     style = MaterialTheme.typography.bodyMedium,
@@ -319,7 +320,7 @@ fun SettingsScreen(
                 viewModel.resetOnboarding()
                 onReplayTutorial()
             }) {
-                Text(stringResource(R.string.settings_replay_tutorial))
+                Text(stringResource(Res.string.settings_replay_tutorial))
             }
             Spacer(Modifier.height(24.dp))
         }
@@ -328,16 +329,16 @@ fun SettingsScreen(
     if (showClearDialog) {
         AlertDialog(
             onDismissRequest = { showClearDialog = false },
-            title = { Text(stringResource(R.string.settings_clear_history)) },
-            text = { Text(stringResource(R.string.settings_clear_history_confirm)) },
+            title = { Text(stringResource(Res.string.settings_clear_history)) },
+            text = { Text(stringResource(Res.string.settings_clear_history_confirm)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.clearAllHistory()
                     showClearDialog = false
-                }) { Text(stringResource(R.string.common_delete)) }
+                }) { Text(stringResource(Res.string.common_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { showClearDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = { showClearDialog = false }) { Text(stringResource(Res.string.common_cancel)) }
             }
         )
     }

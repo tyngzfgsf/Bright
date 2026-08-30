@@ -23,9 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
+import org.jetbrains.compose.resources.stringResource
 import com.bright.app.domain.model.Language
 import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.currentSystemLanguageCode
+import com.bright.app.domain.model.stringRes
 import com.bright.app.ui.components.BrightButton
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
@@ -98,10 +100,11 @@ private fun SharedStackDemo() {
         ) {
             ScenarioType.entries.forEach { scenario ->
                 SelectableChip(
-                    // Display names live in Android resources, which don't exist here — this is
-                    // the Phase 5 resources gate, visible. promptKeyword is shared, so it's what
-                    // a shared screen can actually show today.
-                    text = scenario.promptKeyword,
+                    // Real localized display names, straight out of commonMain. Until the
+                    // resources migration these had to fall back to `promptKeyword`, because
+                    // display names only existed as Android R.string values — that was the
+                    // Phase 5 resources gate, and this line is the proof it's gone.
+                    text = stringResource(scenario.stringRes),
                     selected = selected == scenario,
                     onClick = { selected = scenario }
                 )

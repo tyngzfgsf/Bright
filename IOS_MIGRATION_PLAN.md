@@ -217,6 +217,41 @@ rewritten, Android app still passing. That is independently valuable, carries no
 turns the screen migration into a mechanical move afterwards. Doing resources and the screen
 moves in one pass is exactly the stacking this plan's ground rule warns against.
 
+### Resources migration — **done** (gate 1 of 2 cleared)
+
+All 134 strings × 2 languages moved to `shared/src/commonMain/composeResources/`, and all 113
+`stringResource(...)` call sites rewritten from `R.string.*` to `Res.string.*`. The Android
+`res/values*/strings.xml` files now hold exactly three strings, for reasons that genuinely
+require them: `app_name` (referenced by AndroidManifest.xml) and two update-flow strings read
+via `Context.getString()` from `SettingsViewModel`, a non-composable context.
+
+`ScenarioDisplay.kt` **moved to `commonMain`** and its `stringRes` changed from `Int` to
+`StringResource` — the Phase 2 workaround (Android-only extension returning a resource ID) is
+now gone entirely, which was the whole point. `TourStep` likewise carries `StringResource`
+rather than `Int`.
+
+Two real bugs found by running it, both invisible to the compiler:
+- **`\'` is an Android resource-compiler escape that Compose Resources does not process.** Eight
+  English strings rendered a literal backslash (`it\'s one tap`). Fixed by unescaping to a plain
+  apostrophe, which is valid XML. Korean was unaffected (no apostrophes) — so this is a
+  language-specific breakage that testing only one locale would have shipped.
+- **The Phase 2 iOS `currentSystemLanguageCode()` was using the wrong API.**
+  `NSLocale.currentLocale.languageCode` is filtered by the localizations the *app bundle
+  declares*, so it reported `"en"` on a fully Korean simulator, while Compose Resources (which
+  resolves against `preferredLanguages`) rendered Korean — the same screen disagreeing with
+  itself. Now uses `NSLocale.preferredLanguages`, and the two agree.
+
+Verified on-device in **both languages**, including the live in-app language switch (which
+confirms Compose Resources honours Android's per-app locale via `AppCompatDelegate`), and with
+the parameterized strings actually exercised — a scored session was seeded directly into the
+Room database so `%1$d` / `%1$d…%2$d` / `%1$s` formatting all rendered real values rather than
+staying untested empty states. On iOS, the harness now shows **real localized scenario names**
+instead of the `promptKeyword` fallback, which is the visible proof this gate is cleared.
+
+**Still remaining before the screens can move: gate 2, ViewModel construction.** Every screen
+still reaches its dependencies through
+`LocalContext.current.applicationContext as BrightApplication`.
+
 ## Phase 6 — iOS app shell
 
 **Done: the shared stack runs on the iOS Simulator.** `iosApp/` holds a hand-written Xcode

@@ -62,7 +62,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -73,7 +73,8 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
 import com.bright.app.BuildConfig
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.TraineeRole
@@ -90,10 +91,10 @@ import java.util.Locale
 import kotlin.math.roundToInt
 
 private val TOUR_STEPS = listOf(
-    TourStep("scenario", R.string.tour_scenario_title, R.string.tour_scenario_body),
-    TourStep("options", R.string.tour_options_title, R.string.tour_options_body),
-    TourStep("insights", R.string.tour_insights_title, R.string.tour_insights_body),
-    TourStep("start", R.string.tour_start_title, R.string.tour_start_body)
+    TourStep("scenario", Res.string.tour_scenario_title, Res.string.tour_scenario_body),
+    TourStep("options", Res.string.tour_options_title, Res.string.tour_options_body),
+    TourStep("insights", Res.string.tour_insights_title, Res.string.tour_insights_body),
+    TourStep("start", Res.string.tour_start_title, Res.string.tour_start_body)
 )
 
 /**
@@ -202,7 +203,7 @@ fun HomeScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.home_title), style = MaterialTheme.typography.headlineMedium) },
+                    title = { Text(stringResource(Res.string.home_title), style = MaterialTheme.typography.headlineMedium) },
                     actions = {
                         IconButton(
                             onClick = {
@@ -211,10 +212,10 @@ fun HomeScreen(
                             },
                             modifier = Modifier.onGloballyPositioned { tourBounds["insights"] = it.unclippedBoundsInWindow() }
                         ) {
-                            Icon(Icons.Filled.Insights, contentDescription = stringResource(R.string.stats_title))
+                            Icon(Icons.Filled.Insights, contentDescription = stringResource(Res.string.stats_title))
                         }
                         IconButton(onClick = onOpenHistory) {
-                            Icon(Icons.Filled.History, contentDescription = stringResource(R.string.history_title))
+                            Icon(Icons.Filled.History, contentDescription = stringResource(Res.string.history_title))
                         }
                         IconButton(onClick = onOpenSettings) {
                             BadgedBox(
@@ -224,7 +225,7 @@ fun HomeScreen(
                                     }
                                 }
                             ) {
-                                Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings_title))
+                                Icon(Icons.Filled.Settings, contentDescription = stringResource(Res.string.settings_title))
                             }
                         }
                     },
@@ -243,7 +244,7 @@ fun HomeScreen(
                         .padding(horizontal = 20.dp, vertical = 16.dp)
                 ) {
                     BrightButton(
-                        text = stringResource(R.string.home_start_session),
+                        text = stringResource(Res.string.home_start_session),
                         loading = isStarting,
                         onClick = {
                             advanceTourFrom("start")
@@ -270,7 +271,7 @@ fun HomeScreen(
                     .padding(horizontal = 20.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.home_greeting),
+                    text = stringResource(Res.string.home_greeting),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -291,7 +292,7 @@ fun HomeScreen(
                                     .padding(20.dp)
                             ) {
                                 Text(
-                                    text = stringResource(R.string.home_weak_spot_label),
+                                    text = stringResource(Res.string.home_weak_spot_label),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
                                 )
@@ -309,7 +310,7 @@ fun HomeScreen(
                                     )
                                     Text(
                                         text = stringResource(
-                                            R.string.home_weak_spot_avg,
+                                            Res.string.home_weak_spot_avg,
                                             String.format(Locale.US, "%.1f", weak.averageScore)
                                         ),
                                         style = MaterialTheme.typography.titleSmall,
@@ -333,7 +334,7 @@ fun HomeScreen(
                                         .background(MaterialTheme.colorScheme.background)
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.home_weak_spot_drill),
+                                        text = stringResource(Res.string.home_weak_spot_drill),
                                         color = MaterialTheme.colorScheme.onBackground,
                                         fontWeight = FontWeight.SemiBold,
                                         modifier = Modifier.padding(horizontal = 8.dp)
@@ -352,7 +353,7 @@ fun HomeScreen(
                     contentPadding = 24.dp
                 ) {
                     Text(
-                        text = stringResource(R.string.home_choose_scenario),
+                        text = stringResource(Res.string.home_choose_scenario),
                         style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(Modifier.height(12.dp))
@@ -381,14 +382,14 @@ fun HomeScreen(
                     ) {
                         Icon(Icons.Filled.Shuffle, contentDescription = null, modifier = Modifier.height(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text(stringResource(R.string.home_random_scenario))
+                        Text(stringResource(Res.string.home_random_scenario))
                     }
 
                     Spacer(Modifier.height(6.dp))
                     BrightTextField(
                         value = uiState.customScenario,
                         onValueChange = { viewModel.setCustomScenario(it) },
-                        placeholder = stringResource(R.string.home_custom_scenario_hint),
+                        placeholder = stringResource(Res.string.home_custom_scenario_hint),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -414,7 +415,7 @@ fun HomeScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = stringResource(R.string.home_options_label),
+                                text = stringResource(Res.string.home_options_label),
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Spacer(Modifier.height(2.dp))
@@ -442,7 +443,7 @@ fun HomeScreen(
                             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                             Column(modifier = Modifier.padding(24.dp)) {
                                 Text(
-                                    text = stringResource(R.string.home_choose_role),
+                                    text = stringResource(Res.string.home_choose_role),
                                     style = MaterialTheme.typography.titleSmall
                                 )
                                 Spacer(Modifier.height(10.dp))
@@ -461,7 +462,7 @@ fun HomeScreen(
 
                                 Spacer(Modifier.height(20.dp))
                                 Text(
-                                    text = stringResource(R.string.home_ai_role_title),
+                                    text = stringResource(Res.string.home_ai_role_title),
                                     style = MaterialTheme.typography.titleSmall
                                 )
                                 Spacer(Modifier.height(10.dp))
@@ -481,7 +482,7 @@ fun HomeScreen(
                                 BrightTextField(
                                     value = uiState.customAiRole,
                                     onValueChange = { viewModel.setCustomAiRole(it) },
-                                    placeholder = stringResource(R.string.home_custom_ai_role_hint),
+                                    placeholder = stringResource(Res.string.home_custom_ai_role_hint),
                                     modifier = Modifier.fillMaxWidth()
                                 )
 

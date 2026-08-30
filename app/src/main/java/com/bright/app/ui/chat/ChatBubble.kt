@@ -21,11 +21,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 import com.bright.app.domain.model.ChatMessage
 import com.bright.app.domain.model.MessageRole
 import com.bright.app.ui.theme.BrightMotion
@@ -80,7 +81,7 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                 }
                 isUserAsk -> Column {
                     Text(
-                        text = stringResource(R.string.chat_ask_label),
+                        text = stringResource(Res.string.chat_ask_label),
                         color = captionColor,
                         style = MaterialTheme.typography.labelMedium
                     )
@@ -89,7 +90,7 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                 }
                 isAiAnswer -> Column {
                     Text(
-                        text = stringResource(R.string.chat_answer_label),
+                        text = stringResource(Res.string.chat_answer_label),
                         color = captionColor,
                         style = MaterialTheme.typography.labelMedium
                     )

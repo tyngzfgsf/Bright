@@ -44,14 +44,16 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 
 /** One stop on the guided tour: which captured element to spotlight, and what to say about it. */
-data class TourStep(val key: String, val titleRes: Int, val bodyRes: Int)
+data class TourStep(val key: String, val titleRes: StringResource, val bodyRes: StringResource)
 
 /**
  * A spotlight walkthrough over the real Home screen. Dims everything except the current step's
@@ -202,7 +204,7 @@ fun HomeTourOverlay(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (!isLast) {
                             Text(
-                                text = stringResource(R.string.tour_skip),
+                                text = stringResource(Res.string.tour_skip),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = Color.Black.copy(alpha = 0.5f),
                                 modifier = Modifier
@@ -213,7 +215,7 @@ fun HomeTourOverlay(
                         }
                         Text(
                             text = stringResource(
-                                if (isLast) R.string.common_done else R.string.onboarding_next
+                                if (isLast) Res.string.common_done else Res.string.onboarding_next
                             ),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,

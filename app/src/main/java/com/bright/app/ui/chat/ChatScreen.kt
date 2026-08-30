@@ -39,13 +39,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
 
@@ -81,10 +82,10 @@ fun ChatScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.titleMedium)
                         uiState.averageScore?.let { avg ->
                             Text(
-                                text = stringResource(R.string.chat_average_score, avg),
+                                text = stringResource(Res.string.chat_average_score, avg),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -93,7 +94,7 @@ fun ChatScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back))
                     }
                 },
                 actions = {
@@ -102,10 +103,10 @@ fun ChatScreen(
                             onClick = { viewModel.shuffleScenario() },
                             enabled = !uiState.isSending
                         ) {
-                            Icon(Icons.Filled.Shuffle, contentDescription = stringResource(R.string.chat_shuffle_scenario))
+                            Icon(Icons.Filled.Shuffle, contentDescription = stringResource(Res.string.chat_shuffle_scenario))
                         }
                         TextButton(onClick = { showEndDialog = true }) {
-                            Text(stringResource(R.string.chat_end_session))
+                            Text(stringResource(Res.string.chat_end_session))
                         }
                     }
                 },
@@ -147,7 +148,7 @@ fun ChatScreen(
                         modifier = Modifier.weight(1f)
                     )
                     TextButton(onClick = { viewModel.retry() }) {
-                        Text(stringResource(R.string.chat_retry))
+                        Text(stringResource(Res.string.chat_retry))
                     }
                 }
             }
@@ -162,7 +163,7 @@ fun ChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     SelectableChip(
-                        text = stringResource(R.string.chat_ask_toggle),
+                        text = stringResource(Res.string.chat_ask_toggle),
                         selected = isAskMode,
                         onClick = { isAskMode = !isAskMode }
                     )
@@ -171,7 +172,7 @@ fun ChatScreen(
                             value = input,
                             onValueChange = { input = it },
                             placeholder = stringResource(
-                                if (isAskMode) R.string.chat_ask_placeholder else R.string.chat_input_placeholder
+                                if (isAskMode) Res.string.chat_ask_placeholder else Res.string.chat_input_placeholder
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -208,17 +209,17 @@ fun ChatScreen(
     if (showEndDialog) {
         AlertDialog(
             onDismissRequest = { showEndDialog = false },
-            title = { Text(stringResource(R.string.chat_end_session_confirm_title)) },
-            text = { Text(stringResource(R.string.chat_end_session_confirm_body)) },
+            title = { Text(stringResource(Res.string.chat_end_session_confirm_title)) },
+            text = { Text(stringResource(Res.string.chat_end_session_confirm_body)) },
             confirmButton = {
                 TextButton(onClick = {
                     showEndDialog = false
                     viewModel.endSession()
-                }) { Text(stringResource(R.string.chat_end_session_confirm_yes)) }
+                }) { Text(stringResource(Res.string.chat_end_session_confirm_yes)) }
             },
             dismissButton = {
                 TextButton(onClick = { showEndDialog = false }) {
-                    Text(stringResource(R.string.chat_end_session_confirm_cancel))
+                    Text(stringResource(Res.string.chat_end_session_confirm_cancel))
                 }
             }
         )

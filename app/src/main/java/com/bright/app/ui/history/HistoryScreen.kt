@@ -38,13 +38,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 import com.bright.app.domain.model.stringRes
 import java.text.DateFormat
 import java.util.Date
@@ -66,16 +67,16 @@ fun HistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.history_title)) },
+                title = { Text(stringResource(Res.string.history_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back))
                     }
                 },
                 actions = {
                     if (sessions.isNotEmpty()) {
                         TextButton(onClick = { showClearAllDialog = true }) {
-                            Text(stringResource(R.string.history_delete_all))
+                            Text(stringResource(Res.string.history_delete_all))
                         }
                     }
                 },
@@ -93,12 +94,12 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    stringResource(R.string.history_empty_title),
+                    stringResource(Res.string.history_empty_title),
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    stringResource(R.string.history_empty_body),
+                    stringResource(Res.string.history_empty_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -139,14 +140,14 @@ fun HistoryScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = stringResource(
-                                        if (item.isCompleted) R.string.history_completed else R.string.history_in_progress
+                                        if (item.isCompleted) Res.string.history_completed else Res.string.history_in_progress
                                     ),
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 item.averageScore?.let { avg ->
                                     Text(
-                                        text = "  ·  " + stringResource(R.string.chat_average_score, avg),
+                                        text = "  ·  " + stringResource(Res.string.chat_average_score, avg),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -156,7 +157,7 @@ fun HistoryScreen(
                         IconButton(onClick = { pendingDeleteId = item.id }) {
                             Icon(
                                 Icons.Filled.Delete,
-                                contentDescription = stringResource(R.string.history_delete),
+                                contentDescription = stringResource(Res.string.history_delete),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -169,15 +170,15 @@ fun HistoryScreen(
     pendingDeleteId?.let { id ->
         AlertDialog(
             onDismissRequest = { pendingDeleteId = null },
-            title = { Text(stringResource(R.string.history_delete_confirm)) },
+            title = { Text(stringResource(Res.string.history_delete_confirm)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteSession(id)
                     pendingDeleteId = null
-                }) { Text(stringResource(R.string.common_delete)) }
+                }) { Text(stringResource(Res.string.common_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDeleteId = null }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = { pendingDeleteId = null }) { Text(stringResource(Res.string.common_cancel)) }
             }
         )
     }
@@ -185,16 +186,16 @@ fun HistoryScreen(
     if (showClearAllDialog) {
         AlertDialog(
             onDismissRequest = { showClearAllDialog = false },
-            title = { Text(stringResource(R.string.history_delete_all)) },
-            text = { Text(stringResource(R.string.settings_clear_history_confirm)) },
+            title = { Text(stringResource(Res.string.history_delete_all)) },
+            text = { Text(stringResource(Res.string.settings_clear_history_confirm)) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteAll()
                     showClearAllDialog = false
-                }) { Text(stringResource(R.string.common_delete)) }
+                }) { Text(stringResource(Res.string.common_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { showClearAllDialog = false }) { Text(stringResource(R.string.common_cancel)) }
+                TextButton(onClick = { showClearAllDialog = false }) { Text(stringResource(Res.string.common_cancel)) }
             }
         )
     }

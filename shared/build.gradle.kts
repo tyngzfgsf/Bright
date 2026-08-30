@@ -59,6 +59,9 @@ kotlin {
             api(compose.foundation)
             api(compose.material3)
             api(compose.ui)
+            // Compose Resources: the multiplatform replacement for Android's R.string.
+            // `api` because the app module's screens reference Res/stringResource directly.
+            api(compose.components.resources)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -89,6 +92,14 @@ dependencies {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+compose.resources {
+    // `always`: this is a library module, so generation isn't inferred from an app target.
+    generateResClass = org.jetbrains.compose.resources.ResourcesExtension.ResourceClassGeneration.Always
+    // Public so the Android app module can reference Res.string.* from its own screens.
+    publicResClass = true
+    packageOfResClass = "com.bright.app.resources"
 }
 
 android {

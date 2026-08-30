@@ -38,14 +38,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.BrightApplication
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.model.stringRes
 import java.util.Locale
@@ -66,10 +67,10 @@ fun StatsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.stats_title)) },
+                title = { Text(stringResource(Res.string.stats_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -86,12 +87,12 @@ fun StatsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = stringResource(R.string.stats_empty_title),
+                    text = stringResource(Res.string.stats_empty_title),
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.stats_empty_body),
+                    text = stringResource(Res.string.stats_empty_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -115,7 +116,7 @@ fun StatsScreen(
                         .padding(22.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.stats_overall_label),
+                        text = stringResource(Res.string.stats_overall_label),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
                     )
@@ -136,7 +137,7 @@ fun StatsScreen(
                     }
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        text = stringResource(R.string.stats_overall_answered, uiState.totalAnswered),
+                        text = stringResource(Res.string.stats_overall_answered, uiState.totalAnswered),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
                     )
@@ -152,7 +153,7 @@ fun StatsScreen(
 
             item(key = "footnote") {
                 Text(
-                    text = stringResource(R.string.stats_threshold_note, SkillProfile.MIN_ANSWERS_FOR_JUDGMENT),
+                    text = stringResource(Res.string.stats_threshold_note, SkillProfile.MIN_ANSWERS_FOR_JUDGMENT),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
@@ -179,8 +180,8 @@ private fun ScenarioStatRow(
     }
 
     val trendText = when (stat.trend) {
-        SkillProfile.Trend.IMPROVING -> stringResource(R.string.stats_trend_improving)
-        SkillProfile.Trend.DECLINING -> stringResource(R.string.stats_trend_declining)
+        SkillProfile.Trend.IMPROVING -> stringResource(Res.string.stats_trend_improving)
+        SkillProfile.Trend.DECLINING -> stringResource(Res.string.stats_trend_declining)
         else -> null
     }
 
@@ -215,7 +216,7 @@ private fun ScenarioStatRow(
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.stats_weakest_badge),
+                            text = stringResource(Res.string.stats_weakest_badge),
                             style = MaterialTheme.typography.labelSmall,
                             color = colors.background
                         )
@@ -253,7 +254,7 @@ private fun ScenarioStatRow(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = stringResource(R.string.stats_answered_count, stat.answeredCount, stat.sessionCount),
+                text = stringResource(Res.string.stats_answered_count, stat.answeredCount, stat.sessionCount),
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant
             )

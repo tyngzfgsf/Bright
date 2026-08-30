@@ -48,11 +48,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.bright.app.R
+import com.bright.app.resources.Res
+import com.bright.app.resources.*
 import com.bright.app.domain.model.Language
 import com.bright.app.domain.model.MessageRole
 import com.bright.app.util.voice.AndroidSpeechRecognitionEngine
@@ -94,7 +95,7 @@ fun VoiceModeOverlay(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(
-                        if (recognitionAvailable) R.string.voice_mode_permission_needed else R.string.chat_voice_unavailable
+                        if (recognitionAvailable) Res.string.voice_mode_permission_needed else Res.string.chat_voice_unavailable
                     ),
                     color = Color.White,
                     textAlign = TextAlign.Center,
@@ -102,7 +103,7 @@ fun VoiceModeOverlay(
                 )
                 Spacer(Modifier.height(20.dp))
                 TextButton(onClick = onExit) {
-                    Text(stringResource(R.string.common_back), color = Color.White)
+                    Text(stringResource(Res.string.common_back), color = Color.White)
                 }
             }
         }
@@ -170,12 +171,12 @@ fun VoiceModeOverlay(
     }
 
     val statusText = when {
-        uiState.isCompleted -> stringResource(R.string.voice_mode_session_complete)
-        isPaused -> stringResource(R.string.voice_mode_paused)
-        voiceState == VoiceModeState.LISTENING -> stringResource(R.string.voice_mode_listening)
-        voiceState == VoiceModeState.PROCESSING -> stringResource(R.string.chat_thinking)
-        voiceState == VoiceModeState.SPEAKING -> stringResource(R.string.voice_mode_speaking)
-        else -> stringResource(R.string.voice_mode_error)
+        uiState.isCompleted -> stringResource(Res.string.voice_mode_session_complete)
+        isPaused -> stringResource(Res.string.voice_mode_paused)
+        voiceState == VoiceModeState.LISTENING -> stringResource(Res.string.voice_mode_listening)
+        voiceState == VoiceModeState.PROCESSING -> stringResource(Res.string.chat_thinking)
+        voiceState == VoiceModeState.SPEAKING -> stringResource(Res.string.voice_mode_speaking)
+        else -> stringResource(Res.string.voice_mode_error)
     }
 
     val normalizedRms = ((rmsLevel + 2f) / 12f).coerceIn(0f, 1f)
@@ -255,7 +256,7 @@ fun VoiceModeOverlay(
                 }) {
                     Icon(
                         if (isPaused) Icons.Filled.MicOff else Icons.Filled.Mic,
-                        contentDescription = stringResource(R.string.voice_mode_mic_toggle),
+                        contentDescription = stringResource(Res.string.voice_mode_mic_toggle),
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
                     )
@@ -269,7 +270,7 @@ fun VoiceModeOverlay(
                 }) {
                     Icon(
                         Icons.Filled.Close,
-                        contentDescription = stringResource(R.string.common_back),
+                        contentDescription = stringResource(Res.string.common_back),
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
                     )
