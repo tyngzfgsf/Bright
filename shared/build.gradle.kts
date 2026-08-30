@@ -23,10 +23,14 @@ kotlin {
     }
 
     // iosX64 = Intel simulator, iosArm64 = real devices, iosSimulatorArm64 = Apple Silicon simulator.
-    // Declared now so the source-set layout is real; nothing links against them until Phase 6.
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "Shared"
+            // Static, as Compose Multiplatform expects: it avoids the dynamic-framework
+            // dance for Compose's own native dependencies (Skia et al.) at app launch.
+            isStatic = true
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
