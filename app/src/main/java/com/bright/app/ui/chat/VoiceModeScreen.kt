@@ -1,14 +1,7 @@
 package com.bright.app.ui.chat
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Bundle
-import android.speech.RecognitionListener
-import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -62,7 +55,10 @@ import androidx.core.content.ContextCompat
 import com.bright.app.R
 import com.bright.app.domain.model.Language
 import com.bright.app.domain.model.MessageRole
-import java.util.Locale
+import com.bright.app.util.voice.AndroidSpeechRecognitionEngine
+import com.bright.app.util.voice.AndroidTextToSpeechEngine
+import com.bright.app.util.voice.SpeechRecognitionEvent
+import com.bright.app.util.voice.SpeechSynthesisEvent
 
 private enum class VoiceModeState { LISTENING, PROCESSING, SPEAKING, ERROR }
 
@@ -87,7 +83,8 @@ fun VoiceModeOverlay(
         if (!hasPermission) permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
 
-    val recognitionAvailable = remember { SpeechRecognizer.isRecognitionAvailable(context) }
+    val recognizer = remember { AndroidSpeechRecognitionEngine(context) }
+    val recognitionAvailable = recognizer.isAvailable
 
     if (!hasPermission || !recognitionAvailable) {
         Box(
@@ -117,61 +114,31 @@ fun VoiceModeOverlay(
     var rmsLevel by remember { mutableFloatStateOf(0f) }
     var isPaused by remember { mutableStateOf(false) }
 
-    val recognizer = remember { SpeechRecognizer.createSpeechRecognizer(context) }
-    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
-
-    fun buildRecognizerIntent(): Intent {
-        val localeTag = if (uiState.language == Language.KOREAN) "ko-KR" else "en-US"
-        return Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, localeTag)
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, false)
-        }
-    }
+    val tts = remember { AndroidTextToSpeechEngine(context) }
 
     fun startListeningInternal() {
         if (isPaused || uiState.isCompleted) return
         partialText = ""
         voiceState = VoiceModeState.LISTENING
-        try {
-            recognizer.startListening(buildRecognizerIntent())
-        } catch (e: Exception) {
-            // Will retry on the next natural trigger (result/error/tts-done).
-        }
+        val localeTag = if (uiState.language == Language.KOREAN) "ko-KR" else "en-US"
+        recognizer.startListening(localeTag, partialResults = true)
     }
 
     DisposableEffect(Unit) {
-        recognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) {}
-            override fun onBeginningOfSpeech() {}
-            override fun onRmsChanged(rmsdB: Float) { rmsLevel = rmsdB }
-            override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() {}
-            override fun onError(error: Int) {
-                when (error) {
-                    SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT ->
-                        if (!isPaused && !uiState.isCompleted) startListeningInternal()
-                    else -> voiceState = VoiceModeState.ERROR
-                }
-            }
-            override fun onResults(results: Bundle?) {
-                val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
-                partialText = ""
-                if (!text.isNullOrBlank()) {
+        recognizer.setEventListener { event ->
+            when (event) {
+                is SpeechRecognitionEvent.VolumeChanged -> rmsLevel = event.level
+                is SpeechRecognitionEvent.NoMatch ->
+                    if (!isPaused && !uiState.isCompleted) startListeningInternal()
+                is SpeechRecognitionEvent.Error -> voiceState = VoiceModeState.ERROR
+                is SpeechRecognitionEvent.FinalResult -> {
+                    partialText = ""
                     voiceState = VoiceModeState.PROCESSING
-                    viewModel.sendMessage(text)
-                } else if (!isPaused && !uiState.isCompleted) {
-                    startListeningInternal()
+                    viewModel.sendMessage(event.text)
                 }
+                is SpeechRecognitionEvent.PartialResult -> partialText = event.text
             }
-            override fun onPartialResults(partialResults: Bundle?) {
-                partialText = partialResults
-                    ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    ?.firstOrNull().orEmpty()
-            }
-            override fun onEvent(eventType: Int, params: Bundle?) {}
-        })
+        }
         onDispose {
             recognizer.stopListening()
             recognizer.cancel()
@@ -180,25 +147,16 @@ fun VoiceModeOverlay(
     }
 
     DisposableEffect(Unit) {
-        val instance = TextToSpeech(context) { }
-        instance.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) { voiceState = VoiceModeState.SPEAKING }
-            override fun onDone(utteranceId: String?) {
-                if (!isPaused && !uiState.isCompleted) startListeningInternal()
+        tts.setEventListener { event ->
+            when (event) {
+                SpeechSynthesisEvent.Started -> voiceState = VoiceModeState.SPEAKING
+                SpeechSynthesisEvent.Done ->
+                    if (!isPaused && !uiState.isCompleted) startListeningInternal()
+                SpeechSynthesisEvent.Error ->
+                    if (!isPaused && !uiState.isCompleted) startListeningInternal()
             }
-            override fun onError(utteranceId: String?) {
-                if (!isPaused && !uiState.isCompleted) startListeningInternal()
-            }
-        })
-        tts = instance
-        onDispose {
-            instance.stop()
-            instance.shutdown()
         }
-    }
-
-    LaunchedEffect(tts, uiState.language) {
-        tts?.language = if (uiState.language == Language.KOREAN) Locale.KOREAN else Locale.US
+        onDispose { tts.shutdown() }
     }
 
     LaunchedEffect(Unit) { startListeningInternal() }
@@ -207,7 +165,7 @@ fun VoiceModeOverlay(
         val last = uiState.messages.lastOrNull()
         if (last != null && last.role != MessageRole.USER && last.text.isNotBlank()) {
             recognizer.stopListening()
-            tts?.speak(last.text, TextToSpeech.QUEUE_FLUSH, null, last.id)
+            tts.speak(last.text, uiState.language, last.id)
         }
     }
 
@@ -306,7 +264,7 @@ fun VoiceModeOverlay(
                 IconButton(onClick = {
                     recognizer.stopListening()
                     recognizer.cancel()
-                    tts?.stop()
+                    tts.stop()
                     onExit()
                 }) {
                     Icon(

@@ -49,6 +49,9 @@ kotlin {
             // OkHttp engine — keeps the same underlying HTTP stack the app already used via
             // Retrofit, so connection pooling/timeout behavior on Android doesn't change.
             implementation("io.ktor:ktor-client-okhttp:3.2.2")
+
+            // For LocaleUtils' per-app locale override, and the voice-mode speech engines.
+            implementation("androidx.appcompat:appcompat:1.7.0")
         }
         iosMain.dependencies {
             // Darwin engine — NSURLSession under the hood, the native choice on iOS.

@@ -101,15 +101,66 @@ shared module (including Room's KSP running natively per-target).
 
 ## Phase 4 — Platform-specific code via expect/actual
 
-These have no iOS equivalent and need real (not ported) implementations:
-- **Voice Mode / speech recognition** — Android uses `SpeechRecognizer`; iOS needs
-  `Speech`/`AVFoundation` via Swift interop. Use `expect`/`actual` to declare the
-  interface in `commonMain` and implement separately per platform.
-- **Update checker / APK installer** (`UpdateChecker`, `ApkDownloader`) — this concept
-  doesn't exist on iOS (Apple handles app updates via the App Store/TestFlight, sideloaded
-  installs aren't a thing). Keep this Android-only; don't try to port it. iOS just won't
-  have this feature, and that's correct, not a gap to fill.
-- `LocaleUtils` — needs an iOS-specific locale implementation.
+**Done.**
+
+- **`LocaleUtils`** — moved to `commonMain` as a genuine `expect object`/`actual object`
+  (Android and iOS have the *same* constructor shape here — no Context needed — so
+  `expect`/`actual` fit cleanly, unlike DataStore/Room in Phase 3). Android's actual is the
+  original `AppCompatDelegate` call, unchanged. iOS's actual overrides the "AppleLanguages"
+  `NSUserDefaults` key — the standard workaround, but genuinely weaker than Android's: it only
+  takes effect on next launch, since iOS has no public live-locale-override API. Whatever
+  calls this on iOS will need to prompt for a relaunch; that UI belongs in Phase 6, not here.
+
+- **Voice Mode / speech recognition.** This did *not* become `expect`/`actual` — constructing
+  either platform's engine needs a different thing (Android needs a `Context`; `expect`/`actual`
+  requires identical constructor signatures across platforms, and `Context` doesn't exist in
+  commonMain). Used a plain common `interface` instead (`SpeechRecognitionEngine`,
+  `TextToSpeechEngine` in `commonMain`), each platform providing its own concrete
+  implementation — the officially-recommended pattern for exactly this situation. The only
+  caller is UI code anyway, which isn't shared until Phase 5, so there's no commonMain code
+  that needs to construct one uniformly.
+  - **Android**: `AndroidSpeechRecognitionEngine`/`AndroidTextToSpeechEngine`, a faithful
+    extraction of the logic that used to live directly inside the `VoiceModeOverlay`
+    composable (wrapping `SpeechRecognizer`/`TextToSpeech` exactly as before). Verified: builds
+    clean, installs, and launches without error on both a real device and an emulator forced to
+    match its screen. **Could not verify the actual voice interaction** — see below.
+  - **iOS**: `IosSpeechRecognitionEngine`/`IosTextToSpeechEngine`, wrapping `SFSpeechRecognizer`
+    + `AVAudioEngine` (a manual mic tap feeding audio buffers to the recognizer — Speech.framework
+    doesn't capture audio itself) and `AVSpeechSynthesizer`. **Compile-verified only, never
+    run** — there is no Xcode/iOS Simulator in this environment. Follows Apple's standard,
+    widely-documented pattern, which minimizes the chance the *shape* is wrong, but this is
+    exactly the kind of code that looks right and isn't until it's run on a real device. Treat
+    it as the first thing to manually test once Xcode is available (Phase 6). One specific gap:
+    `AVAudioSession.setActive(...)` doesn't resolve under either overload tried (`setActive:error:`
+    or `setActive:withOptions:error:`) — both are present in the klib's raw metadata but
+    "Unresolved reference" through Kotlin, almost certainly hidden behind a deprecation level
+    Kotlin honors even though the ObjC method still exists. Left uncalled (`AVAudioEngine.start()`
+    activates the session implicitly in the common case), so the session is also never
+    explicitly *deactivated* on stop. Needs whatever the current non-deprecated API actually is,
+    findable in about five minutes with real Xcode's autocomplete — not diagnosable further by
+    grepping binary klib metadata blind.
+  - Real finding from actually attempting the iOS code (not guessed): Kotlin/Native flags
+    `@ObjCSignatureOverride` as *required*, not optional, when multiple ObjC delegate callbacks
+    erase to the same Kotlin signature (`AVSpeechSynthesizerDelegate`'s `didStart`/`didFinish`/
+    `didCancel` all become `(AVSpeechSynthesizer, AVSpeechUtterance) -> Unit` to Kotlin, which
+    doesn't have selector-based overloading). Without it, three genuinely-different ObjC
+    callbacks are a hard compile error, not a warning.
+  - **A discovery unrelated to the migration itself, surfaced while doing this work**:
+    `VoiceModeOverlay` has no caller anywhere in the app — not from `ChatScreen`, not from
+    navigation, nothing (`git log` shows it was added once and never wired up). So the "real
+    device" verification above only confirms the app still launches and the rest of the UI is
+    unaffected; the actual voice interaction couldn't be smoke-tested through the running app
+    at all, on either platform. Worth fixing (wiring the entry point back in) as its own task —
+    out of scope for this migration phase.
+
+- **Update checker / APK installer** (`UpdateChecker`, `ApkDownloader`) — confirmed and left
+  untouched. Both use `android.content.Context`/`Intent`/`FileProvider` directly; this concept
+  doesn't exist on iOS (the App Store/TestFlight own updates there). Correctly Android-only,
+  not a gap to fill.
+
+Verified: `./gradlew clean assembleDebug` passes; installs and launches cleanly on a real
+device (Samsung S26) and an emulator; all three iOS targets compile the shared module
+including the new Speech/AVFoundation code.
 
 ## Phase 5 — Share UI via Compose Multiplatform
 
