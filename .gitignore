@@ -21,3 +21,9 @@ build/
 .kotlin/
 *.klib
 
+# Xcode / iOS
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.DS_Store
+

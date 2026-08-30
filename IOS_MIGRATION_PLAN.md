@@ -219,6 +219,49 @@ moves in one pass is exactly the stacking this plan's ground rule warns against.
 
 ## Phase 6 — iOS app shell
 
+**Done: the shared stack runs on the iOS Simulator.** `iosApp/` holds a hand-written Xcode
+project (no xcodegen/tuist available) whose build phase calls
+`:shared:embedAndSignAppleFrameworkForXcode`, plus a SwiftUI entry point that hosts Compose via
+`ComposeUIViewController` (`shared/.../MainViewController.kt`).
+
+- **Xcode**: 27.0 beta, not 26.6 stable — macOS 27 requires it. Notably the *beta* already had
+  its license accepted while the stable one did not, so no `sudo` was needed after all.
+- **Linking, finally.** Everything in Phases 1–5 had only ever been klib *compilation*; the
+  first `linkDebugFrameworkIosSimulatorArm64` is the first time the Speech/AVFoundation, Room
+  and Ktor iOS code was actually linked. It linked with no missing symbols, and the framework
+  exports 360 Objective-C interfaces covering the whole shared API.
+- **Verified at runtime on the simulator**, which is stronger than anything before this phase:
+  Compose Multiplatform renders `commonMain` code; the shared design system (theme, typography,
+  `SelectableChip`, `BrightTextField`, `BrightButton`) draws correctly; the Phase 2
+  `currentSystemLanguageCode()` iOS `actual` returns a real value from `NSLocale`; and the
+  Phase 5 `isSystemInDarkThemeMultiplatform()` `actual` works — **dark mode was checked
+  explicitly** and renders the dark palette.
+
+Two real problems found only by running it, neither predictable from compiling:
+- **Compose Multiplatform hard-requires `CADisableMinimumFrameDurationOnPhone` = `true` in
+  Info.plist** (the ProMotion 120fps opt-out). Without it `androidx.compose.ui.uikit`'s
+  `PlistSanityCheck` throws and aborts the process. It fires **asynchronously**, so the app
+  renders a full, correct first frame and *then* dies — the first screenshot taken looked like
+  a complete success while the app was already doomed. Worth remembering: on iOS "it rendered"
+  is not evidence it survived.
+- **Xcode's `GENERATE_INFOPLIST_FILE` / `INFOPLIST_KEY_*` mechanism cannot set that key** — it
+  only supports Apple's documented allowlist, and silently drops anything else (the build
+  succeeded; the key simply wasn't in the output plist). Hence `iosApp/iosApp/Info.plist` is a
+  real checked-in file rather than generated.
+
+Not done in this phase, and deliberately so: the app shown is a **validation harness, not
+Bright**. It renders shared components and shared domain types, because the real screens can't
+move to `commonMain` until the Phase 5 resources and ViewModel-construction gates are resolved.
+Chips display `ScenarioType.promptKeyword` rather than proper names precisely because display
+names still live in Android resources — the resources gate, made visible.
+
+Also still unverified on iOS: the Phase 4 voice engines. `NSMicrophoneUsageDescription` and
+`NSSpeechRecognitionUsageDescription` are already in the Info.plist so they *can* run, but
+nothing in this harness exercises `SFSpeechRecognizer`/`AVAudioEngine` yet — including the
+known-unresolved `AVAudioSession.setActive(...)` binding noted under Phase 4.
+
+Remaining from the original plan:
+
 - Xcode project wrapping the Compose Multiplatform UI (or, if Phase 5 is skipped/deferred,
   a native SwiftUI shell calling into the shared Kotlin module for logic only).
 - Build and run on the iOS Simulator first — no Apple Developer Program needed for this.
