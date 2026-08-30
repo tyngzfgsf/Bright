@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.bright.app.ui.navigation.BrightNavGraph
@@ -35,8 +36,13 @@ class MainActivity : AppCompatActivity() {
             isReady = true
 
             setContent {
-                BrightTheme {
-                    BrightNavGraph(startDestination = startDestination)
+                // Provided once here, at the platform entry point, so no screen needs an
+                // Android Context to reach its dependencies. iOS's entry point does the same
+                // with its own BrightDependencies instance.
+                CompositionLocalProvider(LocalBrightDependencies provides app.dependencies) {
+                    BrightTheme {
+                        BrightNavGraph(startDestination = startDestination)
+                    }
                 }
             }
         }

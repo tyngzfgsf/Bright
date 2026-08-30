@@ -248,9 +248,40 @@ Room database so `%1$d` / `%1$d…%2$d` / `%1$s` formatting all rendered real va
 staying untested empty states. On iOS, the harness now shows **real localized scenario names**
 instead of the `promptKeyword` fallback, which is the visible proof this gate is cleared.
 
-**Still remaining before the screens can move: gate 2, ViewModel construction.** Every screen
-still reaches its dependencies through
-`LocalContext.current.applicationContext as BrightApplication`.
+### Dependency seam — **done** (gate 2 of 2 cleared)
+
+`BrightDependencies` (commonMain) holds the database, preferences, repository and app version
+name; `LocalBrightDependencies` is a `staticCompositionLocalOf` provided once at each
+platform's entry point. All six screens now read `LocalBrightDependencies.current` instead of
+`LocalContext.current.applicationContext as BrightApplication` — the Android-only cast, and the
+`Context` it needed, are gone from the UI layer entirely. `BuildConfig.VERSION_NAME` moved into
+the container for the same reason.
+
+Deliberately a plain class, not `expect`/`actual`: building it needs different inputs per
+platform (Android's DB and DataStore builders both take a `Context`, iOS's take nothing), and
+`expect`/`actual` requires identical constructor signatures — the same reasoning as the Phase 4
+voice engines.
+
+A missing CompositionLocal provider fails at *runtime*, not compile time, so every screen was
+walked on-device rather than trusted to the build.
+
+One more bug found by doing that, in the resources migration above rather than the seam:
+**`%1$.1f` in `chat_average_score` rendered verbatim** ("Average score: %1$.1f/10") — Compose
+Resources does positional substitution and does not honour printf precision specifiers. My
+first scan for parameterized strings used a `%[0-9]+\$[sd]` pattern that matched only `s` and
+`d`, so the one float specifier in the catalogue slipped through. Fixed by taking `%1$s` and
+formatting the number at the call site, via a new multiplatform `Double.toScoreString()`. That
+also let the four remaining `String.format(Locale.US, "%.1f", …)` calls go — they worked, but
+are JVM-only and would have blocked those screens from `commonMain`. Note the helper rounds
+halves *away from zero* rather than using `kotlin.math.round`, which breaks ties to even: 5.25
+displayed as "5.2" instead of the "5.3" users saw before, and matching the old behaviour
+mattered more than the tidier standard-library call.
+
+**Both gates are now clear.** What actually remains before a screen can move to `commonMain` is
+mechanical rather than architectural: `androidx.lifecycle.ViewModel` and `viewModel()` need to
+come from the multiplatform lifecycle artifacts, and the genuinely platform-specific screens
+(`VoiceModeScreen`'s mic permission, Settings' Android-only update card) need their platform
+pieces layered rather than moved.
 
 ## Phase 6 — iOS app shell
 

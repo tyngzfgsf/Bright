@@ -60,7 +60,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -71,9 +70,9 @@ import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.bright.app.BrightApplication
-import com.bright.app.BuildConfig
+import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
+import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.ScenarioType
@@ -87,7 +86,6 @@ import com.bright.app.ui.theme.BrightMotion
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.util.Locale
 import kotlin.math.roundToInt
 
 private val TOUR_STEPS = listOf(
@@ -142,10 +140,10 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     onOpenStats: () -> Unit
 ) {
-    val app = LocalContext.current.applicationContext as BrightApplication
+    val app = LocalBrightDependencies.current
     val viewModel: HomeViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, BuildConfig.VERSION_NAME) }
+            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, app.appVersionName) }
         }
     )
     val uiState by viewModel.uiState.collectAsState()
@@ -311,7 +309,7 @@ fun HomeScreen(
                                     Text(
                                         text = stringResource(
                                             Res.string.home_weak_spot_avg,
-                                            String.format(Locale.US, "%.1f", weak.averageScore)
+                                            weak.averageScore.toScoreString()
                                         ),
                                         style = MaterialTheme.typography.titleSmall,
                                         color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)

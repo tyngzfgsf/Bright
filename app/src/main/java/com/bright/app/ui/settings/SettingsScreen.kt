@@ -49,8 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.bright.app.BrightApplication
-import com.bright.app.BuildConfig
+import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
 import com.bright.app.resources.*
 import com.bright.app.domain.model.Language
@@ -65,7 +64,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onReplayTutorial: () -> Unit
 ) {
-    val app = LocalContext.current.applicationContext as BrightApplication
+    val app = LocalBrightDependencies.current
     val context = LocalContext.current
     val viewModel: SettingsViewModel = viewModel(
         factory = viewModelFactory {
@@ -74,7 +73,7 @@ fun SettingsScreen(
                     app.database.chatDao(),
                     app.userPreferences,
                     app.groqRepository,
-                    BuildConfig.VERSION_NAME
+                    app.appVersionName
                 )
             }
         }
@@ -310,7 +309,7 @@ fun SettingsScreen(
             ) {
                 Text(stringResource(Res.string.settings_version), style = MaterialTheme.typography.bodyLarge)
                 Text(
-                    BuildConfig.VERSION_NAME,
+                    app.appVersionName,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

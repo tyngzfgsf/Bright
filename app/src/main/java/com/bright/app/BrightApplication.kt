@@ -33,4 +33,18 @@ class BrightApplication : Application() {
     val groqRepository: GroqRepository by lazy {
         GroqRepository(GroqApiClient(enableLogging = BuildConfig.DEBUG))
     }
+
+    /**
+     * The platform-neutral bag the screens actually read from. Everything Android-specific
+     * about building these (Context for the DB path and DataStore file, BuildConfig for the
+     * version name) stays here; the screens see only [BrightDependencies].
+     */
+    val dependencies: BrightDependencies by lazy {
+        BrightDependencies(
+            database = database,
+            userPreferences = userPreferences,
+            groqRepository = groqRepository,
+            appVersionName = BuildConfig.VERSION_NAME
+        )
+    }
 }

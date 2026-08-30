@@ -37,14 +37,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.bright.app.BrightApplication
+import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
+import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
 import com.bright.app.domain.model.stringRes
 import java.text.DateFormat
@@ -56,7 +56,7 @@ fun HistoryScreen(
     onBack: () -> Unit,
     onOpenSession: (String) -> Unit
 ) {
-    val app = LocalContext.current.applicationContext as BrightApplication
+    val app = LocalBrightDependencies.current
     val viewModel: HistoryViewModel = viewModel(
         factory = viewModelFactory { initializer { HistoryViewModel(app.database.chatDao()) } }
     )
@@ -147,7 +147,7 @@ fun HistoryScreen(
                                 )
                                 item.averageScore?.let { avg ->
                                     Text(
-                                        text = "  ·  " + stringResource(Res.string.chat_average_score, avg),
+                                        text = "  ·  " + stringResource(Res.string.chat_average_score, avg.toScoreString()),
                                         style = MaterialTheme.typography.labelMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

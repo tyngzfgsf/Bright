@@ -37,26 +37,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.bright.app.BrightApplication
+import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
+import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
 import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.model.stringRes
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
     onBack: () -> Unit
 ) {
-    val app = LocalContext.current.applicationContext as BrightApplication
+    val app = LocalBrightDependencies.current
     val viewModel: StatsViewModel = viewModel(
         factory = viewModelFactory {
             initializer { StatsViewModel(app.database.chatDao()) }
@@ -123,7 +122,7 @@ fun StatsScreen(
                     Spacer(Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
-                            text = uiState.overallAverage?.let { String.format(Locale.US, "%.1f", it) } ?: "—",
+                            text = uiState.overallAverage?.toScoreString() ?: "—",
                             style = MaterialTheme.typography.displaySmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.background
@@ -224,7 +223,7 @@ private fun ScenarioStatRow(
                 }
             }
             Text(
-                text = String.format(Locale.US, "%.1f", stat.averageScore),
+                text = stat.averageScore.toScoreString(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )

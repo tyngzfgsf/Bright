@@ -38,14 +38,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.bright.app.BrightApplication
+import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
+import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
@@ -56,7 +56,7 @@ fun ChatScreen(
     sessionId: String,
     onBack: () -> Unit
 ) {
-    val app = LocalContext.current.applicationContext as BrightApplication
+    val app = LocalBrightDependencies.current
     val viewModel: ChatViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
@@ -85,7 +85,7 @@ fun ChatScreen(
                         Text(stringResource(Res.string.app_name), style = MaterialTheme.typography.titleMedium)
                         uiState.averageScore?.let { avg ->
                             Text(
-                                text = stringResource(Res.string.chat_average_score, avg),
+                                text = stringResource(Res.string.chat_average_score, avg.toScoreString()),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
