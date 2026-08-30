@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.google.devtools.ksp")
 }
 
 val versionNameOverride = (project.findProperty("versionNameOverride") as String?)?.removePrefix("v")
@@ -79,10 +78,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("androidx.navigation:navigation-compose:2.9.0")
-
-    implementation("androidx.room:room-runtime:2.7.0")
-    implementation("androidx.room:room-ktx:2.7.0")
-    ksp("androidx.room:room-compiler:2.7.0")
 
     implementation("androidx.datastore:datastore-preferences-core:1.1.2")
     implementation("com.squareup.okio:okio:3.9.0")

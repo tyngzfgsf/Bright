@@ -57,21 +57,47 @@ Verified: `./gradlew clean assembleDebug` passes, and all three iOS targets
 
 ## Phase 3 — Replace Android-only libraries with KMP-compatible ones (in `commonMain`)
 
-- **Retrofit/OkHttp → Ktor Client.** Rewrite `GroqApiService`/`GroqRepository` on Ktor,
-  which has first-class KMP support. This is the biggest rewrite in this phase.
-- **Room → check current KMP support first.** Room 2.7+ has official Kotlin Multiplatform
-  support; since the project is already on Room 2.7.0, check whether `ChatDao`/
-  `SessionEntity`/`MessageEntity` can move to `commonMain` largely as-is before assuming
-  a rewrite is needed.
-- **DataStore → also has official KMP support** — check current version compatibility
-  before assuming `UserPreferences` needs replacing.
-- **`domain/SkillProfile.kt`** — carried over from Phase 2 (see that section): it takes
-  `List<SessionEntity>` directly, so it can't move to `commonMain` until `SessionEntity`
-  does. Once Room's KMP move above happens, either move `SkillProfile` alongside it, or take
-  the opportunity to decouple it to a plain data class input first — pure functions
-  shouldn't really take a Room `@Entity` as a parameter regardless of KMP.
+**Done.** Split into three commits (3a DataStore, 3b Ktor, 3c Room) so any one could be
+reverted independently. The whole data layer now lives in `shared/commonMain`; the `app`
+module keeps only Android-only code.
 
-Verify Android build after this phase.
+- **DataStore (3a).** Moved as-is using the Context-free `datastore-preferences-core`
+  artifact. `UserPreferences` now takes a `DataStore<Preferences>` instead of a `Context` —
+  *where* the file lives is per-platform, so that decision moved out to each platform's app
+  entry point (`BrightApplication.kt` on Android). No rewrite was needed.
+- **Retrofit/OkHttp → Ktor (3b).** `GroqApiService` + `NetworkModule` + `GroqRepository`
+  replaced by `GroqApiClient` (thin Ktor wrapper) + a rewritten `GroqRepository`. Engine is
+  auto-selected per platform (OkHttp on Android, Darwin on iOS) — no `expect/actual` needed.
+  `GroqRepository`'s public API is unchanged, so no ViewModel was touched. Plain OkHttp stays
+  in `app` for `UpdateChecker`/`ApkDownloader` (Android-only, Phase 4).
+- **Room (3c).** Moved largely as-is, as this plan hoped: `SessionEntity`, `MessageEntity`,
+  and `ChatDao` needed **zero changes** — their Room annotations are already multiplatform.
+  Only `AppDatabase` changed, to Room's KMP `@ConstructedBy` + `expect object
+  RoomDatabaseConstructor` pattern, with the `Context`-taking builder split into
+  `getDatabaseBuilder()` per platform and a shared `buildDatabase()`. KSP now runs per-target
+  (`kspAndroid`, `kspIosX64`, `kspIosArm64`, `kspIosSimulatorArm64`) and the `app` module
+  dropped KSP entirely since no annotation processing remains there.
+- **`domain/SkillProfile.kt`** — moved to `commonMain` unchanged, as promised in Phase 2. It
+  was only ever blocked on `SessionEntity`, so once Room moved it followed for free. (Its
+  awkward coupling to a Room `@Entity` remains a valid future cleanup, but it isn't blocking
+  anything now, so it wasn't worth churning this phase.)
+
+Things worth knowing that only surfaced by compiling, not from docs:
+- **Ktor 3.5.2's klibs require Kotlin 2.3.21**; this project is on 2.2.20 and can't consume
+  that klib ABI. Pinned Ktor to **3.2.2** instead of bumping Kotlin project-wide, which would
+  have dragged the pinned Compose-compiler and KSP versions along with it.
+- **`Dispatchers.IO` is `internal` on Kotlin/Native** with coroutines 1.9.0, so it can't be
+  used from `commonMain`. `GroqRepository` uses `Dispatchers.Default`; Room's builder simply
+  omits `setQueryCoroutineContext` and takes its default.
+- **The Android DB path was preserved deliberately.** Room's old
+  `databaseBuilder(ctx, klass, "bright.db")` resolved to the app's database dir; the KMP
+  builder takes a full path, so it's given `context.getDatabasePath("bright.db")` to land in
+  the same place. Getting this wrong would silently orphan every existing user's history.
+- `-Xexpect-actual-classes` is set in `shared/build.gradle.kts` — Room's `@ConstructedBy`
+  requires an `expect object`, and the Beta warning fires on Room's own generated code.
+
+Verified: `./gradlew clean assembleDebug` passes, and all three iOS targets compile the
+shared module (including Room's KSP running natively per-target).
 
 ## Phase 4 — Platform-specific code via expect/actual
 

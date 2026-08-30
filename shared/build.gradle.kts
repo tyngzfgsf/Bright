@@ -2,9 +2,18 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("com.android.library")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.devtools.ksp")
+    id("androidx.room")
 }
 
 kotlin {
+    // Room's @ConstructedBy pattern requires an `expect object`, and expect/actual *classes*
+    // are still flagged Beta by the compiler. The warning is unavoidable here (it fires on
+    // Room's own generated code), so opt in explicitly rather than leave it as build noise.
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
@@ -27,6 +36,11 @@ kotlin {
             implementation("io.ktor:ktor-client-content-negotiation:3.2.2")
             implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.2")
             implementation("io.ktor:ktor-client-logging:3.2.2")
+
+            // Room 2.7.0 is the first stable release with KMP support; sqlite-bundled ships
+            // SQLite compiled from source so Android and iOS run the identical engine.
+            api("androidx.room:room-runtime:2.7.0")
+            implementation("androidx.sqlite:sqlite-bundled:2.5.0")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
@@ -41,6 +55,19 @@ kotlin {
             implementation("io.ktor:ktor-client-darwin:3.2.2")
         }
     }
+}
+
+// Room's KSP processor has to run per-target, not once — each platform gets its own
+// generated database implementation (the `actual` for the @ConstructedBy expect object).
+dependencies {
+    add("kspAndroid", "androidx.room:room-compiler:2.7.0")
+    add("kspIosX64", "androidx.room:room-compiler:2.7.0")
+    add("kspIosArm64", "androidx.room:room-compiler:2.7.0")
+    add("kspIosSimulatorArm64", "androidx.room:room-compiler:2.7.0")
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {

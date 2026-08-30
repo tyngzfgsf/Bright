@@ -3,6 +3,8 @@ package com.bright.app
 import android.app.Application
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.bright.app.data.local.AppDatabase
+import com.bright.app.data.local.buildDatabase
+import com.bright.app.data.local.getDatabaseBuilder
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqApiClient
 import com.bright.app.data.remote.GroqRepository
@@ -12,7 +14,10 @@ private const val PREFERENCES_FILE_NAME = "bright_prefs.preferences_pb"
 
 class BrightApplication : Application() {
 
-    val database: AppDatabase by lazy { AppDatabase.getInstance(this) }
+    // The old AppDatabase.getInstance(context) singleton is gone — Room's KMP builder is
+    // split into a platform-specific builder plus a shared build step, and `by lazy` here
+    // already provides the single-instance guarantee that the synchronized block used to.
+    val database: AppDatabase by lazy { buildDatabase(getDatabaseBuilder(this)) }
 
     // Where the store lives on disk is an Android-specific concern (files dir + java.io.File),
     // so it's decided here rather than inside the shared UserPreferences class — see the
