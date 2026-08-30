@@ -13,10 +13,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,39 +50,24 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.bright.app.R
 
-/**
- * One stop on the guided tour: which captured element to spotlight, and what to say about it.
- *
- * When [manualAdvance] is false (the common case), the tour only moves on once the trainee
- * actually performs the real action on the highlighted element (tap the caller reports back via
- * its own advance callback) — the spotlight's hole lets the real touch through to the real
- * control underneath. Set it true only for a step whose "real" action would navigate away from
- * the screen the tour is running on (e.g. an icon that opens another screen); those get an
- * explicit "Next" button instead of requiring the trainee to actually leave.
- */
-data class TourStep(
-    val key: String,
-    val titleRes: Int,
-    val bodyRes: Int,
-    val manualAdvance: Boolean = false
-)
+/** One stop on the guided tour: which captured element to spotlight, and what to say about it. */
+data class TourStep(val key: String, val titleRes: Int, val bodyRes: Int)
 
 /**
  * A spotlight walkthrough over the real Home screen. Dims everything except the current step's
- * element (bounds captured by the Home screen via onGloballyPositioned, in window coordinates).
+ * element (bounds captured by the Home screen, unclipped, in window coordinates).
  *
- * Unlike a slideshow-style coach mark, the hole over the highlighted element carries no touch
- * blocker, so the trainee is tapping the *real* button/chip, not a proxy — the caller advances
- * [stepIndex] in response to that real interaction. Only steps marked [TourStep.manualAdvance]
- * get an explicit "Next" button; everything dimmed around the hole still eats touches so the
- * tour can't be broken by poking somewhere else.
+ * The hole over the highlighted element carries no touch blocker, so the trainee is tapping the
+ * *real* control, not a proxy — the caller advances the step in response to that real
+ * interaction. Every step also gets a Next button, so the tour is never a dead end if someone
+ * would rather just read through it.
  */
 @Composable
 fun HomeTourOverlay(
     steps: List<TourStep>,
     stepIndex: Int,
     bounds: Map<String, Rect>,
-    onManualAdvance: () -> Unit,
+    onNext: () -> Unit,
     onSkip: () -> Unit
 ) {
     val step = steps.getOrNull(stepIndex) ?: return
@@ -101,33 +90,31 @@ fun HomeTourOverlay(
         val screenH = constraints.maxHeight.toFloat()
 
         val target = targetInWindow.translate(-overlayOriginInWindow)
-        val rawHole = Rect(
+        val hole = Rect(
             left = target.left - holePad,
             top = target.top - holePad,
             right = target.right + holePad,
             bottom = target.bottom + holePad
         )
-        val hole = Rect(
-            left = rawHole.left.coerceIn(0f, screenW),
-            top = rawHole.top.coerceIn(0f, screenH),
-            right = rawHole.right.coerceIn(0f, screenW),
-            bottom = rawHole.bottom.coerceIn(0f, screenH)
-        )
-        val targetInTopHalf = hole.center.y < screenH / 2f
 
-        // Dim + spotlight border only — no pointer input attached, so this draws over the real
-        // content without intercepting the touch that lands inside the hole.
+        // Clamped edges, used for laying out the tooltip and the touch blockers. The hole is
+        // still *drawn* unclamped so a partially off-screen target keeps its true shape.
+        val holeTop = hole.top.coerceIn(0f, screenH)
+        val holeBottom = hole.bottom.coerceIn(0f, screenH)
+        val holeLeft = hole.left.coerceIn(0f, screenW)
+        val holeRight = hole.right.coerceIn(0f, screenW)
+
         Canvas(modifier = Modifier.fillMaxSize()) {
             val path = Path().apply {
                 fillType = PathFillType.EvenOdd
                 addRect(Rect(0f, 0f, size.width, size.height))
-                addRoundRect(RoundRect(rawHole, CornerRadius(holeCorner, holeCorner)))
+                addRoundRect(RoundRect(hole, CornerRadius(holeCorner, holeCorner)))
             }
             drawPath(path, Color.Black.copy(alpha = 0.74f))
             drawRoundRect(
                 color = Color.White,
-                topLeft = Offset(rawHole.left, rawHole.top),
-                size = Size(rawHole.width, rawHole.height),
+                topLeft = Offset(hole.left, hole.top),
+                size = Size(hole.width, hole.height),
                 cornerRadius = CornerRadius(holeCorner, holeCorner),
                 style = Stroke(width = strokeWidth)
             )
@@ -135,37 +122,73 @@ fun HomeTourOverlay(
 
         // Four strips framing the hole. These DO consume touches, so the rest of the screen
         // stays locked while the tour is up — only the spotlighted element is reachable.
-        TourTouchBlocker(x = 0f, y = 0f, width = screenW, height = hole.top)
-        TourTouchBlocker(x = 0f, y = hole.bottom, width = screenW, height = screenH - hole.bottom)
-        TourTouchBlocker(x = 0f, y = hole.top, width = hole.left, height = hole.bottom - hole.top)
-        TourTouchBlocker(x = hole.right, y = hole.top, width = screenW - hole.right, height = hole.bottom - hole.top)
+        TourTouchBlocker(x = 0f, y = 0f, width = screenW, height = holeTop)
+        TourTouchBlocker(x = 0f, y = holeBottom, width = screenW, height = screenH - holeBottom)
+        TourTouchBlocker(x = 0f, y = holeTop, width = holeLeft, height = holeBottom - holeTop)
+        TourTouchBlocker(x = holeRight, y = holeTop, width = screenW - holeRight, height = holeBottom - holeTop)
+
+        // Put the tooltip in whichever gap around the spotlight is larger, and constrain it to
+        // that gap. Previously it was pinned to the screen's top or bottom with nothing stopping
+        // it from covering the very element it describes — which is what happened on shorter
+        // (e.g. Korean) layouts, where the card ended up hiding the spotlight entirely.
+        val spaceAbove = holeTop
+        val spaceBelow = screenH - holeBottom
+        val placeBelow = spaceBelow >= spaceAbove
+
+        // Reserve enough room for the card to stay readable. When the spotlight is tall enough
+        // that neither gap fits it (the scenario card covers most of the screen), let the card
+        // overlap the spotlight's edge rather than be squeezed to nothing — losing the bottom
+        // strip of a highlighted card beats an unreadable tooltip or an unreachable Next button.
+        val minCardPx = with(density) { 260.dp.toPx() }
+        val maxInset = (screenH - minCardPx).coerceAtLeast(0f)
+        val topPadPx = if (placeBelow) holeBottom.coerceAtMost(maxInset) else 0f
+        val bottomPadPx = if (placeBelow) 0f else (screenH - holeTop).coerceAtMost(maxInset)
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            contentAlignment = if (targetInTopHalf) Alignment.BottomCenter else Alignment.TopCenter
+                .padding(
+                    top = with(density) { topPadPx.toDp() },
+                    bottom = with(density) { bottomPadPx.toDp() }
+                )
+                // Keep the card clear of the status bar and the gesture pill; the scrim still
+                // covers them, but the card's buttons must stay tappable.
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            contentAlignment = if (placeBelow) Alignment.TopCenter else Alignment.BottomCenter
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color.White)
-                    .padding(22.dp)
+                    .padding(18.dp)
             ) {
-                Text(
-                    text = stringResource(step.titleRes),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = stringResource(step.bodyRes),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black.copy(alpha = 0.65f)
-                )
-                Spacer(Modifier.height(18.dp))
+                // Only the text scrolls. The action row below is outside this scroll area and
+                // gets laid out first, so Next/Skip stay reachable even when the gap beside the
+                // spotlight is too short for the full card — otherwise the buttons end up
+                // pushed off the bottom of the screen (which is exactly what happened in
+                // Korean, where the body text wraps to more lines).
+                Column(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = stringResource(step.titleRes),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = stringResource(step.bodyRes),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Black.copy(alpha = 0.65f)
+                    )
+                }
+                Spacer(Modifier.height(14.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -188,19 +211,19 @@ fun HomeTourOverlay(
                                     .padding(horizontal = 14.dp, vertical = 10.dp)
                             )
                         }
-                        if (step.manualAdvance) {
-                            Text(
-                                text = stringResource(R.string.onboarding_next),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(50))
-                                    .background(Color.Black)
-                                    .clickable { onManualAdvance() }
-                                    .padding(horizontal = 20.dp, vertical = 10.dp)
-                            )
-                        }
+                        Text(
+                            text = stringResource(
+                                if (isLast) R.string.common_done else R.string.onboarding_next
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(Color.Black)
+                                .clickable { onNext() }
+                                .padding(horizontal = 20.dp, vertical = 10.dp)
+                        )
                     }
                 }
             }

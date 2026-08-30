@@ -57,7 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
@@ -67,6 +67,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -91,9 +92,20 @@ import kotlin.math.roundToInt
 private val TOUR_STEPS = listOf(
     TourStep("scenario", R.string.tour_scenario_title, R.string.tour_scenario_body),
     TourStep("options", R.string.tour_options_title, R.string.tour_options_body),
-    TourStep("insights", R.string.tour_insights_title, R.string.tour_insights_body, manualAdvance = true),
+    TourStep("insights", R.string.tour_insights_title, R.string.tour_insights_body),
     TourStep("start", R.string.tour_start_title, R.string.tour_start_body)
 )
+
+/**
+ * Unclipped bounds in window coordinates.
+ *
+ * Deliberately *not* `boundsInWindow()`, which clips to the visible window: an element scrolled
+ * off-screen reports an empty rect there, which collapsed the tour's spotlight to nothing and
+ * fed garbage into the auto-scroll math (the bug where step 2/4 showed only the explanation
+ * card). `positionInWindow()` stays correct even when the element is outside the viewport.
+ */
+private fun LayoutCoordinates.unclippedBoundsInWindow(): Rect =
+    Rect(positionInWindow(), size.toSize())
 
 @Composable
 private fun scenarioLabel(scenario: ScenarioType) = stringResource(scenario.stringRes)
@@ -197,7 +209,7 @@ fun HomeScreen(
                                 advanceTourFrom("insights")
                                 onOpenStats()
                             },
-                            modifier = Modifier.onGloballyPositioned { tourBounds["insights"] = it.boundsInWindow() }
+                            modifier = Modifier.onGloballyPositioned { tourBounds["insights"] = it.unclippedBoundsInWindow() }
                         ) {
                             Icon(Icons.Filled.Insights, contentDescription = stringResource(R.string.stats_title))
                         }
@@ -244,7 +256,7 @@ fun HomeScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .onGloballyPositioned { tourBounds["start"] = it.boundsInWindow() }
+                            .onGloballyPositioned { tourBounds["start"] = it.unclippedBoundsInWindow() }
                     )
                 }
             }
@@ -336,7 +348,7 @@ fun HomeScreen(
 
                 // --- Scenario card ---
                 HomeSectionCard(
-                    modifier = Modifier.onGloballyPositioned { tourBounds["scenario"] = it.boundsInWindow() },
+                    modifier = Modifier.onGloballyPositioned { tourBounds["scenario"] = it.unclippedBoundsInWindow() },
                     contentPadding = 24.dp
                 ) {
                     Text(
@@ -387,7 +399,7 @@ fun HomeScreen(
                 // so this stays tucked away until someone taps it — keeps Home from feeling like
                 // a long form when most trainees just want to pick a scenario and go. ---
                 HomeSectionCard(
-                    modifier = Modifier.onGloballyPositioned { tourBounds["options"] = it.boundsInWindow() }
+                    modifier = Modifier.onGloballyPositioned { tourBounds["options"] = it.unclippedBoundsInWindow() }
                 ) {
                     Row(
                         modifier = Modifier
@@ -493,7 +505,7 @@ fun HomeScreen(
                 steps = TOUR_STEPS,
                 stepIndex = tourStepIndex,
                 bounds = tourBounds,
-                onManualAdvance = { TOUR_STEPS.getOrNull(tourStepIndex)?.key?.let(::advanceTourFrom) },
+                onNext = { TOUR_STEPS.getOrNull(tourStepIndex)?.key?.let(::advanceTourFrom) },
                 onSkip = { viewModel.completeHomeTour() }
             )
         }

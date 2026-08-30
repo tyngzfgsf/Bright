@@ -162,14 +162,21 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
 
         Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp)) {
             val isLastPage = pagerState.currentPage == pages.lastIndex
+            val hasKey = apiKeyInput.isNotBlank()
             BrightButton(
+                // The key is genuinely optional here — sessions gate on it later, with a dialog
+                // offering to jump to Settings. The button used to be hard-disabled until 8+
+                // characters were typed, which made it a wall rather than a skippable step.
                 text = stringResource(
-                    if (isLastPage) R.string.onboarding_get_started else R.string.onboarding_next
+                    when {
+                        !isLastPage -> R.string.onboarding_next
+                        hasKey -> R.string.onboarding_get_started
+                        else -> R.string.onboarding_skip_key
+                    }
                 ),
-                enabled = !isLastPage || apiKeyInput.trim().length >= 8,
                 onClick = {
                     if (isLastPage) {
-                        viewModel.saveApiKey(apiKeyInput)
+                        if (hasKey) viewModel.saveApiKey(apiKeyInput)
                         viewModel.completeOnboarding()
                         onFinished()
                     } else {

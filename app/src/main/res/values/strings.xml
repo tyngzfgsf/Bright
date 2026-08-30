@@ -12,7 +12,8 @@
     <string name="onboarding_next">Next</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_api_key_title">Connect your AI</string>
-    <string name="onboarding_api_key_subtitle">Bright uses Groq to power its scenarios. Paste your free Groq API key to continue.</string>
+    <string name="onboarding_api_key_subtitle">Bright uses Groq to power its scenarios. Paste your free Groq API key, or skip and add it later in Settings.</string>
+    <string name="onboarding_skip_key">Skip for now</string>
     <string name="onboarding_api_key_hint">Groq API key</string>
     <string name="onboarding_api_key_get_one">Get a free key at console.groq.com</string>
     <string name="onboarding_api_key_continue">Continue</string>
@@ -20,9 +21,9 @@
 
     <!-- Home tour -->
     <string name="tour_scenario_title">Pick a scenario</string>
-    <string name="tour_scenario_body">Tap a card to choose the emergency you\'ll train on — try one now. You can also shuffle for a random pick, or write your own below.</string>
+    <string name="tour_scenario_body">Tap a card to pick the emergency you\'ll train on — or shuffle for a random one.</string>
     <string name="tour_options_title">More options</string>
-    <string name="tour_options_body">Your role, the AI\'s role, and difficulty live in here — tap to peek in. The defaults already work great.</string>
+    <string name="tour_options_body">Your role, the AI\'s role, and difficulty live here. The defaults work fine.</string>
     <string name="tour_insights_title">Your skill profile</string>
     <string name="tour_insights_body">As your answers get graded, this is where your per-scenario averages and weak spots show up.</string>
     <string name="tour_start_title">Start a session</string>
