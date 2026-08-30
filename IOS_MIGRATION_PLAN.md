@@ -164,11 +164,58 @@ including the new Speech/AVFoundation code.
 
 ## Phase 5 — Share UI via Compose Multiplatform
 
-Once logic is shared and stable, evaluate moving Compose screens (`HomeScreen`,
-`ChatScreen`, `SettingsScreen`, `StatsScreen`, `OnboardingScreen`) into `commonMain` using
-Compose Multiplatform, which now supports iOS as a real target. Screens with
-platform-specific pieces (Voice Mode, the update card in Settings) will need conditional
-logic or platform-specific composables layered on top of a shared base.
+**Partially done, deliberately.** This phase said "evaluate", and the evaluation says the work
+splits into one part that's essentially free today and one part that is its own project. The
+free part is done; the screens are not, and for a concrete reason rather than effort budget.
+
+**Done: Compose Multiplatform toolchain + the whole design system in `commonMain`.**
+- CMP 1.8.2 added to `shared` (with the Compose compiler plugin). Pinned below latest
+  deliberately: a library built with a *newer* Kotlin than the project's can't be consumed —
+  the same klib ABI failure that forced Ktor down to 3.2.2 in Phase 3. Older-library /
+  newer-compiler is the safe direction.
+- `Color.kt`, `Type.kt`, `BrightButton`, `BrightSlider`, `SelectableChip`, `BrightTextField`
+  moved to `commonMain` with **zero source changes** — CMP changes artifact coordinates, not
+  package names, so their `androidx.compose.*` imports are still correct. Git records them as
+  pure renames.
+- `Theme.kt` needed real restructuring, since system-bar tinting is genuinely
+  platform-specific: `SystemBarsEffect` and `isSystemInDarkThemeMultiplatform` are now
+  `expect`/`actual`. Android's actual is the original `WindowCompat` code; iOS's is an
+  intentional no-op (status bar appearance there belongs to the hosting UIViewController, not
+  the Compose layer — that lands in Phase 6).
+- Package names kept identical (`com.bright.app.ui.theme` / `.ui.components`), so not one
+  screen in the app module needed an import change.
+
+Verified: `./gradlew clean assembleDebug` passes; CMP in `shared` and androidx Compose in `app`
+coexist with no duplicate-class conflict; all three iOS targets compile the design system; and
+the app renders correctly on-device in **both light and dark mode** — the dark check matters,
+since it's what actually exercises both new `actual`s.
+
+**Not done: the five screens.** Two hard gates have to be decided first, and both are large
+enough to deserve their own phase rather than being smuggled in here.
+
+1. **Resources — the real blocker.** There are **113 `stringResource(...)` call sites across 9
+   files**, against **134 strings × 2 languages**. Android resources (`R.string.*`,
+   `res/values/` + `res/values-ko/`) do not exist in `commonMain`; CMP has its own parallel
+   system (`Res.string.*` backed by `composeResources/`). Moving any screen means migrating the
+   entire string catalogue and rewriting every call site. The machinery is already wired up and
+   idle — visible as `generateComposeResClass SKIPPED` in the iOS build. It also obsoletes the
+   `ScenarioDisplay.kt` `stringRes: Int` extension invented in Phase 2, which would need
+   rethinking rather than porting.
+2. **ViewModel construction.** Every screen reaches its dependencies via
+   `LocalContext.current.applicationContext as BrightApplication` (7 files use `LocalContext`,
+   6 use `BrightApplication`). That Android-only handle needs replacing with something
+   injectable before any screen compiles in `commonMain` — a small DI seam, but cross-cutting.
+
+Genuinely platform-specific pieces that stay layered on top regardless: `VoiceModeScreen`
+(runtime mic permission via `rememberLauncherForActivityResult`), the Settings update card
+(`UpdateChecker`/`ApkDownloader`, Android-only by design since Phase 4), and
+`BuildConfig.VERSION_NAME`.
+
+**Recommended sequencing if this continues:** do the resources migration as its own isolated
+change **on Android only** first — strings move to `composeResources`, all 113 call sites
+rewritten, Android app still passing. That is independently valuable, carries no iOS risk, and
+turns the screen migration into a mechanical move afterwards. Doing resources and the screen
+moves in one pass is exactly the stacking this plan's ground rule warns against.
 
 ## Phase 6 — iOS app shell
 

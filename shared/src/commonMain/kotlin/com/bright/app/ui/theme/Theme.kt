@@ -1,18 +1,12 @@
 package com.bright.app.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.animation.core.spring
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
+import androidx.compose.ui.graphics.Color
 
 private val LightColors = lightColorScheme(
     primary = LightOnBackground,
@@ -64,30 +58,32 @@ object BrightMotion {
     const val SLOW = 520
 }
 
+/**
+ * Tints the platform's system chrome (Android's status/navigation bars) to match the theme.
+ *
+ * Genuinely platform-specific, and genuinely asymmetric: Android needs an explicit call per
+ * composition to colour its bars and set light/dark icon appearance. iOS has no equivalent —
+ * status bar appearance there is driven by the hosting UIViewController, not by the Compose
+ * layer — so its actual is an intentional no-op rather than a stub awaiting implementation.
+ */
+@Composable
+internal expect fun SystemBarsEffect(darkTheme: Boolean, background: Color)
+
+/** Whether the platform is currently in dark mode. */
+@Composable
+internal expect fun isSystemInDarkThemeMultiplatform(): Boolean
+
 @Composable
 fun BrightTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = isSystemInDarkThemeMultiplatform(),
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColors else LightColors
-    val view = LocalView.current
 
-    if (!view.isInEditMode) {
-        SideEffect {
-            val activity = view.context as? Activity ?: return@SideEffect
-            val window = activity.window
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            val controller = WindowCompat.getInsetsController(window, view)
-            controller.isAppearanceLightStatusBars = !darkTheme
-            controller.isAppearanceLightNavigationBars = !darkTheme
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                @Suppress("DEPRECATION")
-                window.statusBarColor = colorScheme.background.toArgb()
-                @Suppress("DEPRECATION")
-                window.navigationBarColor = colorScheme.background.toArgb()
-            }
-        }
-    }
+    // Passing the colour explicitly rather than reading MaterialTheme.colorScheme inside the
+    // effect: this call sits outside the MaterialTheme block below, so the ambient scheme there
+    // is still Material's default, not ours.
+    SystemBarsEffect(darkTheme, colorScheme.background)
 
     MaterialTheme(
         colorScheme = colorScheme,

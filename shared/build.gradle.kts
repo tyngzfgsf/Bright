@@ -4,6 +4,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
     id("androidx.room")
+    id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 kotlin {
@@ -41,6 +43,18 @@ kotlin {
             // SQLite compiled from source so Android and iOS run the identical engine.
             api("androidx.room:room-runtime:2.7.0")
             implementation("androidx.sqlite:sqlite-bundled:2.5.0")
+
+            // Compose Multiplatform. `api`, not `implementation`: the app module's own screens
+            // consume these types (MaterialTheme, Modifier, ...) directly from the shared
+            // design system, so they have to stay on its compile classpath.
+            //
+            // Note the package names in source are still `androidx.compose.*` — Compose
+            // Multiplatform only changes the artifact coordinates, not the packages, which is
+            // why the moved files needed no import changes at all.
+            api(compose.runtime)
+            api(compose.foundation)
+            api(compose.material3)
+            api(compose.ui)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
