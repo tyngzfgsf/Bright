@@ -2,6 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Required by Compose Multiplatform. Without it, androidx.compose.ui.uikit's
+	     PlistSanityCheck throws IllegalStateException shortly after launch (asynchronously,
+	     so the UI renders first and *then* the app aborts). It opts the app out of the 60fps
+	     cap on ProMotion displays. Xcode's GENERATE_INFOPLIST_FILE / INFOPLIST_KEY_* mechanism
+	     cannot set this key — it only supports Apple's documented allowlist — which is why
+	     this file exists rather than being generated. NOTE: Xcode's plist editor strips this
+	     comment on save, so it may not survive future edits made through the Xcode GUI. -->
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -20,16 +29,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-
-	<!-- Required by Compose Multiplatform. Without it, androidx.compose.ui.uikit's
-	     PlistSanityCheck throws IllegalStateException shortly after launch (asynchronously,
-	     so the UI renders first and *then* the app aborts). It opts the app out of the 60fps
-	     cap on ProMotion displays. Xcode's GENERATE_INFOPLIST_FILE / INFOPLIST_KEY_* mechanism
-	     cannot set this key — it only supports Apple's documented allowlist — which is why
-	     this file exists rather than being generated. -->
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Bright uses the microphone for voice-mode drills.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Bright transcribes your spoken answers during voice-mode drills.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -47,12 +50,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-
-	<!-- For the Phase 4 iOS voice engines (SFSpeechRecognizer + AVAudioEngine). Not yet
-	     exercised by this shell, but required before voice mode can ever run. -->
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Bright uses the microphone for voice-mode drills.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Bright transcribes your spoken answers during voice-mode drills.</string>
 </dict>
 </plist>
