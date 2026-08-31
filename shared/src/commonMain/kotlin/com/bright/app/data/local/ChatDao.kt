@@ -42,10 +42,20 @@ interface ChatDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertQuestionRecord(record: QuestionRecordEntity)
 
+    @Update
+    suspend fun updateQuestionRecord(record: QuestionRecordEntity)
+
+    @Query("SELECT * FROM question_records WHERE id = :id")
+    suspend fun getQuestionRecord(id: String): QuestionRecordEntity?
+
     @Query("SELECT * FROM question_records ORDER BY timestampMillis DESC")
     fun observeQuestionRecords(): Flow<List<QuestionRecordEntity>>
 
-    /** The individual missed/low-scored questions Phase 2's scheduler will draw from. */
+    /** The individual missed/low-scored questions the scheduler draws from. */
     @Query("SELECT * FROM question_records WHERE score <= :maxScore ORDER BY timestampMillis DESC")
     fun observeLowScoredQuestionRecords(maxScore: Int): Flow<List<QuestionRecordEntity>>
+
+    /** The review queue: items due now, most overdue (soonest due date) first. */
+    @Query("SELECT * FROM question_records WHERE dueAtMillis <= :nowMillis ORDER BY dueAtMillis ASC")
+    fun observeDueQuestionRecords(nowMillis: Long): Flow<List<QuestionRecordEntity>>
 }

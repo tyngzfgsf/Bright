@@ -73,7 +73,8 @@ fun BrightNavGraph(
 
         composable(Screen.STATS) {
             StatsScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onStartReview = { sessionId -> navController.navigate(Screen.chat(sessionId)) }
             )
         }
 

@@ -75,6 +75,10 @@
     <string name="stats_empty_title">아직 데이터가 없어요</string>
     <string name="stats_empty_body">채점된 세션을 몇 번 완료하면 시나리오별 실력 프로필이 여기에 자동으로 만들어져요.</string>
     <string name="stats_threshold_note">시나리오가 최약점으로 표시되려면 채점된 답변이 최소 %1$d개 필요해요.</string>
+    <string name="stats_review_queue_title">복습 대기열</string>
+    <string name="stats_review_queue_subtitle">복습할 문제 %1$d개</string>
+    <string name="stats_review_queue_score">%1$d/10점</string>
+    <string name="stats_review_queue_start">복습하기</string>
 
     <!-- 채팅 -->
     <string name="chat_input_placeholder">응답을 입력하세요…</string>

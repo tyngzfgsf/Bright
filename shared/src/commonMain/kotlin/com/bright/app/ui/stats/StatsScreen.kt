@@ -33,35 +33,43 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import org.jetbrains.compose.resources.stringResource
+import androidx.compose.material3.Button
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.LocalBrightDependencies
+import com.bright.app.data.local.QuestionRecordEntity
+import com.bright.app.domain.model.ScenarioType
 import com.bright.app.resources.Res
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
 import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.model.stringRes
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatsScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onStartReview: (String) -> Unit
 ) {
     val app = LocalBrightDependencies.current
     val viewModel: StatsViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { StatsViewModel(app.database.chatDao()) }
+            initializer { StatsViewModel(app.database.chatDao(), app.userPreferences) }
         }
     )
     val uiState by viewModel.uiState.collectAsState()
+    val dueForReview by viewModel.dueForReview.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -79,7 +87,7 @@ fun StatsScreen(
             )
         }
     ) { padding ->
-        if (uiState.stats.isEmpty()) {
+        if (uiState.stats.isEmpty() && dueForReview.isEmpty()) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 32.dp),
                 verticalArrangement = Arrangement.Center,
@@ -143,6 +151,34 @@ fun StatsScreen(
                 }
             }
 
+            if (dueForReview.isNotEmpty()) {
+                item(key = "review_queue_title") {
+                    Column {
+                        Text(
+                            text = stringResource(Res.string.stats_review_queue_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(Res.string.stats_review_queue_subtitle, dueForReview.size),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                items(dueForReview, key = { "review_${it.id}" }) { record ->
+                    ReviewQueueRow(
+                        record = record,
+                        onReview = {
+                            coroutineScope.launch {
+                                val sessionId = viewModel.startReviewSession(record)
+                                onStartReview(sessionId)
+                            }
+                        }
+                    )
+                }
+            }
+
             items(uiState.stats, key = { it.type.name }) { stat ->
                 ScenarioStatRow(
                     stat = stat,
@@ -158,6 +194,46 @@ fun StatsScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ReviewQueueRow(
+    record: QuestionRecordEntity,
+    onReview: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    val scenarioLabel = record.scenarioType
+        ?.let { runCatching { ScenarioType.valueOf(it) }.getOrNull() }
+        ?.let { stringResource(it.stringRes) }
+        ?: record.customScenario
+        ?: ""
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.surface)
+            .border(1.dp, colors.outline, RoundedCornerShape(16.dp))
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = scenarioLabel,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(Res.string.stats_review_queue_score, record.score),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant
+            )
+        }
+        Button(onClick = onReview) {
+            Text(stringResource(Res.string.stats_review_queue_start))
         }
     }
 }

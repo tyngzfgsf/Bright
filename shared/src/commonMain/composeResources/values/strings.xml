@@ -75,6 +75,10 @@
     <string name="stats_empty_title">No data yet</string>
     <string name="stats_empty_body">Finish a few graded sessions and your per-scenario skill profile will build itself here.</string>
     <string name="stats_threshold_note">A scenario needs at least %1$d graded answers before it can be marked as your weakest.</string>
+    <string name="stats_review_queue_title">Review queue</string>
+    <string name="stats_review_queue_subtitle">%1$d due for review</string>
+    <string name="stats_review_queue_score">Scored %1$d/10</string>
+    <string name="stats_review_queue_start">Review this</string>
 
     <!-- Chat -->
     <string name="chat_input_placeholder">Type your response…</string>

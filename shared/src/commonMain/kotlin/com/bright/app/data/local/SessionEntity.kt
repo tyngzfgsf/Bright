@@ -18,5 +18,6 @@ data class SessionEntity(
     val isCompleted: Boolean,
     val summary: String? = null,
     val totalScore: Int = 0,        // running sum of all graded answers this session
-    val answeredCount: Int = 0      // number of graded answers, for computing the average
+    val answeredCount: Int = 0,     // number of graded answers, for computing the average
+    val reviewOfRecordId: String? = null  // set when this session was started from the review queue
 )

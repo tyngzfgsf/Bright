@@ -13,6 +13,7 @@ import com.bright.app.data.remote.GroqRepository
 import com.bright.app.domain.AiTurn
 import com.bright.app.domain.AiTurnParser
 import com.bright.app.domain.ScenarioPromptBuilder
+import com.bright.app.domain.SpacedRepetitionScheduler
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.ChatMessage
 import com.bright.app.domain.model.Difficulty
@@ -137,12 +138,22 @@ class ChatViewModel(
      * already the *most recent* messages of their kind — this turn's own AI_FEEDBACK/next
      * AI_QUESTION haven't been inserted yet, so a simple "last of each role" lookup is enough
      * to pair them without a more complex explicit link between messages.
+     *
+     * Every graded round gets its own new record with a freshly-computed initial schedule.
+     * When this session was started specifically to review an existing due record (see
+     * `HomeViewModel`/`StatsViewModel.startReviewSession`), that *original* record's own
+     * schedule is additionally advanced in place from its own prior state — this is what
+     * makes the interval actually grow across repeated reviews of the same missed case,
+     * rather than every attempt starting its schedule over from scratch.
      */
     private suspend fun recordGradedQuestion(score: Int) {
         val recent = messagesFlow.first()
         val question = recent.lastOrNull { it.role == MessageRole.AI_QUESTION.name } ?: return
         val answer = recent.lastOrNull { it.role == MessageRole.USER.name } ?: return
         val s = session ?: return
+        val now = currentTimeMillis()
+
+        val initialSchedule = SpacedRepetitionScheduler.next(SpacedRepetitionScheduler.INITIAL_SCHEDULE, score)
         dao.insertQuestionRecord(
             QuestionRecordEntity(
                 id = randomId(),
@@ -152,9 +163,34 @@ class ChatViewModel(
                 questionText = question.text,
                 answerText = answer.text,
                 score = score,
-                timestampMillis = currentTimeMillis()
+                timestampMillis = now,
+                repetitionCount = initialSchedule.repetitionCount,
+                easeFactor = initialSchedule.easeFactor,
+                intervalDays = initialSchedule.intervalDays,
+                dueAtMillis = SpacedRepetitionScheduler.dueAtMillis(initialSchedule, now)
             )
         )
+
+        s.reviewOfRecordId?.let { originalId ->
+            dao.getQuestionRecord(originalId)?.let { original ->
+                val updatedSchedule = SpacedRepetitionScheduler.next(
+                    SpacedRepetitionScheduler.Schedule(
+                        repetitionCount = original.repetitionCount,
+                        easeFactor = original.easeFactor,
+                        intervalDays = original.intervalDays
+                    ),
+                    score
+                )
+                dao.updateQuestionRecord(
+                    original.copy(
+                        repetitionCount = updatedSchedule.repetitionCount,
+                        easeFactor = updatedSchedule.easeFactor,
+                        intervalDays = updatedSchedule.intervalDays,
+                        dueAtMillis = SpacedRepetitionScheduler.dueAtMillis(updatedSchedule, now)
+                    )
+                )
+            }
+        }
     }
 
     private suspend fun applyTurn(turn: AiTurn) {
