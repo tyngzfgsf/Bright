@@ -143,14 +143,20 @@ fun HomeScreen(
     val app = LocalBrightDependencies.current
     val viewModel: HomeViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, app.appVersionName) }
+            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, app.appVersionName, app.appUpdater) }
         }
     )
     val uiState by viewModel.uiState.collectAsState()
     val weakestStat by viewModel.weakestStat.collectAsState()
     var isStarting by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val difficultyDisplayLabels = listOf("Beginner", "Intermediate", "Advanced")
+    // These string resources existed in both languages all along but were never wired up —
+    // the list was hardcoded English, so the Korean UI showed "Intermediate".
+    val difficultyDisplayLabels = listOf(
+        stringResource(Res.string.difficulty_beginner),
+        stringResource(Res.string.difficulty_intermediate),
+        stringResource(Res.string.difficulty_advanced)
+    )
     var optionsExpanded by remember { mutableStateOf(false) }
 
     // --- Interactive home tour: highlights the real controls and waits for a real tap. ---

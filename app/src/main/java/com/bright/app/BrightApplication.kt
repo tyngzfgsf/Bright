@@ -8,6 +8,7 @@ import com.bright.app.data.local.getDatabaseBuilder
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqApiClient
 import com.bright.app.data.remote.GroqRepository
+import com.bright.app.data.update.AndroidAppUpdater
 import okio.Path.Companion.toOkioPath
 
 private const val PREFERENCES_FILE_NAME = "bright_prefs.preferences_pb"
@@ -44,7 +45,8 @@ class BrightApplication : Application() {
             database = database,
             userPreferences = userPreferences,
             groqRepository = groqRepository,
-            appVersionName = BuildConfig.VERSION_NAME
+            appVersionName = BuildConfig.VERSION_NAME,
+            appUpdater = AndroidAppUpdater(this)
         )
     }
 }

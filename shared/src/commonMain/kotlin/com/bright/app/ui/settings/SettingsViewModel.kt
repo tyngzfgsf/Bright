@@ -1,18 +1,13 @@
 package com.bright.app.ui.settings
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bright.app.R
 import com.bright.app.data.local.ChatDao
 import com.bright.app.data.preferences.UserPreferences
-import com.bright.app.data.remote.ApkDownloader
 import com.bright.app.data.remote.GroqRepository
 import com.bright.app.data.remote.GroqUsageInfo
-import com.bright.app.data.remote.UpdateChecker
+import com.bright.app.data.update.AppUpdateInfo
+import com.bright.app.data.update.AppUpdater
 import com.bright.app.domain.model.Language
 import com.bright.app.util.ApiResult
 import com.bright.app.util.LocaleUtils
@@ -28,17 +23,19 @@ data class SettingsUiState(
     val language: Language = Language.ENGLISH,
     val apiKey: String = "",
     val model: String = UserPreferences.DEFAULT_MODEL,
-    val updateInfo: UpdateChecker.UpdateInfo? = null
+    val updateInfo: AppUpdateInfo? = null
 )
 
 class SettingsViewModel(
     private val dao: ChatDao,
     private val preferences: UserPreferences,
     private val groqRepository: GroqRepository,
-    private val currentVersionName: String
+    private val currentVersionName: String,
+    /** Null on platforms without sideloaded updates (iOS); the UI hides the section then. */
+    private val appUpdater: AppUpdater? = null
 ) : ViewModel() {
 
-    private val _updateInfo = MutableStateFlow<UpdateChecker.UpdateInfo?>(null)
+    private val _updateInfo = MutableStateFlow<AppUpdateInfo?>(null)
     private val _isDownloadingUpdate = MutableStateFlow(false)
     private val _updateErrorMessage = MutableStateFlow<String?>(null)
 
@@ -68,7 +65,7 @@ class SettingsViewModel(
 
     init {
         viewModelScope.launch {
-            _updateInfo.value = UpdateChecker.checkForUpdate(currentVersionName)
+            _updateInfo.value = appUpdater?.checkForUpdate(currentVersionName)
         }
         viewModelScope.launch {
             val existingKey = preferences.groqApiKey.first()
@@ -132,34 +129,15 @@ class SettingsViewModel(
         }
     }
 
-    fun downloadAndInstallUpdate(context: Context) {
+    fun downloadAndInstallUpdate() {
         val update = _updateInfo.value ?: return
-        val apkUrl = update.apkDownloadUrl
-        val appContext = context.applicationContext
-        if (apkUrl == null) {
-            _updateErrorMessage.value = appContext.getString(R.string.settings_update_no_apk)
-            return
-        }
-
-        if (!appContext.packageManager.canRequestPackageInstalls()) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                Uri.parse("package:${appContext.packageName}")
-            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            appContext.startActivity(intent)
-            return
-        }
-
+        val updater = appUpdater ?: return
         viewModelScope.launch {
             _isDownloadingUpdate.value = true
             _updateErrorMessage.value = null
-            val file = ApkDownloader.download(appContext, apkUrl)
+            val error = updater.downloadAndInstall(update)
             _isDownloadingUpdate.value = false
-            if (file != null) {
-                ApkDownloader.launchInstall(appContext, file)
-            } else {
-                _updateErrorMessage.value = appContext.getString(R.string.settings_update_download_failed)
-            }
+            _updateErrorMessage.value = error
         }
     }
 }

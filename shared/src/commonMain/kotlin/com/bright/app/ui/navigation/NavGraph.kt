@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.savedstate.read
 import com.bright.app.ui.chat.ChatScreen
 import com.bright.app.ui.history.HistoryScreen
 import com.bright.app.ui.home.HomeScreen
@@ -80,7 +81,7 @@ fun BrightNavGraph(
             route = Screen.CHAT,
             arguments = listOf(navArgument("sessionId") { })
         ) { backStackEntry ->
-            val sessionId = backStackEntry.arguments?.getString("sessionId").orEmpty()
+            val sessionId = backStackEntry.arguments?.read { getStringOrNull("sessionId") }.orEmpty()
             ChatScreen(
                 sessionId = sessionId,
                 onBack = { navController.popBackStack() }

@@ -62,6 +62,13 @@ kotlin {
             // Compose Resources: the multiplatform replacement for Android's R.string.
             // `api` because the app module's screens reference Res/stringResource directly.
             api(compose.components.resources)
+            api(compose.materialIconsExtended)
+
+            // Multiplatform ViewModel + Navigation (JetBrains' KMP builds of the AndroidX
+            // libraries). Version-matched to Compose Multiplatform 1.8.x rather than taking
+            // latest, for the same klib-ABI reason Ktor is pinned to 3.2.2.
+            api("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
+            api("org.jetbrains.androidx.navigation:navigation-compose:2.9.0")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

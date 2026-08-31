@@ -277,11 +277,55 @@ halves *away from zero* rather than using `kotlin.math.round`, which breaks ties
 displayed as "5.2" instead of the "5.3" users saw before, and matching the old behaviour
 mattered more than the tidier standard-library call.
 
-**Both gates are now clear.** What actually remains before a screen can move to `commonMain` is
-mechanical rather than architectural: `androidx.lifecycle.ViewModel` and `viewModel()` need to
-come from the multiplatform lifecycle artifacts, and the genuinely platform-specific screens
-(`VoiceModeScreen`'s mic permission, Settings' Android-only update card) need their platform
-pieces layered rather than moved.
+### Screens moved — **Phase 5 complete**
+
+Every screen, ViewModel, and the navigation graph now live in `commonMain`, and the real Bright
+app runs on the iOS Simulator. Added `org.jetbrains.androidx.lifecycle` 2.9.0 and
+`org.jetbrains.androidx.navigation` 2.9.0 (version-matched to CMP 1.8.x, not latest, for the
+usual klib-ABI reason).
+
+The **entire** Android app module is now 7 files, all genuinely platform-specific:
+`BrightApplication` and `MainActivity` (entry points), `UpdateChecker`/`ApkDownloader`/
+`GitHubModels`/`AndroidAppUpdater` (sideloaded APK updates — Android-only by design), and
+`VoiceModeScreen` (runtime mic permission).
+
+The Android-only update flow moved behind an `AppUpdater` interface in `commonMain` with
+`AndroidAppUpdater` implementing it; `BrightDependencies.appUpdater` is null on iOS and the
+Settings section simply doesn't render. That is what let `SettingsViewModel` and
+`SettingsScreen` — the most Android-coupled screen — move as well.
+
+Four JVM-only leaks had to be resolved, and every one of them compiled fine on Android:
+- `java.util.UUID` → `kotlin.uuid.Uuid` behind a `randomId()` helper (opt-in contained there).
+- `System.currentTimeMillis()` → `expect`/`actual` `currentTimeMillis()`.
+- `java.text.DateFormat`/`java.util.Date` in HistoryScreen → `expect`/`actual`
+  `formatSessionTimestamp()`, using each platform's own locale-aware formatter rather than
+  hand-rolling one in common code.
+- `backStackEntry.arguments?.getString(...)` → the multiplatform navigation `SavedState` API.
+
+**This is the inverse of CLAUDE.md's gotcha #1 and worth recording:** `./gradlew assembleDebug`
+passed green while all four of the above were broken. Android compiles JVM APIs happily; only
+`compileKotlinIosSimulatorArm64` surfaced them. From here on, an Android-only build proves
+nothing about `commonMain`.
+
+Also fixed while here: the difficulty labels were a hardcoded English
+`listOf("Beginner", "Intermediate", "Advanced")`, so Korean showed "Intermediate". The
+`difficulty_*` string resources already existed in both languages and had simply never been
+wired up.
+
+Verified: `./gradlew clean assembleDebug` passes; all three iOS targets compile and the
+simulator framework links; on Android every screen was walked with no error; and on iOS the
+real app launches, routes through the shared navigation graph to Home, renders Korean, and
+creates both its Room database (`sessions`/`messages`/`room_master_table`) and its DataStore
+file in the app container.
+
+### Still outstanding
+
+- **`VoiceModeOverlay` has no caller** anywhere in the app — pre-existing, unrelated to the
+  migration (see Phase 4). It stays in the Android module; wiring it up is its own task, and
+  the iOS voice engines remain unverified at runtime until it is.
+- The iOS app hardcodes `appVersionName = "1.5"`; it should read `CFBundleShortVersionString`.
+- iOS Settings shows a language picker whose change only takes effect on next launch (see
+  `LocaleUtils` under Phase 4) — it needs a relaunch prompt.
 
 ## Phase 6 — iOS app shell
 

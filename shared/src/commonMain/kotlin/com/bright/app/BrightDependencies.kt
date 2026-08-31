@@ -4,6 +4,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqRepository
+import com.bright.app.data.update.AppUpdater
 
 /**
  * Everything the screens need, in one platform-neutral bag.
@@ -23,7 +24,9 @@ class BrightDependencies(
     val userPreferences: UserPreferences,
     val groqRepository: GroqRepository,
     /** Shown in Settings and used for the Android update check. Supplied per platform. */
-    val appVersionName: String
+    val appVersionName: String,
+    /** Null where sideloaded updates don't exist (iOS). See AppUpdater. */
+    val appUpdater: AppUpdater? = null
 )
 
 /**

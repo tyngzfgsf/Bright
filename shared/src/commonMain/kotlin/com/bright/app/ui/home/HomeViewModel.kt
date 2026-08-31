@@ -3,9 +3,10 @@ package com.bright.app.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bright.app.data.local.ChatDao
+import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
-import com.bright.app.data.remote.UpdateChecker
+import com.bright.app.data.update.AppUpdater
 import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.Difficulty
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.UUID
+import com.bright.app.util.randomId
 
 data class HomeUiState(
     val selectedScenario: ScenarioType = ScenarioType.entries.first(),
@@ -35,7 +36,9 @@ data class HomeUiState(
 class HomeViewModel(
     private val dao: ChatDao,
     private val preferences: UserPreferences,
-    currentVersionName: String
+    currentVersionName: String,
+    /** Null where sideloaded updates don't exist (iOS) — no badge is shown then. */
+    appUpdater: AppUpdater? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -58,7 +61,7 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-            val update = UpdateChecker.checkForUpdate(currentVersionName)
+            val update = appUpdater?.checkForUpdate(currentVersionName)
             if (update != null) {
                 _uiState.value = _uiState.value.copy(updateAvailable = true)
             }
@@ -112,8 +115,8 @@ class HomeViewModel(
         val state = _uiState.value
         val difficulty = Difficulty.entries.getOrElse(state.difficultyIndex) { Difficulty.INTERMEDIATE }
         val languageCode = preferences.languageCode.first() ?: Language.fromSystemDefault().code
-        val now = System.currentTimeMillis()
-        val id = UUID.randomUUID().toString()
+        val now = currentTimeMillis()
+        val id = randomId()
 
         val trimmedCustomScenario = customScenarioOverride.trim()
         val trimmedCustomAiRole = state.customAiRole.trim()

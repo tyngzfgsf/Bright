@@ -44,11 +44,10 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
+import com.bright.app.util.formatSessionTimestamp
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
 import com.bright.app.domain.model.stringRes
-import java.text.DateFormat
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,8 +112,7 @@ fun HistoryScreen(
             ) {
                 items(sessions, key = { it.id }) { item ->
                     val dateText = remember(item.lastUpdatedAtMillis) {
-                        DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
-                            .format(Date(item.lastUpdatedAtMillis))
+                        formatSessionTimestamp(item.lastUpdatedAtMillis)
                     }
                     Row(
                         modifier = Modifier

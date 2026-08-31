@@ -1,132 +1,80 @@
 package com.bright.app
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
-import org.jetbrains.compose.resources.stringResource
-import com.bright.app.domain.model.Language
-import com.bright.app.domain.model.ScenarioType
-import com.bright.app.domain.model.currentSystemLanguageCode
-import com.bright.app.domain.model.stringRes
-import com.bright.app.ui.components.BrightButton
-import com.bright.app.ui.components.BrightTextField
-import com.bright.app.ui.components.SelectableChip
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import com.bright.app.data.local.buildDatabase
+import com.bright.app.data.local.getDatabaseBuilder
+import com.bright.app.data.preferences.UserPreferences
+import com.bright.app.data.remote.GroqApiClient
+import com.bright.app.data.remote.GroqRepository
+import com.bright.app.ui.navigation.BrightNavGraph
+import com.bright.app.ui.navigation.Screen
 import com.bright.app.ui.theme.BrightTheme
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.flow.first
+import okio.Path.Companion.toPath
+import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
+import platform.Foundation.NSURL
+import platform.Foundation.NSUserDomainMask
 import platform.UIKit.UIViewController
 
+private const val PREFERENCES_FILE_NAME = "bright_prefs.preferences_pb"
+
 /**
- * The iOS app's Compose entry point, called from Swift (see `iosApp/`).
+ * iOS's equivalent of Android's `BrightApplication` + `MainActivity`: builds the dependency
+ * container and hands it to the same shared navigation graph the Android app uses.
  *
- * This is deliberately a **validation harness, not the real app** — Bright's actual screens
- * can't move to `commonMain` until the resources and ViewModel-construction gates described
- * under Phase 5 in IOS_MIGRATION_PLAN.md are resolved. What it renders is chosen to exercise
- * as much of the shared stack as possible on a real device: the shared theme (colours,
- * typography, dark-mode `actual`), three shared design-system components, and shared domain
- * types + the `currentSystemLanguageCode` expect/actual from Phase 2.
+ * Note there is no `appUpdater` — sideloaded APK updates are an Android-only concept, so the
+ * parameter defaults to null and Settings simply doesn't render that section here.
  */
-fun MainViewController(): UIViewController = ComposeUIViewController {
-    BrightTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            SharedStackDemo()
-        }
-    }
+@OptIn(ExperimentalForeignApi::class)
+private fun buildDependencies(): BrightDependencies {
+    val documents: NSURL? = NSFileManager.defaultManager.URLForDirectory(
+        directory = NSDocumentDirectory,
+        inDomain = NSUserDomainMask,
+        appropriateForURL = null,
+        create = false,
+        error = null
+    )
+    val documentsPath = requireNotNull(documents?.path)
+
+    return BrightDependencies(
+        database = buildDatabase(getDatabaseBuilder()),
+        userPreferences = UserPreferences(
+            PreferenceDataStoreFactory.createWithPath(
+                produceFile = { "$documentsPath/$PREFERENCES_FILE_NAME".toPath() }
+            )
+        ),
+        groqRepository = GroqRepository(GroqApiClient(enableLogging = false)),
+        appVersionName = "1.5"
+    )
 }
 
-@Composable
-private fun SharedStackDemo() {
-    var selected by remember { mutableStateOf(ScenarioType.CARDIAC_ARREST) }
-    var customScenario by remember { mutableStateOf("") }
-    var tapCount by remember { mutableStateOf(0) }
+fun MainViewController(): UIViewController = ComposeUIViewController {
+    // Built once and remembered: the database and DataStore must not be recreated on
+    // recomposition, exactly as `by lazy` guarantees on the Android side.
+    val dependencies = remember { buildDependencies() }
 
-    val systemLanguage = remember { currentSystemLanguageCode() }
-    val resolvedLanguage = remember { Language.fromSystemDefault() }
+    var startDestination by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        val onboardingCompleted = dependencies.userPreferences.onboardingCompleted.first()
+        startDestination = if (onboardingCompleted) Screen.HOME else Screen.ONBOARDING
+    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
-    ) {
-        Text(
-            text = "Bright — shared stack on iOS",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = "Compose Multiplatform rendering commonMain code",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(Modifier.height(20.dp))
-        Text("Shared domain + expect/actual", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = "System language code: $systemLanguage\n" +
-                "Resolved app language: ${resolvedLanguage.displayName} (${resolvedLanguage.code})\n" +
-                "Prompt keyword: ${selected.promptKeyword}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(Modifier.height(20.dp))
-        Text("SelectableChip (shared)", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(10.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            ScenarioType.entries.forEach { scenario ->
-                SelectableChip(
-                    // Real localized display names, straight out of commonMain. Until the
-                    // resources migration these had to fall back to `promptKeyword`, because
-                    // display names only existed as Android R.string values — that was the
-                    // Phase 5 resources gate, and this line is the proof it's gone.
-                    text = stringResource(scenario.stringRes),
-                    selected = selected == scenario,
-                    onClick = { selected = scenario }
-                )
-            }
+    CompositionLocalProvider(LocalBrightDependencies provides dependencies) {
+        BrightTheme {
+            // Nothing is drawn until the start destination is known, mirroring the Android
+            // splash screen's keep-on-screen condition — otherwise the nav graph would briefly
+            // start at onboarding for a returning user.
+            startDestination?.let { BrightNavGraph(startDestination = it) }
         }
-
-        Spacer(Modifier.height(20.dp))
-        Text("BrightTextField (shared)", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(10.dp))
-        BrightTextField(
-            value = customScenario,
-            onValueChange = { customScenario = it },
-            placeholder = "Type to check IME + state…",
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(20.dp))
-        BrightButton(
-            text = if (tapCount == 0) "Tap to test press animation" else "Tapped $tapCount×",
-            onClick = { tapCount++ },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.height(24.dp))
     }
 }

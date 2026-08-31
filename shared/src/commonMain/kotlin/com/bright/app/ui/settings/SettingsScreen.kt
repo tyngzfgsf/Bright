@@ -42,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -65,7 +64,6 @@ fun SettingsScreen(
     onReplayTutorial: () -> Unit
 ) {
     val app = LocalBrightDependencies.current
-    val context = LocalContext.current
     val viewModel: SettingsViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
@@ -73,7 +71,8 @@ fun SettingsScreen(
                     app.database.chatDao(),
                     app.userPreferences,
                     app.groqRepository,
-                    app.appVersionName
+                    app.appVersionName,
+                    app.appUpdater
                 )
             }
         }
@@ -287,7 +286,7 @@ fun SettingsScreen(
                     BrightButton(
                         text = stringResource(Res.string.settings_update_download),
                         loading = isDownloadingUpdate,
-                        onClick = { viewModel.downloadAndInstallUpdate(context) },
+                        onClick = { viewModel.downloadAndInstallUpdate() },
                         modifier = Modifier.fillMaxWidth()
                     )
                     updateErrorMessage?.let { error ->

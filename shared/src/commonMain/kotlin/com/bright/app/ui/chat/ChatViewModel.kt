@@ -3,6 +3,7 @@ package com.bright.app.ui.chat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bright.app.data.local.ChatDao
+import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.MessageEntity
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
@@ -26,7 +27,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.UUID
+import com.bright.app.util.randomId
 
 data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
@@ -131,12 +132,12 @@ class ChatViewModel(
     }
 
     private suspend fun applyTurn(turn: AiTurn) {
-        val now = System.currentTimeMillis()
+        val now = currentTimeMillis()
 
         if (turn.score != null || turn.feedback != null) {
             dao.insertMessage(
                 MessageEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = randomId(),
                     sessionId = sessionId,
                     role = MessageRole.AI_FEEDBACK.name,
                     text = turn.feedback.orEmpty(),
@@ -159,7 +160,7 @@ class ChatViewModel(
         if (turn.sessionComplete) {
             dao.insertMessage(
                 MessageEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = randomId(),
                     sessionId = sessionId,
                     role = MessageRole.SYSTEM_SUMMARY.name,
                     text = turn.nextPrompt,
@@ -174,7 +175,7 @@ class ChatViewModel(
         } else {
             dao.insertMessage(
                 MessageEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = randomId(),
                     sessionId = sessionId,
                     role = MessageRole.AI_QUESTION.name,
                     text = turn.nextPrompt,
@@ -206,11 +207,11 @@ class ChatViewModel(
             _errorMessage.value = null
             dao.insertMessage(
                 MessageEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = randomId(),
                     sessionId = sessionId,
                     role = MessageRole.USER.name,
                     text = text.trim(),
-                    timestampMillis = System.currentTimeMillis()
+                    timestampMillis = currentTimeMillis()
                 )
             )
             touchSession()
@@ -228,11 +229,11 @@ class ChatViewModel(
             _errorMessage.value = null
             dao.insertMessage(
                 MessageEntity(
-                    id = UUID.randomUUID().toString(),
+                    id = randomId(),
                     sessionId = sessionId,
                     role = MessageRole.USER_ASK.name,
                     text = text.trim(),
-                    timestampMillis = System.currentTimeMillis()
+                    timestampMillis = currentTimeMillis()
                 )
             )
             _isSending.value = true
@@ -246,11 +247,11 @@ class ChatViewModel(
                 is ApiResult.Success -> {
                     dao.insertMessage(
                         MessageEntity(
-                            id = UUID.randomUUID().toString(),
+                            id = randomId(),
                             sessionId = sessionId,
                             role = MessageRole.AI_ANSWER.name,
                             text = result.data.trim(),
-                            timestampMillis = System.currentTimeMillis()
+                            timestampMillis = currentTimeMillis()
                         )
                     )
                 }
@@ -297,7 +298,7 @@ class ChatViewModel(
                 val updated = it.copy(
                     scenarioType = newScenario.name,
                     customScenario = null,
-                    lastUpdatedAtMillis = System.currentTimeMillis()
+                    lastUpdatedAtMillis = currentTimeMillis()
                 )
                 dao.updateSession(updated)
                 session = updated
@@ -327,7 +328,7 @@ class ChatViewModel(
 
     private suspend fun touchSession() {
         session?.let {
-            val updated = it.copy(lastUpdatedAtMillis = System.currentTimeMillis())
+            val updated = it.copy(lastUpdatedAtMillis = currentTimeMillis())
             dao.updateSession(updated)
             session = updated
         }
