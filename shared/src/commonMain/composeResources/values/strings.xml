@@ -61,6 +61,7 @@
     <string name="home_weak_spot_avg">avg %1$s/10</string>
     <string name="home_weak_spot_drill">Drill it now</string>
     <string name="home_streak_days">%1$d-day streak</string>
+    <string name="home_review_now">Review now</string>
     <string name="difficulty_beginner">Beginner</string>
     <string name="difficulty_intermediate">Intermediate</string>
     <string name="difficulty_advanced">Advanced</string>

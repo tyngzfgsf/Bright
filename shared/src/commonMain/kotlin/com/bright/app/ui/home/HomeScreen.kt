@@ -74,6 +74,7 @@ import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
+import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.TraineeRole
@@ -132,6 +133,117 @@ private fun HomeSectionCard(
     )
 }
 
+/**
+ * The single "your progress" card: review queue (the more specific, more actionable version
+ * of the weak-spot idea) takes priority when anything is due; otherwise the weak-spot card
+ * shows as before. The streak rides along at the bottom of whichever one renders — or stands
+ * alone if there's a streak but neither of the others has anything to show yet.
+ */
+@Composable
+private fun HomeProgressCard(
+    dueForReviewCount: Int,
+    weakest: SkillProfile.ScenarioStat?,
+    streakDays: Int,
+    onReviewNow: () -> Unit,
+    onDrillWeakSpot: (ScenarioType) -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    val hasPrimaryContent = dueForReviewCount > 0 || weakest != null
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(colors.onBackground)
+            .padding(20.dp)
+    ) {
+        when {
+            dueForReviewCount > 0 -> {
+                Text(
+                    text = stringResource(Res.string.stats_review_queue_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = colors.background.copy(alpha = 0.7f)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.stats_review_queue_subtitle, dueForReviewCount),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.background
+                )
+                Spacer(Modifier.height(14.dp))
+                TextButton(
+                    onClick = onReviewNow,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(colors.background)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.home_review_now),
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                }
+            }
+
+            weakest != null -> {
+                Text(
+                    text = stringResource(Res.string.home_weak_spot_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = colors.background.copy(alpha = 0.7f)
+                )
+                Spacer(Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(weakest.type.stringRes),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.background
+                    )
+                    Text(
+                        text = stringResource(Res.string.home_weak_spot_avg, weakest.averageScore.toScoreString()),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = colors.background.copy(alpha = 0.8f)
+                    )
+                }
+                Spacer(Modifier.height(14.dp))
+                TextButton(
+                    onClick = { onDrillWeakSpot(weakest.type) },
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(colors.background)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.home_weak_spot_drill),
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+                }
+            }
+        }
+
+        if (streakDays > 0) {
+            if (hasPrimaryContent) Spacer(Modifier.height(14.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("🔥")
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = stringResource(Res.string.home_streak_days, streakDays),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.background.copy(alpha = if (hasPrimaryContent) 0.85f else 1f)
+                )
+            }
+        }
+    }
+}
+
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -149,6 +261,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val weakestStat by viewModel.weakestStat.collectAsState()
     val streakDays by viewModel.streakDays.collectAsState()
+    val dueForReview by viewModel.dueForReview.collectAsState()
     var isStarting by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     // These string resources existed in both languages all along but were never wired up —
@@ -275,101 +388,47 @@ fun HomeScreen(
                     .verticalScroll(scrollState)
                     .padding(horizontal = 20.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(Res.string.home_greeting),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    AnimatedVisibility(visible = streakDays > 0, enter = fadeIn(), exit = androidx.compose.animation.fadeOut()) {
-                        Row(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(50))
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("🔥")
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                text = stringResource(Res.string.home_streak_days, streakDays),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-                }
+                Text(
+                    text = stringResource(Res.string.home_greeting),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-                // --- Weak-spot drill card ---
+                // --- Progress card: review queue (most specific/actionable) takes priority
+                // over the weak-spot card when there's anything due; the streak always rides
+                // along at the bottom of whichever one shows, or stands alone if neither does. ---
+                val dueForReviewCount = dueForReview.size
                 AnimatedVisibility(
-                    visible = weakestStat != null,
+                    visible = dueForReviewCount > 0 || weakestStat != null || streakDays > 0,
                     enter = fadeIn() + expandVertically()
                 ) {
-                    weakestStat?.let { weak ->
-                        Column {
-                            Spacer(Modifier.height(16.dp))
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(18.dp))
-                                    .background(MaterialTheme.colorScheme.onBackground)
-                                    .padding(20.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.home_weak_spot_label),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.7f)
-                                )
-                                Spacer(Modifier.height(4.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = stringResource(weak.type.stringRes),
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.background
-                                    )
-                                    Text(
-                                        text = stringResource(
-                                            Res.string.home_weak_spot_avg,
-                                            weak.averageScore.toScoreString()
-                                        ),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
-                                    )
+                    Column {
+                        Spacer(Modifier.height(16.dp))
+                        HomeProgressCard(
+                            dueForReviewCount = dueForReviewCount,
+                            weakest = weakestStat,
+                            streakDays = streakDays,
+                            onReviewNow = {
+                                if (!isStarting) {
+                                    isStarting = true
+                                    scope.launch {
+                                        val id = viewModel.startNextReviewSession()
+                                        isStarting = false
+                                        id?.let(onStartSession)
+                                    }
                                 }
-                                Spacer(Modifier.height(14.dp))
-                                TextButton(
-                                    onClick = {
-                                        if (!isStarting) {
-                                            isStarting = true
-                                            scope.launch {
-                                                val id = viewModel.startWeakSpotSession(weak.type)
-                                                isStarting = false
-                                                onStartSession(id)
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(50))
-                                        .background(MaterialTheme.colorScheme.background)
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.home_weak_spot_drill),
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        fontWeight = FontWeight.SemiBold,
-                                        modifier = Modifier.padding(horizontal = 8.dp)
-                                    )
+                            },
+                            onDrillWeakSpot = { type ->
+                                if (!isStarting) {
+                                    isStarting = true
+                                    scope.launch {
+                                        val id = viewModel.startWeakSpotSession(type)
+                                        isStarting = false
+                                        onStartSession(id)
+                                    }
                                 }
                             }
-                        }
+                        )
                     }
                 }
 

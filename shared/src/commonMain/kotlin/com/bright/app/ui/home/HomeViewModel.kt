@@ -6,9 +6,11 @@ import com.bright.app.data.local.ChatDao
 import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
+import com.bright.app.data.local.QuestionRecordEntity
 import com.bright.app.data.update.AppUpdater
 import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.SkillProfile
+import com.bright.app.domain.startReviewSession
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.Difficulty
 import com.bright.app.domain.model.Language
@@ -65,6 +67,16 @@ class HomeViewModel(
     val streakDays: StateFlow<Int> = preferences.streakState
         .map { DailyStreak.displayedCount(it, currentLocalEpochDay()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    /** The individual missed/low-scored questions due for review right now, most overdue first. */
+    val dueForReview: StateFlow<List<QuestionRecordEntity>> = dao.observeDueQuestionRecords(currentTimeMillis())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** One-tap "Review now": drills the single most-overdue item. Null if nothing is due. */
+    suspend fun startNextReviewSession(): String? {
+        val record = dueForReview.value.firstOrNull() ?: return null
+        return startReviewSession(dao, preferences, record)
+    }
 
     init {
         viewModelScope.launch {

@@ -61,6 +61,7 @@
     <string name="home_weak_spot_avg">평균 %1$s/10</string>
     <string name="home_weak_spot_drill">지금 훈련하기</string>
     <string name="home_streak_days">%1$d일 연속</string>
+    <string name="home_review_now">지금 복습하기</string>
     <string name="difficulty_beginner">초급</string>
     <string name="difficulty_intermediate">중급</string>
     <string name="difficulty_advanced">고급</string>
