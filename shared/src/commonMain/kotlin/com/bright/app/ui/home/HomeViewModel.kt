@@ -7,6 +7,7 @@ import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.update.AppUpdater
+import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.Difficulty
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.bright.app.util.currentLocalEpochDay
 import com.bright.app.util.randomId
 
 data class HomeUiState(
@@ -58,6 +60,11 @@ class HomeViewModel(
     val hasApiKey: StateFlow<Boolean> = preferences.groqApiKey
         .map { !it.isNullOrBlank() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    /** 0 when there's no current streak to show — see [DailyStreak.displayedCount]. */
+    val streakDays: StateFlow<Int> = preferences.streakState
+        .map { DailyStreak.displayedCount(it, currentLocalEpochDay()) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     init {
         viewModelScope.launch {

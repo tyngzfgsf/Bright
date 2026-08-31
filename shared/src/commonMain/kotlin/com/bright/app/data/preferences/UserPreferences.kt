@@ -4,7 +4,10 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.model.Language
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -26,6 +29,8 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
         val HOME_TOUR_COMPLETED = booleanPreferencesKey("home_tour_completed")
         val GROQ_API_KEY = stringPreferencesKey("groq_api_key")
         val GROQ_MODEL = stringPreferencesKey("groq_model")
+        val STREAK_COUNT = intPreferencesKey("streak_count")
+        val STREAK_LAST_ACTIVE_EPOCH_DAY = longPreferencesKey("streak_last_active_epoch_day")
     }
 
     companion object {
@@ -66,5 +71,25 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
 
     suspend fun setGroqModel(model: String) {
         dataStore.edit { it[Keys.GROQ_MODEL] = model }
+    }
+
+    val streakState: Flow<DailyStreak.State> = dataStore.data.map {
+        DailyStreak.State(
+            count = it[Keys.STREAK_COUNT] ?: 0,
+            lastActiveEpochDay = it[Keys.STREAK_LAST_ACTIVE_EPOCH_DAY] ?: 0L
+        )
+    }
+
+    /** Call once when a session actually completes — see [DailyStreak.recordActiveDay]. */
+    suspend fun recordActiveDay(todayEpochDay: Long) {
+        dataStore.edit { prefs ->
+            val previous = DailyStreak.State(
+                count = prefs[Keys.STREAK_COUNT] ?: 0,
+                lastActiveEpochDay = prefs[Keys.STREAK_LAST_ACTIVE_EPOCH_DAY] ?: 0L
+            )
+            val updated = DailyStreak.recordActiveDay(previous, todayEpochDay)
+            prefs[Keys.STREAK_COUNT] = updated.count
+            prefs[Keys.STREAK_LAST_ACTIVE_EPOCH_DAY] = updated.lastActiveEpochDay
+        }
     }
 }

@@ -148,6 +148,7 @@ fun HomeScreen(
     )
     val uiState by viewModel.uiState.collectAsState()
     val weakestStat by viewModel.weakestStat.collectAsState()
+    val streakDays by viewModel.streakDays.collectAsState()
     var isStarting by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     // These string resources existed in both languages all along but were never wired up —
@@ -274,11 +275,34 @@ fun HomeScreen(
                     .verticalScroll(scrollState)
                     .padding(horizontal = 20.dp)
             ) {
-                Text(
-                    text = stringResource(Res.string.home_greeting),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(Res.string.home_greeting),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    AnimatedVisibility(visible = streakDays > 0, enter = fadeIn(), exit = androidx.compose.animation.fadeOut()) {
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🔥")
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = stringResource(Res.string.home_streak_days, streakDays),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
 
                 // --- Weak-spot drill card ---
                 AnimatedVisibility(

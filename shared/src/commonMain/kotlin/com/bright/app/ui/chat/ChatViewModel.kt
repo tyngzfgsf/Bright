@@ -3,6 +3,7 @@ package com.bright.app.ui.chat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bright.app.data.local.ChatDao
+import com.bright.app.util.currentLocalEpochDay
 import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.MessageEntity
 import com.bright.app.data.local.QuestionRecordEntity
@@ -237,6 +238,7 @@ class ChatViewModel(
                 dao.updateSession(updated)
                 session = updated
             }
+            preferences.recordActiveDay(currentLocalEpochDay())
         } else {
             dao.insertMessage(
                 MessageEntity(
