@@ -291,14 +291,24 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(Modifier.height(4.dp))
+                    // apkDownloadUrl is only ever set by the Android sideload flow — its
+                    // absence means this came from the iOS App Store checker instead. That's
+                    // enough to pick the right copy without needing a separate platform flag.
+                    val isAppStoreUpdate = update.apkDownloadUrl == null
                     Text(
-                        text = stringResource(Res.string.settings_update_body),
+                        text = stringResource(
+                            if (isAppStoreUpdate) Res.string.settings_update_body_store
+                            else Res.string.settings_update_body
+                        ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(12.dp))
                     BrightButton(
-                        text = stringResource(Res.string.settings_update_download),
+                        text = stringResource(
+                            if (isAppStoreUpdate) Res.string.settings_update_view_store
+                            else Res.string.settings_update_download
+                        ),
                         loading = isDownloadingUpdate,
                         onClick = { viewModel.downloadAndInstallUpdate() },
                         modifier = Modifier.fillMaxWidth()

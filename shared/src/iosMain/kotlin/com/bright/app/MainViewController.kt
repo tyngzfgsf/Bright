@@ -14,6 +14,7 @@ import com.bright.app.data.local.getDatabaseBuilder
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqApiClient
 import com.bright.app.data.remote.GroqRepository
+import com.bright.app.data.update.IosAppUpdater
 import com.bright.app.ui.navigation.BrightNavGraph
 import com.bright.app.ui.navigation.Screen
 import com.bright.app.ui.theme.BrightTheme
@@ -33,8 +34,9 @@ private const val PREFERENCES_FILE_NAME = "bright_prefs.preferences_pb"
  * iOS's equivalent of Android's `BrightApplication` + `MainActivity`: builds the dependency
  * container and hands it to the same shared navigation graph the Android app uses.
  *
- * Note there is no `appUpdater` — sideloaded APK updates are an Android-only concept, so the
- * parameter defaults to null and Settings simply doesn't render that section here.
+ * Uses `IosAppUpdater` for `appUpdater` rather than leaving it null — iOS updates through the
+ * App Store rather than a sideloaded APK, but that's still an update flow, just a different
+ * one. See `IosAppUpdater`'s doc comment for why it currently finds nothing to update to.
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun buildDependencies(): BrightDependencies {
@@ -60,6 +62,7 @@ private fun buildDependencies(): BrightDependencies {
         appVersionName = NSBundle.mainBundle.objectForInfoDictionaryKey(
             "CFBundleShortVersionString"
         ) as? String ?: "1.0",
+        appUpdater = IosAppUpdater(),
         languageChangeRequiresRestart = true
     )
 }

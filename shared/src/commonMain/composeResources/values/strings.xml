@@ -139,6 +139,8 @@
     <string name="settings_update_available">Update available: %1$s</string>
     <string name="settings_update_body">Downloading installs it directly. The first time, Android may ask you to allow installs from Bright — after that it's one tap.</string>
     <string name="settings_update_download">Download update</string>
+    <string name="settings_update_body_store">A newer version is on the App Store.</string>
+    <string name="settings_update_view_store">View on the App Store</string>
     <string name="settings_update_no_apk">No APK file found in the latest release.</string>
     <string name="settings_update_download_failed">Download failed. Check your connection and try again.</string>
     <string name="settings_version">Version</string>
