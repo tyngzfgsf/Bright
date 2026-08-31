@@ -119,6 +119,7 @@
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_section_general">General</string>
+    <string name="settings_language_restart_note">Restart Bright to finish switching language.</string>
     <string name="settings_language">Language</string>
     <string name="settings_api_key">Groq API key</string>
     <string name="settings_api_key_saved">Key saved</string>

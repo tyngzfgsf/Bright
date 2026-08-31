@@ -119,6 +119,7 @@
     <!-- 설정 -->
     <string name="settings_title">설정</string>
     <string name="settings_section_general">일반</string>
+    <string name="settings_language_restart_note">언어 변경을 마치려면 Bright를 다시 실행해 주세요.</string>
     <string name="settings_language">언어</string>
     <string name="settings_api_key">Groq API 키</string>
     <string name="settings_api_key_saved">키 저장됨</string>

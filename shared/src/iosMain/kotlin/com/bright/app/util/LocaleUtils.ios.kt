@@ -5,13 +5,19 @@ import platform.Foundation.NSUserDefaults
 
 actual object LocaleUtils {
     /**
-     * iOS has no live-locale-override API like Android's AppCompatDelegate. Overriding the
-     * "AppleLanguages" default is the standard workaround (same technique apps like Twitter/X
-     * and countless others use for an in-app language picker), but it only takes effect on the
-     * *next* launch — NSLocalizedString and friends keep resolving against the old language
-     * until then. Whatever calls this on iOS needs to prompt the user to relaunch; there is no
-     * way around that restart with public API. That UI prompt belongs in Phase 6 (the iOS app
-     * shell), not here — this function only records the preference.
+     * Records the language preference. It takes effect on the **next launch**, not immediately.
+     *
+     * To be precise about why, because the earlier version of this comment overstated it: iOS
+     * apps *can* switch language live in general — with a custom string layer, or SwiftUI's
+     * `.environment(\.locale)`. The blocker here is specific to this stack. Bright's strings come
+     * from Compose Multiplatform Resources, which resolves against the system locale, and the API
+     * for overriding that (`LocalComposeEnvironment` / `ResourceEnvironment`) is `internal` in
+     * every Compose Multiplatform release compatible with this project's Kotlin version —
+     * checked against 1.8.2 and 1.9.3. See JetBrains/compose-multiplatform#4197.
+     *
+     * Overriding "AppleLanguages" is the standard workaround and is what makes the next launch
+     * come up in the chosen language. Settings surfaces a restart note on iOS
+     * (see BrightDependencies.languageChangeRequiresRestart) so the picker doesn't look inert.
      */
     actual fun applyLanguage(language: Language) {
         NSUserDefaults.standardUserDefaults.setObject(listOf(language.code), forKey = "AppleLanguages")

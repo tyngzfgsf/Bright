@@ -59,7 +59,8 @@ private fun buildDependencies(): BrightDependencies {
         // Xcode project the way Android's BuildConfig.VERSION_NAME tracks the Gradle config.
         appVersionName = NSBundle.mainBundle.objectForInfoDictionaryKey(
             "CFBundleShortVersionString"
-        ) as? String ?: "1.0"
+        ) as? String ?: "1.0",
+        languageChangeRequiresRestart = true
     )
 }
 

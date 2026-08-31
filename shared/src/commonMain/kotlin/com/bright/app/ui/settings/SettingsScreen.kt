@@ -64,6 +64,7 @@ fun SettingsScreen(
     onReplayTutorial: () -> Unit
 ) {
     val app = LocalBrightDependencies.current
+    var languageChanged by remember { mutableStateOf(false) }
     val viewModel: SettingsViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
@@ -123,9 +124,22 @@ fun SettingsScreen(
                     SelectableChip(
                         text = lang.displayName,
                         selected = uiState.language == lang,
-                        onClick = { viewModel.setLanguage(lang) }
+                        onClick = {
+                            if (app.languageChangeRequiresRestart) languageChanged = true
+                            viewModel.setLanguage(lang)
+                        }
                     )
                 }
+            }
+            // Only shown where the switch can't take effect live (iOS) — otherwise the picker
+            // would look like it did nothing. See BrightDependencies.languageChangeRequiresRestart.
+            if (languageChanged) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = stringResource(Res.string.settings_language_restart_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             Spacer(Modifier.height(20.dp))

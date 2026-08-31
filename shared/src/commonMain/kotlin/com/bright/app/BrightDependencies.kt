@@ -26,7 +26,20 @@ class BrightDependencies(
     /** Shown in Settings and used for the Android update check. Supplied per platform. */
     val appVersionName: String,
     /** Null where sideloaded updates don't exist (iOS). See AppUpdater. */
-    val appUpdater: AppUpdater? = null
+    val appUpdater: AppUpdater? = null,
+    /**
+     * True where a language change only takes effect on next launch, so the UI can say so
+     * instead of appearing to do nothing.
+     *
+     * Android switches live via AppCompatDelegate. iOS cannot: Compose Resources resolves
+     * strings against the system locale, and the API for overriding that
+     * (`LocalComposeEnvironment` / `ResourceEnvironment`) is `internal` in every Compose
+     * Multiplatform release compatible with this project's Kotlin version — verified against
+     * both 1.8.2 and 1.9.3. Live in-app switching is possible on iOS in general (a custom
+     * string layer, or SwiftUI's `.environment(\.locale)`), just not through Compose
+     * Resources' public API today. See JetBrains/compose-multiplatform#4197.
+     */
+    val languageChangeRequiresRestart: Boolean = false
 )
 
 /**
