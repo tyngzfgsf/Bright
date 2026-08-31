@@ -38,4 +38,14 @@ interface ChatDao {
 
     @Query("SELECT * FROM messages WHERE sessionId = :sessionId ORDER BY timestampMillis ASC")
     fun observeMessages(sessionId: String): Flow<List<MessageEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertQuestionRecord(record: QuestionRecordEntity)
+
+    @Query("SELECT * FROM question_records ORDER BY timestampMillis DESC")
+    fun observeQuestionRecords(): Flow<List<QuestionRecordEntity>>
+
+    /** The individual missed/low-scored questions Phase 2's scheduler will draw from. */
+    @Query("SELECT * FROM question_records WHERE score <= :maxScore ORDER BY timestampMillis DESC")
+    fun observeLowScoredQuestionRecords(maxScore: Int): Flow<List<QuestionRecordEntity>>
 }

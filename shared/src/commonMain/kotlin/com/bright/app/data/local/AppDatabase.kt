@@ -7,8 +7,8 @@ import androidx.room.RoomDatabaseConstructor
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 
 @Database(
-    entities = [SessionEntity::class, MessageEntity::class],
-    version = 2,
+    entities = [SessionEntity::class, MessageEntity::class, QuestionRecordEntity::class],
+    version = 3,
     exportSchema = false
 )
 @ConstructedBy(AppDatabaseConstructor::class)

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.bright.app.data.local.ChatDao
 import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.MessageEntity
+import com.bright.app.data.local.QuestionRecordEntity
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqMessage
@@ -131,10 +132,38 @@ class ChatViewModel(
         }
     }
 
+    /**
+     * At this point in [applyTurn], the just-graded round's AI_QUESTION and USER answer are
+     * already the *most recent* messages of their kind — this turn's own AI_FEEDBACK/next
+     * AI_QUESTION haven't been inserted yet, so a simple "last of each role" lookup is enough
+     * to pair them without a more complex explicit link between messages.
+     */
+    private suspend fun recordGradedQuestion(score: Int) {
+        val recent = messagesFlow.first()
+        val question = recent.lastOrNull { it.role == MessageRole.AI_QUESTION.name } ?: return
+        val answer = recent.lastOrNull { it.role == MessageRole.USER.name } ?: return
+        val s = session ?: return
+        dao.insertQuestionRecord(
+            QuestionRecordEntity(
+                id = randomId(),
+                sessionId = sessionId,
+                scenarioType = s.scenarioType,
+                customScenario = s.customScenario,
+                questionText = question.text,
+                answerText = answer.text,
+                score = score,
+                timestampMillis = currentTimeMillis()
+            )
+        )
+    }
+
     private suspend fun applyTurn(turn: AiTurn) {
         val now = currentTimeMillis()
 
         if (turn.score != null || turn.feedback != null) {
+            if (turn.score != null) {
+                recordGradedQuestion(score = turn.score)
+            }
             dao.insertMessage(
                 MessageEntity(
                     id = randomId(),
