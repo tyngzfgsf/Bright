@@ -441,22 +441,34 @@ fun HomeScreen(
                     modifier = Modifier.onGloballyPositioned { tourBounds["scenario"] = it.unclippedBoundsInWindow() },
                     contentPadding = 24.dp
                 ) {
-                    Text(
-                        text = stringResource(Res.string.home_choose_scenario),
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.home_choose_scenario),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        if (uiState.customScenario.isBlank()) {
+                            Text(
+                                text = "${triageSystem.name} · " + stringResource(
+                                    Res.string.home_triage_level_suffix,
+                                    uiState.selectedScenario.triageLevel(triageSystem)
+                                ),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(12.dp))
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         ScenarioType.entries.forEach { scenario ->
-                            val levelSuffix = stringResource(
-                                Res.string.home_triage_level_suffix,
-                                scenario.triageLevel(triageSystem)
-                            )
                             SelectableChip(
-                                text = "${scenarioLabel(scenario)} · $levelSuffix",
+                                text = scenarioLabel(scenario),
                                 selected = uiState.customScenario.isBlank() && uiState.selectedScenario == scenario,
                                 onClick = {
                                     viewModel.selectScenario(scenario)
@@ -465,13 +477,6 @@ fun HomeScreen(
                             )
                         }
                     }
-
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        text = stringResource(Res.string.home_triage_disclaimer),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
 
                     Spacer(Modifier.height(8.dp))
                     TextButton(

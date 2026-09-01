@@ -63,7 +63,6 @@
     <string name="home_streak_days">%1$d-day streak</string>
     <string name="home_review_now">Review now</string>
     <string name="home_triage_level_suffix">L%1$d</string>
-    <string name="home_triage_disclaimer">Triage levels shown are a first-pass estimate, not yet reviewed by a clinician.</string>
     <string name="difficulty_beginner">Beginner</string>
     <string name="difficulty_intermediate">Intermediate</string>
     <string name="difficulty_advanced">Advanced</string>

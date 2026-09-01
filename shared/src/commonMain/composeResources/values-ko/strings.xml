@@ -63,7 +63,6 @@
     <string name="home_streak_days">%1$d일 연속</string>
     <string name="home_review_now">지금 복습하기</string>
     <string name="home_triage_level_suffix">%1$d단계</string>
-    <string name="home_triage_disclaimer">표시된 중증도 단계는 1차 추정치이며 아직 임상 전문가의 검토를 받지 않았어요.</string>
     <string name="difficulty_beginner">초급</string>
     <string name="difficulty_intermediate">중급</string>
     <string name="difficulty_advanced">고급</string>
