@@ -27,6 +27,14 @@ class OnboardingViewModel(private val preferences: UserPreferences) : ViewModel(
     }
 
     fun completeOnboarding() {
-        viewModelScope.launch { preferences.setOnboardingCompleted(true) }
+        viewModelScope.launch {
+            // The language page shows _selectedLanguage (defaulted from the system locale) as
+            // already selected — a trainee whose device is already in their language has no
+            // reason to tap it. But selectLanguage() only ever persists on an explicit tap, so
+            // without this, Settings would fall back to Language.fromCode(null) == ENGLISH
+            // regardless of what onboarding displayed, even though nothing was ever "wrong".
+            preferences.setLanguage(_selectedLanguage.value)
+            preferences.setOnboardingCompleted(true)
+        }
     }
 }
