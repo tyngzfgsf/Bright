@@ -9,6 +9,7 @@ import com.bright.app.data.remote.GroqUsageInfo
 import com.bright.app.data.update.AppUpdateInfo
 import com.bright.app.data.update.AppUpdater
 import com.bright.app.domain.model.Language
+import com.bright.app.domain.model.TriageSystem
 import com.bright.app.util.ApiResult
 import com.bright.app.util.LocaleUtils
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,8 @@ data class SettingsUiState(
     val language: Language = Language.ENGLISH,
     val apiKey: String = "",
     val model: String = UserPreferences.DEFAULT_MODEL,
-    val updateInfo: AppUpdateInfo? = null
+    val updateInfo: AppUpdateInfo? = null,
+    val triageSystem: TriageSystem = TriageSystem.ESI
 )
 
 class SettingsViewModel(
@@ -53,13 +55,14 @@ class SettingsViewModel(
     val usage: StateFlow<GroqUsageInfo?> = _usage
 
     val uiState: StateFlow<SettingsUiState> = combine(
-        preferences.languageCode, preferences.groqApiKey, preferences.groqModel, _updateInfo
-    ) { langCode, apiKey, model, updateInfo ->
+        preferences.languageCode, preferences.groqApiKey, preferences.groqModel, _updateInfo, preferences.triageSystem
+    ) { langCode, apiKey, model, updateInfo, triageSystem ->
         SettingsUiState(
             language = Language.fromCode(langCode),
             apiKey = apiKey.orEmpty(),
             model = model,
-            updateInfo = updateInfo
+            updateInfo = updateInfo,
+            triageSystem = triageSystem
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsUiState())
 
@@ -80,6 +83,10 @@ class SettingsViewModel(
             preferences.setLanguage(language)
             LocaleUtils.applyLanguage(language)
         }
+    }
+
+    fun setTriageSystem(system: TriageSystem) {
+        viewModelScope.launch { preferences.setTriageSystem(system) }
     }
 
     fun setApiKey(key: String) {

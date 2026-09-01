@@ -62,6 +62,8 @@
     <string name="home_weak_spot_drill">Drill it now</string>
     <string name="home_streak_days">%1$d-day streak</string>
     <string name="home_review_now">Review now</string>
+    <string name="home_triage_level_suffix">L%1$d</string>
+    <string name="home_triage_disclaimer">Triage levels shown are a first-pass estimate, not yet reviewed by a clinician.</string>
     <string name="difficulty_beginner">Beginner</string>
     <string name="difficulty_intermediate">Intermediate</string>
     <string name="difficulty_advanced">Advanced</string>
@@ -81,6 +83,9 @@
     <string name="stats_review_queue_subtitle">%1$d due for review</string>
     <string name="stats_review_queue_score">Scored %1$d/10</string>
     <string name="stats_review_queue_start">Review this</string>
+    <string name="stats_triage_title">By %1$s level</string>
+    <string name="stats_triage_level_label">Level %1$d</string>
+    <string name="stats_triage_disclaimer">Provisional triage-level mapping — a first-pass estimate, not yet reviewed by a clinician.</string>
 
     <!-- Chat -->
     <string name="chat_input_placeholder">Type your response…</string>
@@ -127,6 +132,8 @@
     <string name="settings_section_general">General</string>
     <string name="settings_language_restart_note">Restart Bright to finish switching language.</string>
     <string name="settings_language">Language</string>
+    <string name="settings_triage_system">Triage system</string>
+    <string name="settings_triage_system_note">Defaults to KTAS for Korean and ESI otherwise — change it any time. Level assignments are a first-pass estimate, not yet reviewed by a clinician.</string>
     <string name="settings_api_key">Groq API key</string>
     <string name="settings_api_key_saved">Key saved</string>
     <string name="settings_api_key_not_set">Not set</string>

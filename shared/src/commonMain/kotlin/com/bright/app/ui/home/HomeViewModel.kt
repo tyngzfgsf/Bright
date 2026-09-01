@@ -11,6 +11,7 @@ import com.bright.app.data.update.AppUpdater
 import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.startReviewSession
+import com.bright.app.domain.model.TriageSystem
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.Difficulty
 import com.bright.app.domain.model.Language
@@ -67,6 +68,10 @@ class HomeViewModel(
     val streakDays: StateFlow<Int> = preferences.streakState
         .map { DailyStreak.displayedCount(it, currentLocalEpochDay()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    /** KTAS or ESI, whichever is currently active — see [UserPreferences.triageSystem]. */
+    val triageSystem: StateFlow<TriageSystem> = preferences.triageSystem
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), TriageSystem.ESI)
 
     /** The individual missed/low-scored questions due for review right now, most overdue first. */
     val dueForReview: StateFlow<List<QuestionRecordEntity>> = dao.observeDueQuestionRecords(currentTimeMillis())

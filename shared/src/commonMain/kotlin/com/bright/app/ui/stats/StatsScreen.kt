@@ -52,6 +52,7 @@ import com.bright.app.resources.Res
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
 import com.bright.app.domain.SkillProfile
+import com.bright.app.domain.TriageSkillProfile
 import com.bright.app.domain.model.stringRes
 import kotlinx.coroutines.launch
 
@@ -186,6 +187,31 @@ fun StatsScreen(
                 )
             }
 
+            if (uiState.triageStats.isNotEmpty()) {
+                item(key = "triage_title") {
+                    Column(modifier = Modifier.padding(top = 8.dp)) {
+                        Text(
+                            text = stringResource(Res.string.stats_triage_title, uiState.triageSystem.name),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                items(uiState.triageStats, key = { "triage_${it.level}" }) { levelStat ->
+                    TriageLevelRow(
+                        stat = levelStat,
+                        isWeakest = uiState.weakestTriageLevel?.level == levelStat.level
+                    )
+                }
+                item(key = "triage_disclaimer") {
+                    Text(
+                        text = stringResource(Res.string.stats_triage_disclaimer),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
             item(key = "footnote") {
                 Text(
                     text = stringResource(Res.string.stats_threshold_note, SkillProfile.MIN_ANSWERS_FOR_JUDGMENT),
@@ -235,6 +261,94 @@ private fun ReviewQueueRow(
         Button(onClick = onReview) {
             Text(stringResource(Res.string.stats_review_queue_start))
         }
+    }
+}
+
+@Composable
+private fun TriageLevelRow(
+    stat: TriageSkillProfile.LevelStat,
+    isWeakest: Boolean
+) {
+    val colors = MaterialTheme.colorScheme
+    var animateTarget by remember { mutableStateOf(0f) }
+    val barFraction by animateFloatAsState(
+        targetValue = animateTarget,
+        animationSpec = tween(durationMillis = 700),
+        label = "triageBar"
+    )
+    LaunchedEffect(stat.averageScore) {
+        animateTarget = (stat.averageScore / 10.0).toFloat().coerceIn(0f, 1f)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.surface)
+            .then(
+                if (isWeakest) Modifier.border(1.5.dp, colors.onBackground, RoundedCornerShape(16.dp))
+                else Modifier.border(1.dp, colors.outline, RoundedCornerShape(16.dp))
+            )
+            .padding(18.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(Res.string.stats_triage_level_label, stat.level),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                if (isWeakest) {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(colors.onBackground)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.stats_weakest_badge),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colors.background
+                        )
+                    }
+                }
+            }
+            Text(
+                text = stat.averageScore.toScoreString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp))
+                .background(colors.surfaceVariant)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(barFraction)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(colors.onBackground)
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(Res.string.stats_answered_count, stat.answeredCount, stat.sessionCount),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurfaceVariant
+        )
     }
 }
 

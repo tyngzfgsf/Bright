@@ -52,6 +52,7 @@ import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
 import com.bright.app.resources.*
 import com.bright.app.domain.model.Language
+import com.bright.app.domain.model.TriageSystem
 import com.bright.app.ui.components.BrightButton
 import com.bright.app.ui.components.BrightButtonStyle
 import com.bright.app.ui.components.BrightTextField
@@ -141,6 +142,25 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Spacer(Modifier.height(20.dp))
+            Text(stringResource(Res.string.settings_triage_system), style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                TriageSystem.entries.forEach { system ->
+                    SelectableChip(
+                        text = system.name,
+                        selected = uiState.triageSystem == system,
+                        onClick = { viewModel.setTriageSystem(system) }
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(Res.string.settings_triage_system_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
             Spacer(Modifier.height(20.dp))
             Text(stringResource(Res.string.settings_api_key), style = MaterialTheme.typography.titleMedium)

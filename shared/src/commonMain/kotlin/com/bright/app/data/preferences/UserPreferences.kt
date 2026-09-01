@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.model.Language
+import com.bright.app.domain.model.TriageSystem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -31,6 +32,7 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
         val GROQ_MODEL = stringPreferencesKey("groq_model")
         val STREAK_COUNT = intPreferencesKey("streak_count")
         val STREAK_LAST_ACTIVE_EPOCH_DAY = longPreferencesKey("streak_last_active_epoch_day")
+        val TRIAGE_SYSTEM_OVERRIDE = stringPreferencesKey("triage_system_override")
     }
 
     companion object {
@@ -91,5 +93,22 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
             prefs[Keys.STREAK_COUNT] = updated.count
             prefs[Keys.STREAK_LAST_ACTIVE_EPOCH_DAY] = updated.lastActiveEpochDay
         }
+    }
+
+    /**
+     * KTAS for Korean, ESI otherwise, unless the trainee has explicitly picked one in Settings
+     * — see [TriageSystem.defaultFor]. Reactive to the language preference for as long as no
+     * override has ever been set, so switching languages before ever touching this setting
+     * still picks the right default.
+     */
+    val triageSystem: Flow<TriageSystem> = dataStore.data.map { prefs ->
+        val override = prefs[Keys.TRIAGE_SYSTEM_OVERRIDE]?.let { stored ->
+            runCatching { TriageSystem.valueOf(stored) }.getOrNull()
+        }
+        override ?: TriageSystem.defaultFor(Language.fromCode(prefs[Keys.LANGUAGE_CODE]))
+    }
+
+    suspend fun setTriageSystem(system: TriageSystem) {
+        dataStore.edit { it[Keys.TRIAGE_SYSTEM_OVERRIDE] = system.name }
     }
 }

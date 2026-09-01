@@ -79,6 +79,7 @@ import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.TraineeRole
 import com.bright.app.domain.model.stringRes
+import com.bright.app.domain.model.triageLevel
 import com.bright.app.ui.components.BrightButton
 import com.bright.app.ui.components.BrightDiscreteSlider
 import com.bright.app.ui.components.BrightTextField
@@ -262,6 +263,7 @@ fun HomeScreen(
     val weakestStat by viewModel.weakestStat.collectAsState()
     val streakDays by viewModel.streakDays.collectAsState()
     val dueForReview by viewModel.dueForReview.collectAsState()
+    val triageSystem by viewModel.triageSystem.collectAsState()
     var isStarting by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     // These string resources existed in both languages all along but were never wired up —
@@ -449,8 +451,12 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         ScenarioType.entries.forEach { scenario ->
+                            val levelSuffix = stringResource(
+                                Res.string.home_triage_level_suffix,
+                                scenario.triageLevel(triageSystem)
+                            )
                             SelectableChip(
-                                text = scenarioLabel(scenario),
+                                text = "${scenarioLabel(scenario)} · $levelSuffix",
                                 selected = uiState.customScenario.isBlank() && uiState.selectedScenario == scenario,
                                 onClick = {
                                     viewModel.selectScenario(scenario)
@@ -459,6 +465,13 @@ fun HomeScreen(
                             )
                         }
                     }
+
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = stringResource(Res.string.home_triage_disclaimer),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
 
                     Spacer(Modifier.height(8.dp))
                     TextButton(
