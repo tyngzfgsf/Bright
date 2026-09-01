@@ -86,6 +86,12 @@
     <string name="stats_triage_level_label">Level %1$d</string>
     <string name="stats_triage_disclaimer">Provisional triage-level mapping — a first-pass estimate, not yet reviewed by a clinician.</string>
 
+    <!-- Local notifications -->
+    <string name="notif_streak_title">Keep your streak alive</string>
+    <string name="notif_streak_body">You haven't trained today yet — finish a session before the day ends.</string>
+    <string name="notif_review_title">Review time</string>
+    <string name="notif_review_body">You have questions ready for review in Bright.</string>
+
     <!-- Chat -->
     <string name="chat_input_placeholder">Type your response…</string>
     <string name="chat_ask_placeholder">Ask a question…</string>

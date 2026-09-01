@@ -6,6 +6,8 @@ import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.local.buildDatabase
 import com.bright.app.data.local.getDatabaseBuilder
 import com.bright.app.data.preferences.UserPreferences
+import com.bright.app.data.notify.AndroidNotifier
+import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.data.remote.GroqApiClient
 import com.bright.app.data.remote.GroqRepository
 import com.bright.app.data.share.AndroidImageSharer
@@ -39,6 +41,8 @@ class BrightApplication : Application() {
 
     val imageSharer: ImageSharer by lazy { AndroidImageSharer(this) }
 
+    val notifier: LocalNotifier by lazy { AndroidNotifier(this) }
+
     /**
      * The platform-neutral bag the screens actually read from. Everything Android-specific
      * about building these (Context for the DB path and DataStore file, BuildConfig for the
@@ -50,6 +54,7 @@ class BrightApplication : Application() {
             userPreferences = userPreferences,
             groqRepository = groqRepository,
             imageSharer = imageSharer,
+            notifier = notifier,
             appVersionName = BuildConfig.VERSION_NAME,
             appUpdater = AndroidAppUpdater(this)
         )

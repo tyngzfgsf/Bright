@@ -256,7 +256,7 @@ fun HomeScreen(
     val app = LocalBrightDependencies.current
     val viewModel: HomeViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, app.appVersionName, app.appUpdater) }
+            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, app.appVersionName, app.appUpdater, app.notifier) }
         }
     )
     val uiState by viewModel.uiState.collectAsState()

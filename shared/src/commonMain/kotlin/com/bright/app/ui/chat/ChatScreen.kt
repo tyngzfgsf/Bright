@@ -51,6 +51,7 @@ import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.stringRes
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
+import com.bright.app.ui.notify.RequestNotificationPermissionEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +63,7 @@ fun ChatScreen(
     val viewModel: ChatViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
-                ChatViewModel(sessionId, app.database.chatDao(), app.userPreferences, app.groqRepository)
+                ChatViewModel(sessionId, app.database.chatDao(), app.userPreferences, app.groqRepository, app.notifier)
             }
         }
     )
@@ -77,6 +78,12 @@ fun ChatScreen(
         if (uiState.messages.isNotEmpty()) {
             listState.animateScrollToItem((uiState.messages.size - 1).coerceAtLeast(0))
         }
+    }
+
+    // One-time, triggered by the first completed session rather than on first launch — see
+    // ChatUiState.showNotificationPermissionPrompt.
+    RequestNotificationPermissionEffect(trigger = uiState.showNotificationPermissionPrompt) { granted ->
+        viewModel.onNotificationPermissionResult(granted)
     }
 
     Scaffold(

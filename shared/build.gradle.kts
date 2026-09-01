@@ -80,6 +80,8 @@ kotlin {
 
             // For LocaleUtils' per-app locale override, and the voice-mode speech engines.
             implementation("androidx.appcompat:appcompat:1.7.0")
+            // rememberLauncherForActivityResult, for the POST_NOTIFICATIONS runtime prompt.
+            implementation("androidx.activity:activity-compose:1.10.0")
         }
         iosMain.dependencies {
             // Darwin engine — NSURLSession under the hood, the native choice on iOS.

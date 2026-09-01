@@ -12,6 +12,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.bright.app.data.local.buildDatabase
 import com.bright.app.data.local.getDatabaseBuilder
 import com.bright.app.data.preferences.UserPreferences
+import com.bright.app.data.notify.IosNotifier
 import com.bright.app.data.remote.GroqApiClient
 import com.bright.app.data.remote.GroqRepository
 import com.bright.app.data.share.IosImageSharer
@@ -59,6 +60,7 @@ private fun buildDependencies(): BrightDependencies {
         ),
         groqRepository = GroqRepository(GroqApiClient(enableLogging = false)),
         imageSharer = IosImageSharer(),
+        notifier = IosNotifier(),
         // Read from the bundle rather than hardcoded, so it tracks MARKETING_VERSION in the
         // Xcode project the way Android's BuildConfig.VERSION_NAME tracks the Gradle config.
         appVersionName = NSBundle.mainBundle.objectForInfoDictionaryKey(

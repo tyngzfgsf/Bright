@@ -7,10 +7,12 @@ import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.local.QuestionRecordEntity
+import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.data.update.AppUpdater
 import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.startReviewSession
+import com.bright.app.domain.syncLocalNotifications
 import com.bright.app.domain.model.TriageSystem
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.Difficulty
@@ -43,7 +45,8 @@ class HomeViewModel(
     private val preferences: UserPreferences,
     currentVersionName: String,
     /** Null where sideloaded updates don't exist (iOS) — no badge is shown then. */
-    appUpdater: AppUpdater? = null
+    appUpdater: AppUpdater? = null,
+    private val notifier: LocalNotifier
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -90,6 +93,11 @@ class HomeViewModel(
                 _uiState.value = _uiState.value.copy(updateAvailable = true)
             }
         }
+        // Home is the app's hub — loading it is the closest thing this local-only app has to
+        // an "app opened" signal, so it's the natural place to re-derive whether either
+        // reminder should be pending (permission may have been granted, a day may have turned
+        // over, review schedules may have moved) since the last time anything changed them.
+        viewModelScope.launch { syncLocalNotifications(dao, preferences, notifier) }
     }
 
     fun completeHomeTour() {

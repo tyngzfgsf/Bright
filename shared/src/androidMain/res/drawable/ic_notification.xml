@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar/notification icon: same glyph as app/src/main/res/drawable/ic_launcher_foreground.xml,
+     just at the 24dp size Android expects for a small icon. Lives here (not in the app module)
+     because this shared library module needs its own resource for NotificationCompat.Builder,
+     which app's R class isn't visible to. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="#FFFFFF">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,32 A16,16 0 0 1 70,48 L38,48 A16,16 0 0 1 54,32 Z" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:pathData="M28,62 L80,62" />
+</vector>

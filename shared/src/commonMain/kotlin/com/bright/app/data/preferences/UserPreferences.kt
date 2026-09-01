@@ -33,6 +33,7 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
         val STREAK_COUNT = intPreferencesKey("streak_count")
         val STREAK_LAST_ACTIVE_EPOCH_DAY = longPreferencesKey("streak_last_active_epoch_day")
         val TRIAGE_SYSTEM_OVERRIDE = stringPreferencesKey("triage_system_override")
+        val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
     }
 
     companion object {
@@ -110,5 +111,18 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
 
     suspend fun setTriageSystem(system: TriageSystem) {
         dataStore.edit { it[Keys.TRIAGE_SYSTEM_OVERRIDE] = system.name }
+    }
+
+    /**
+     * Whether we've ever asked for notification permission — gates the one-time prompt so it
+     * only ever shows once, triggered at a natural moment (first completed session) rather than
+     * on first launch. See `ChatViewModel`/`ChatScreen`.
+     */
+    val notificationPermissionAsked: Flow<Boolean> = dataStore.data.map {
+        it[Keys.NOTIFICATION_PERMISSION_ASKED] ?: false
+    }
+
+    suspend fun setNotificationPermissionAsked(asked: Boolean) {
+        dataStore.edit { it[Keys.NOTIFICATION_PERMISSION_ASKED] = asked }
     }
 }

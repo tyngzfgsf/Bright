@@ -86,6 +86,12 @@
     <string name="stats_triage_level_label">%1$d단계</string>
     <string name="stats_triage_disclaimer">잠정적인 중증도 단계 매핑이에요 — 1차 추정치이며 아직 임상 전문가의 검토를 받지 않았어요.</string>
 
+    <!-- 로컬 알림 -->
+    <string name="notif_streak_title">연속 기록을 지켜보세요</string>
+    <string name="notif_streak_body">오늘 아직 훈련을 하지 않았어요 — 하루가 끝나기 전에 세션을 완료해 보세요.</string>
+    <string name="notif_review_title">복습할 시간이에요</string>
+    <string name="notif_review_body">Bright에 복습할 문제가 준비되어 있어요.</string>
+
     <!-- 채팅 -->
     <string name="chat_input_placeholder">응답을 입력하세요…</string>
     <string name="chat_ask_placeholder">질문을 입력하세요…</string>

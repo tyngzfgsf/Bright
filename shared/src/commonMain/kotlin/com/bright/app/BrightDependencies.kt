@@ -2,6 +2,7 @@ package com.bright.app
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.bright.app.data.local.AppDatabase
+import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqRepository
 import com.bright.app.data.share.ImageSharer
@@ -25,6 +26,7 @@ class BrightDependencies(
     val userPreferences: UserPreferences,
     val groqRepository: GroqRepository,
     val imageSharer: ImageSharer,
+    val notifier: LocalNotifier,
     /** Shown in Settings and used for the Android update check. Supplied per platform. */
     val appVersionName: String,
     /** Null where sideloaded updates don't exist (iOS). See AppUpdater. */

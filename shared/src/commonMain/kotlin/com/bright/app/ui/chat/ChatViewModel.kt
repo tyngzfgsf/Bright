@@ -11,11 +11,13 @@ import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqMessage
 import com.bright.app.data.remote.GroqRepository
+import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.domain.AiTurn
 import com.bright.app.domain.AiTurnParser
 import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.ScenarioPromptBuilder
 import com.bright.app.domain.SpacedRepetitionScheduler
+import com.bright.app.domain.syncLocalNotifications
 import com.bright.app.domain.model.AiCharacterRole
 import com.bright.app.domain.model.ChatMessage
 import com.bright.app.domain.model.Difficulty
@@ -42,14 +44,16 @@ data class ChatUiState(
     val language: Language = Language.ENGLISH,
     val scenarioType: String? = null,
     val customScenario: String? = null,
-    val streakDays: Int = 0
+    val streakDays: Int = 0,
+    val showNotificationPermissionPrompt: Boolean = false
 )
 
 class ChatViewModel(
     private val sessionId: String,
     private val dao: ChatDao,
     private val preferences: UserPreferences,
-    private val groqRepository: GroqRepository
+    private val groqRepository: GroqRepository,
+    private val notifier: LocalNotifier
 ) : ViewModel() {
 
     private val _isSending = MutableStateFlow(false)
@@ -60,8 +64,8 @@ class ChatViewModel(
     private val messagesFlow = dao.observeMessages(sessionId)
 
     val uiState: StateFlow<ChatUiState> = combine(
-        messagesFlow, _isSending, _errorMessage, preferences.streakState
-    ) { entities, sending, error, streakState ->
+        messagesFlow, _isSending, _errorMessage, preferences.streakState, preferences.notificationPermissionAsked
+    ) { entities, sending, error, streakState, permissionAsked ->
         val currentSession = session
         ChatUiState(
             messages = entities.map { it.toDomain() },
@@ -74,7 +78,8 @@ class ChatViewModel(
             language = Language.fromCode(currentSession?.languageCode),
             scenarioType = currentSession?.scenarioType,
             customScenario = currentSession?.customScenario,
-            streakDays = DailyStreak.displayedCount(streakState, currentLocalEpochDay())
+            streakDays = DailyStreak.displayedCount(streakState, currentLocalEpochDay()),
+            showNotificationPermissionPrompt = (currentSession?.isCompleted ?: false) && !permissionAsked
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatUiState())
 
@@ -257,6 +262,20 @@ class ChatViewModel(
                 )
             )
             touchSession()
+        }
+
+        // Every graded round and every completion can change whether either reminder should be
+        // pending (a completed session secures today's streak; a graded round can clear the due
+        // queue) — cheapest to just re-derive both from scratch here rather than track deltas.
+        syncLocalNotifications(dao, preferences, notifier)
+    }
+
+    fun onNotificationPermissionResult(granted: Boolean) {
+        viewModelScope.launch {
+            preferences.setNotificationPermissionAsked(true)
+            if (granted) {
+                syncLocalNotifications(dao, preferences, notifier)
+            }
         }
     }
 
