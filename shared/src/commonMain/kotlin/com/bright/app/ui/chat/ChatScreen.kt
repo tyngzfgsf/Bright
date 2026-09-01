@@ -47,6 +47,8 @@ import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
+import com.bright.app.domain.model.ScenarioType
+import com.bright.app.domain.model.stringRes
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
 
@@ -201,6 +203,24 @@ fun ChatScreen(
                             }
                         }
                     }
+                }
+            } else {
+                uiState.averageScore?.let { avg ->
+                    val scenarioLabel = uiState.scenarioType
+                        ?.let { runCatching { ScenarioType.valueOf(it) }.getOrNull() }
+                        ?.let { stringResource(it.stringRes) }
+                        ?: uiState.customScenario
+                        ?: ""
+                    SessionCompleteShareSection(
+                        scenarioLabel = scenarioLabel,
+                        score = avg,
+                        streakDays = uiState.streakDays,
+                        imageSharer = app.imageSharer,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(20.dp)
+                    )
                 }
             }
         }

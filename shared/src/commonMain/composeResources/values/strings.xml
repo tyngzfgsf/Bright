@@ -115,6 +115,7 @@
     <string name="chat_retry">Retry</string>
     <string name="chat_score_label">Score: %1$d/10</string>
     <string name="chat_average_score">Average score: %1$s/10</string>
+    <string name="chat_share_result">Share result</string>
 
     <!-- History -->
     <string name="history_title">History</string>

@@ -160,11 +160,12 @@ fun HomeTourOverlay(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             contentAlignment = if (placeBelow) Alignment.TopCenter else Alignment.BottomCenter
         ) {
+            val colors = MaterialTheme.colorScheme
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White)
+                    .background(colors.background)
                     .padding(18.dp)
             ) {
                 // Only the text scrolls. The action row below is outside this scroll area and
@@ -181,13 +182,13 @@ fun HomeTourOverlay(
                         text = stringResource(step.titleRes),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = colors.onBackground
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
                         text = stringResource(step.bodyRes),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Black.copy(alpha = 0.65f)
+                        color = colors.onBackground.copy(alpha = 0.65f)
                     )
                 }
                 Spacer(Modifier.height(14.dp))
@@ -199,14 +200,14 @@ fun HomeTourOverlay(
                     Text(
                         text = "${stepIndex + 1}/${steps.size}",
                         style = MaterialTheme.typography.labelMedium,
-                        color = Color.Black.copy(alpha = 0.45f)
+                        color = colors.onBackground.copy(alpha = 0.45f)
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (!isLast) {
                             Text(
                                 text = stringResource(Res.string.tour_skip),
                                 style = MaterialTheme.typography.labelLarge,
-                                color = Color.Black.copy(alpha = 0.5f),
+                                color = colors.onBackground.copy(alpha = 0.5f),
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(50))
                                     .clickable { onSkip() }
@@ -219,10 +220,10 @@ fun HomeTourOverlay(
                             ),
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = colors.background,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50))
-                                .background(Color.Black)
+                                .background(colors.onBackground)
                                 .clickable { onNext() }
                                 .padding(horizontal = 20.dp, vertical = 10.dp)
                         )

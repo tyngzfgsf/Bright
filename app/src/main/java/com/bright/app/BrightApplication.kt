@@ -8,6 +8,8 @@ import com.bright.app.data.local.getDatabaseBuilder
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqApiClient
 import com.bright.app.data.remote.GroqRepository
+import com.bright.app.data.share.AndroidImageSharer
+import com.bright.app.data.share.ImageSharer
 import com.bright.app.data.update.AndroidAppUpdater
 import okio.Path.Companion.toOkioPath
 
@@ -35,6 +37,8 @@ class BrightApplication : Application() {
         GroqRepository(GroqApiClient(enableLogging = BuildConfig.DEBUG))
     }
 
+    val imageSharer: ImageSharer by lazy { AndroidImageSharer(this) }
+
     /**
      * The platform-neutral bag the screens actually read from. Everything Android-specific
      * about building these (Context for the DB path and DataStore file, BuildConfig for the
@@ -45,6 +49,7 @@ class BrightApplication : Application() {
             database = database,
             userPreferences = userPreferences,
             groqRepository = groqRepository,
+            imageSharer = imageSharer,
             appVersionName = BuildConfig.VERSION_NAME,
             appUpdater = AndroidAppUpdater(this)
         )

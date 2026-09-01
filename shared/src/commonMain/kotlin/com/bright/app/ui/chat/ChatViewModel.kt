@@ -13,6 +13,7 @@ import com.bright.app.data.remote.GroqMessage
 import com.bright.app.data.remote.GroqRepository
 import com.bright.app.domain.AiTurn
 import com.bright.app.domain.AiTurnParser
+import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.ScenarioPromptBuilder
 import com.bright.app.domain.SpacedRepetitionScheduler
 import com.bright.app.domain.model.AiCharacterRole
@@ -38,7 +39,10 @@ data class ChatUiState(
     val isCompleted: Boolean = false,
     val errorMessage: String? = null,
     val averageScore: Double? = null,
-    val language: Language = Language.ENGLISH
+    val language: Language = Language.ENGLISH,
+    val scenarioType: String? = null,
+    val customScenario: String? = null,
+    val streakDays: Int = 0
 )
 
 class ChatViewModel(
@@ -56,8 +60,8 @@ class ChatViewModel(
     private val messagesFlow = dao.observeMessages(sessionId)
 
     val uiState: StateFlow<ChatUiState> = combine(
-        messagesFlow, _isSending, _errorMessage
-    ) { entities, sending, error ->
+        messagesFlow, _isSending, _errorMessage, preferences.streakState
+    ) { entities, sending, error, streakState ->
         val currentSession = session
         ChatUiState(
             messages = entities.map { it.toDomain() },
@@ -67,7 +71,10 @@ class ChatViewModel(
             averageScore = currentSession?.let {
                 if (it.answeredCount > 0) it.totalScore.toDouble() / it.answeredCount else null
             },
-            language = Language.fromCode(currentSession?.languageCode)
+            language = Language.fromCode(currentSession?.languageCode),
+            scenarioType = currentSession?.scenarioType,
+            customScenario = currentSession?.customScenario,
+            streakDays = DailyStreak.displayedCount(streakState, currentLocalEpochDay())
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatUiState())
 

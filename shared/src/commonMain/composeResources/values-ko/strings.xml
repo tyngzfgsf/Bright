@@ -115,6 +115,7 @@
     <string name="chat_retry">다시 시도</string>
     <string name="chat_score_label">점수: %1$d/10</string>
     <string name="chat_average_score">평균 점수: %1$s/10</string>
+    <string name="chat_share_result">결과 공유하기</string>
 
     <!-- 기록 -->
     <string name="history_title">기록</string>
