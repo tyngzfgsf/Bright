@@ -16,6 +16,8 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 
 /**
@@ -30,6 +32,7 @@ fun BrightDiscreteSlider(
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
+    val haptic = LocalHapticFeedback.current
     Column(modifier = modifier.fillMaxWidth()) {
         AnimatedContent(
             targetState = selectedIndex,
@@ -50,7 +53,13 @@ fun BrightDiscreteSlider(
 
         Slider(
             value = selectedIndex.toFloat(),
-            onValueChange = { onIndexChange(it.toInt()) },
+            onValueChange = { newValue ->
+                val newIndex = newValue.toInt()
+                // Slider's onValueChange fires continuously while dragging — only tick when the
+                // snapped-to option actually changes, not on every pixel of movement.
+                if (newIndex != selectedIndex) haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                onIndexChange(newIndex)
+            },
             valueRange = 0f..(labels.size - 1).toFloat(),
             steps = (labels.size - 2).coerceAtLeast(0),
             colors = SliderDefaults.colors(

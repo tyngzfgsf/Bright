@@ -38,6 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,6 +49,7 @@ import com.bright.app.LocalBrightDependencies
 import com.bright.app.resources.Res
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
+import com.bright.app.domain.model.MessageRole
 import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.stringRes
 import com.bright.app.ui.components.BrightTextField
@@ -73,10 +76,27 @@ fun ChatScreen(
     var showEndDialog by remember { mutableStateOf(false) }
     var isAskMode by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
+    val haptic = LocalHapticFeedback.current
 
     LaunchedEffect(uiState.messages.size, uiState.isSending) {
         if (uiState.messages.isNotEmpty()) {
             listState.animateScrollToItem((uiState.messages.size - 1).coerceAtLeast(0))
+        }
+    }
+
+    // Fires once per newly-arrived scored message, not on every recomposition — keyed on the
+    // last message's id so re-collecting the same state (e.g. after a config change) doesn't
+    // re-buzz.
+    LaunchedEffect(uiState.messages.lastOrNull()?.id) {
+        val last = uiState.messages.lastOrNull()
+        if (last?.role == MessageRole.AI_FEEDBACK && last.score != null) {
+            haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.streakMilestoneEvent.collect {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
 

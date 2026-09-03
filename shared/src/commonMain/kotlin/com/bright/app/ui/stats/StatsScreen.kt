@@ -38,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.material3.Button
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +73,7 @@ fun StatsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val dueForReview by viewModel.dueForReview.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
 
     Scaffold(
         topBar = {
@@ -171,6 +174,7 @@ fun StatsScreen(
                     ReviewQueueRow(
                         record = record,
                         onReview = {
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                             coroutineScope.launch {
                                 val sessionId = viewModel.startReviewSession(record)
                                 onStartReview(sessionId)

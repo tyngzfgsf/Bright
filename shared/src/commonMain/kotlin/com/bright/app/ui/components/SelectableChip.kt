@@ -16,6 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.bright.app.ui.theme.BrightMotion
 
@@ -27,6 +29,7 @@ fun SelectableChip(
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
+    val haptic = LocalHapticFeedback.current
     val scale by animateFloatAsState(
         targetValue = if (selected) 1.03f else 1f,
         animationSpec = BrightMotion.snappy,
@@ -51,7 +54,17 @@ fun SelectableChip(
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(RoundedCornerShape(14.dp))
             .background(background)
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                    // Only on an actual change of selection — re-tapping the chip that's
+                    // already selected is a no-op in every caller, so a tick there would just
+                    // be noise.
+                    if (!selected) haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    onClick()
+                }
+            )
             .padding(horizontal = 16.dp, vertical = 10.dp)
     )
 }

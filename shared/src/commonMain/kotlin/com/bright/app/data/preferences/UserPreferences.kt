@@ -83,17 +83,25 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
         )
     }
 
-    /** Call once when a session actually completes — see [DailyStreak.recordActiveDay]. */
-    suspend fun recordActiveDay(todayEpochDay: Long) {
+    /**
+     * Call once when a session actually completes — see [DailyStreak.recordActiveDay].
+     * Returns whether this call actually incremented the streak (a genuine new active day),
+     * as opposed to a same-day no-op — callers use this to gate a "milestone reached" signal
+     * without having to diff the streak count across recompositions themselves.
+     */
+    suspend fun recordActiveDay(todayEpochDay: Long): Boolean {
+        var incremented = false
         dataStore.edit { prefs ->
             val previous = DailyStreak.State(
                 count = prefs[Keys.STREAK_COUNT] ?: 0,
                 lastActiveEpochDay = prefs[Keys.STREAK_LAST_ACTIVE_EPOCH_DAY] ?: 0L
             )
             val updated = DailyStreak.recordActiveDay(previous, todayEpochDay)
+            incremented = updated.count > previous.count
             prefs[Keys.STREAK_COUNT] = updated.count
             prefs[Keys.STREAK_LAST_ACTIVE_EPOCH_DAY] = updated.lastActiveEpochDay
         }
+        return incremented
     }
 
     /**

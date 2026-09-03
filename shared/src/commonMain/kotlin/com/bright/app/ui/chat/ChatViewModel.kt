@@ -26,7 +26,9 @@ import com.bright.app.domain.model.MessageRole
 import com.bright.app.domain.model.ScenarioType
 import com.bright.app.domain.model.TraineeRole
 import com.bright.app.util.ApiResult
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -60,6 +62,12 @@ class ChatViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     private var session: SessionEntity? = null
     private var hasTriggeredOpening = false
+
+    // A genuine new-day streak increment, for the UI to fire a "pronounced" haptic on — a
+    // SharedFlow rather than derived from ChatUiState so it can't misfire from a stale value
+    // simply settling into place on first collection.
+    private val _streakMilestoneEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val streakMilestoneEvent: SharedFlow<Unit> = _streakMilestoneEvent
 
     private val messagesFlow = dao.observeMessages(sessionId)
 
@@ -250,7 +258,9 @@ class ChatViewModel(
                 dao.updateSession(updated)
                 session = updated
             }
-            preferences.recordActiveDay(currentLocalEpochDay())
+            if (preferences.recordActiveDay(currentLocalEpochDay())) {
+                _streakMilestoneEvent.tryEmit(Unit)
+            }
         } else {
             dao.insertMessage(
                 MessageEntity(

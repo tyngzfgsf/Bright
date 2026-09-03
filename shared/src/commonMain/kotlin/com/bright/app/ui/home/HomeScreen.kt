@@ -60,7 +60,9 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -266,6 +268,7 @@ fun HomeScreen(
     val triageSystem by viewModel.triageSystem.collectAsState()
     var isStarting by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
     // These string resources existed in both languages all along but were never wired up —
     // the list was hardcoded English, so the Korean UI showed "Intermediate".
     val difficultyDisplayLabels = listOf(
@@ -367,6 +370,7 @@ fun HomeScreen(
                         text = stringResource(Res.string.home_start_session),
                         loading = isStarting,
                         onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                             advanceTourFrom("start")
                             isStarting = true
                             scope.launch {
@@ -412,6 +416,7 @@ fun HomeScreen(
                             streakDays = streakDays,
                             onReviewNow = {
                                 if (!isStarting) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                     isStarting = true
                                     scope.launch {
                                         val id = viewModel.startNextReviewSession()
@@ -422,6 +427,7 @@ fun HomeScreen(
                             },
                             onDrillWeakSpot = { type ->
                                 if (!isStarting) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                                     isStarting = true
                                     scope.launch {
                                         val id = viewModel.startWeakSpotSession(type)
