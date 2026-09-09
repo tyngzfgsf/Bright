@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import BackToTop from "@/components/BackToTop";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import ThemeScript from "@/components/ThemeScript";
@@ -99,6 +100,7 @@ export default async function LocaleLayout({
             {children}
           </main>
           <Footer />
+          <BackToTop />
         </NextIntlClientProvider>
       </body>
     </html>

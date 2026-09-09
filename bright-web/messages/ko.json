@@ -15,7 +15,8 @@
     "download": "다운로드",
     "faq": "자주 묻는 질문",
     "releases": "릴리스",
-    "home": "홈"
+    "home": "홈",
+    "backToTop": "맨 위로"
   },
   "theme": {
     "label": "테마",

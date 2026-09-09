@@ -8,6 +8,7 @@ import LocaleToggle from "./LocaleToggle";
 import ThemeToggle from "./ThemeToggle";
 import Wordmark from "./Wordmark";
 import { GLIDE } from "@/lib/motion";
+import { useScrollDirection } from "@/lib/useScrollDirection";
 import { site } from "@/lib/site";
 
 /** Anchors only resolve on the home page, so they're written as absolute paths. */
@@ -23,16 +24,14 @@ export default function Header() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
-  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
+  const { direction, scrollY } = useScrollDirection();
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const scrolled = scrollY > 8;
+  // Step out of the way on the way down, come back the moment you scroll up.
+  // Never while the mobile menu is open, and never near the top of the page.
+  const hidden = !open && direction === "down" && scrollY > 180;
 
   useEffect(() => setOpen(false), [pathname]);
 
@@ -44,7 +43,9 @@ export default function Header() {
   }, [open]);
 
   return (
-    <header
+    <motion.header
+      animate={reduceMotion ? undefined : { y: hidden ? "-100%" : "0%" }}
+      transition={GLIDE}
       className={[
         "sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500",
         scrolled || open
@@ -205,6 +206,6 @@ export default function Header() {
           </motion.nav>
         )}
       </AnimatePresence>
-    </header>
+    </motion.header>
   );
 }

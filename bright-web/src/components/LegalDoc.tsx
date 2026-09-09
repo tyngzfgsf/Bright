@@ -34,7 +34,7 @@ export default async function LegalDoc({ sections }: { sections: LegalSection[] 
 
         <div className="min-w-0">
           {sections.map((section, i) => (
-            <Reveal key={section.id} y={12}>
+            <Reveal key={section.id} y={12} once>
               <section
                 id={section.id}
                 className="scroll-mt-28 border-t border-line-subtle py-10 first:border-t-0 first:pt-0"
