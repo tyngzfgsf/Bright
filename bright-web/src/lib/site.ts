@@ -1,0 +1,13 @@
+export const site = {
+  name: "Bright",
+  slogan: "A step for your brighter future.",
+  /** Public repo: built APKs are published here on every version tag. */
+  releasesRepo: "https://github.com/tyngzfgsf/Bright-app",
+  releasesLatest: "https://github.com/tyngzfgsf/Bright-app/releases",
+  /** Source repo — private for now. */
+  sourceRepo: "https://github.com/tyngzfgsf/Bright",
+  /** Used for canonical/OG URLs; override with NEXT_PUBLIC_SITE_URL at build time. */
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://bright-34c23.web.app",
+} as const;
+
+export const THEME_STORAGE_KEY = "bright-theme";

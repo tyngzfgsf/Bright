@@ -1,0 +1,184 @@
+{
+  "meta": {
+    "title": "Bright — AI emergency-scenario training",
+    "description": "An AI plays the patient or the doctor. You type what you'd actually do. Emergency-medicine roleplay drills for Android, free, built in the open by one developer.",
+    "ogAlt": "Bright — a step for your brighter future"
+  },
+  "nav": {
+    "what": "What it does",
+    "how": "How it works",
+    "status": "Status",
+    "github": "GitHub",
+    "menu": "Menu",
+    "close": "Close menu",
+    "skip": "Skip to content"
+  },
+  "theme": {
+    "label": "Theme",
+    "toLight": "Switch to light mode",
+    "toDark": "Switch to dark mode"
+  },
+  "lang": {
+    "label": "Language",
+    "en": "EN",
+    "ko": "KO",
+    "enFull": "English",
+    "koFull": "Korean"
+  },
+  "hero": {
+    "eyebrow": "Android · Free · In active development",
+    "name": "Bright",
+    "tagline": "A step for your brighter future.",
+    "description": "I'm building an AI training app for medical emergencies. The AI plays the patient — or the doctor — and you type what you'd actually do next.",
+    "ctaPrimary": "Get the Android app",
+    "ctaSecondary": "See how it works",
+    "note": "APK on GitHub Releases. There's no Play Store listing yet."
+  },
+  "demo": {
+    "label": "Emergency session",
+    "caption": "An illustration of the interaction — not a recording of the app.",
+    "messages": [
+      { "role": "scene", "text": "Scenario · Chest pain, 62" },
+      {
+        "role": "ai",
+        "text": "It started twenty minutes ago. Feels like something heavy is sitting on me."
+      },
+      {
+        "role": "user",
+        "text": "Vitals and a 12-lead ECG now. IV access, and chewable aspirin unless there's a contraindication."
+      },
+      {
+        "role": "ai",
+        "text": "BP 138/86, HR 102. The ECG shows ST elevation in II, III and aVF."
+      },
+      {
+        "role": "user",
+        "text": "Inferior STEMI. Activate the cath lab and get a right-sided ECG."
+      }
+    ]
+  },
+  "what": {
+    "eyebrow": "What it does",
+    "title": "Roleplay, not flashcards",
+    "lede": "Bright puts you inside an emergency and keeps it moving. The AI stays in character; you answer in your own words.",
+    "cards": [
+      {
+        "title": "The AI takes the role",
+        "body": "It plays a patient in an emergency — or a doctor putting questions to you. The situation unfolds as a conversation, not a list of options."
+      },
+      {
+        "title": "You write the response",
+        "body": "Nothing to pick from. You type what you'd actually say or do next, the way you'd have to in the room."
+      },
+      {
+        "title": "Nothing vanishes when you leave",
+        "body": "Exit a session whenever you want. It's kept in your history, so you can read the whole thing back later."
+      }
+    ],
+    "note": "History is stored on your device only. Google sign-in and cloud sync are on the roadmap, not in the app yet."
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "title": "Four steps, start to finish",
+    "steps": [
+      {
+        "title": "Open Bright",
+        "body": "The first launch is a short cinematic intro: the name resolves, a few tutorial pages, then a language pick — Korean or English, guessed from your phone and changeable in settings."
+      },
+      {
+        "title": "Start a session",
+        "body": "You're dropped into an emergency scenario with the AI already in character."
+      },
+      {
+        "title": "Answer in your own words",
+        "body": "Type your response and the scenario moves on from what you said. Voice input is planned; today it's typing."
+      },
+      {
+        "title": "Review it later",
+        "body": "Leave whenever you like. Every past session sits in your history, waiting to be read back."
+      }
+    ]
+  },
+  "design": {
+    "eyebrow": "Design",
+    "title": "Quiet on purpose",
+    "lede": "This is a tool for practising emergencies. It should feel competent and calm — never loud.",
+    "points": [
+      {
+        "title": "Monochrome, all the way down",
+        "body": "White, black, and the grays between. No accent color competing for attention while you're trying to think."
+      },
+      {
+        "title": "Your phone decides light or dark",
+        "body": "Bright follows the system setting instead of asking. So does this site — with a manual toggle if you disagree."
+      },
+      {
+        "title": "Motion that answers you",
+        "body": "Every button and slider animates. Nothing bounces, nothing lingers. It's there so a tap feels acknowledged."
+      },
+      {
+        "title": "A first launch worth watching",
+        "body": "Name reveal, tutorial pages, language selection. It takes a few seconds and sets the tone for everything after it."
+      }
+    ]
+  },
+  "status": {
+    "eyebrow": "Status",
+    "title": "Built in the open",
+    "lede": "One developer, shipping in small versions. Here's exactly where things stand — including what isn't built yet.",
+    "states": {
+      "available": "Available",
+      "building": "In development",
+      "planned": "Planned",
+      "paused": "Not right now"
+    },
+    "items": [
+      {
+        "state": "available",
+        "name": "Android app",
+        "body": "Install the APK from GitHub Releases. Free, no account needed."
+      },
+      {
+        "state": "building",
+        "name": "iOS app",
+        "body": "In active development with Kotlin Multiplatform and Compose Multiplatform, sharing the same core as the Android app."
+      },
+      {
+        "state": "planned",
+        "name": "Voice input",
+        "body": "Speaking your answers instead of typing them. Designed, not shipped — no release has it yet."
+      },
+      {
+        "state": "planned",
+        "name": "Google sign-in and cloud sync",
+        "body": "Your history is local to your device today. Signing in and syncing across devices is on the list."
+      },
+      {
+        "state": "paused",
+        "name": "Google Play",
+        "body": "A submission was attempted before, but store distribution isn't being pursued right now. GitHub Releases is the real way to get Bright."
+      }
+    ]
+  },
+  "get": {
+    "eyebrow": "Get the app",
+    "title": "Install it from GitHub",
+    "lede": "Android only for now, straight from the releases page. It's free — no paid tier, no ads, nothing to buy.",
+    "steps": [
+      "Open the releases page on your Android phone.",
+      "Download the latest APK.",
+      "Approve the install when Android asks — sideloaded apps need a one-time permission for your browser or file manager."
+    ],
+    "cta": "Open GitHub Releases",
+    "repoLabel": "github.com/tyngzfgsf/Bright-app",
+    "groqNote": "The AI runs on Groq's free tier. Bright asks for a free Groq key the first time a session needs one — you can skip past it during setup. A page here to help you get and manage that key is planned."
+  },
+  "footer": {
+    "tagline": "A step for your brighter future.",
+    "releases": "APK releases",
+    "source": "Source repo",
+    "sourceNote": "private for now",
+    "builtBy": "Built by one developer, in public.",
+    "rights": "© {year} Bright."
+  }
+}
