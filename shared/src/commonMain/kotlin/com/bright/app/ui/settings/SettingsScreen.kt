@@ -74,7 +74,8 @@ fun SettingsScreen(
                     app.userPreferences,
                     app.groqRepository,
                     app.appVersionName,
-                    app.appUpdater
+                    app.appUpdater,
+                    app.authService
                 )
             }
         }
@@ -86,6 +87,9 @@ fun SettingsScreen(
     val isFetchingModels by viewModel.isFetchingModels.collectAsState()
     val modelsFetchError by viewModel.modelsFetchError.collectAsState()
     val usage by viewModel.usage.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
+    val isSigningIn by viewModel.isSigningIn.collectAsState()
+    val authErrorMessage by viewModel.authErrorMessage.collectAsState()
 
     var apiKeyInput by remember(uiState.apiKey) { mutableStateOf(uiState.apiKey) }
     var manualModelInput by remember(uiState.model) { mutableStateOf(uiState.model) }
@@ -275,6 +279,65 @@ fun SettingsScreen(
                             )
                         }
                     }
+                }
+            }
+
+            // Additive for Phase 1: signing in does nothing to the Groq flow yet — the API key
+            // field above remains the only thing that powers a session. The backend proxy that
+            // makes an account actually useful is Phase 2. Hidden entirely where there is no
+            // AuthService (iOS), rather than shown as a button that can't work.
+            if (viewModel.showAccountSection) {
+                Spacer(Modifier.height(28.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                Spacer(Modifier.height(20.dp))
+
+                SectionLabel(stringResource(Res.string.settings_section_account))
+                Spacer(Modifier.height(10.dp))
+
+                val signedIn = currentUser
+                if (signedIn != null) {
+                    Text(
+                        text = stringResource(
+                            Res.string.settings_account_signed_in_as,
+                            signedIn.email ?: signedIn.displayName ?: signedIn.uid
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    BrightButton(
+                        text = stringResource(Res.string.settings_sign_out),
+                        style = BrightButtonStyle.OUTLINED,
+                        onClick = { viewModel.signOut() },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    Text(
+                        text = stringResource(Res.string.settings_account_signed_out_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    if (isSigningIn) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        }
+                    } else {
+                        BrightButton(
+                            text = stringResource(Res.string.settings_sign_in),
+                            style = BrightButtonStyle.OUTLINED,
+                            onClick = { viewModel.signIn() },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                authErrorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
                 }
             }
 

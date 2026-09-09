@@ -1,6 +1,7 @@
 package com.bright.app
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.bright.app.data.auth.AuthService
 import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.data.preferences.UserPreferences
@@ -31,6 +32,12 @@ class BrightDependencies(
     val appVersionName: String,
     /** Null where sideloaded updates don't exist (iOS). See AppUpdater. */
     val appUpdater: AppUpdater? = null,
+    /**
+     * Null on platforms without an auth implementation yet (iOS) — the Settings account section
+     * hides itself rather than showing a button that can't work. See AuthService and
+     * BACKEND_PLAN.md Phase 1.
+     */
+    val authService: AuthService? = null,
     /**
      * True where a language change only takes effect on next launch, so the UI can say so
      * instead of appearing to do nothing.
