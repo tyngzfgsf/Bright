@@ -62,7 +62,14 @@
         "role": "user",
         "text": "Inferior STEMI. Activate the cath lab and get a right-sided ECG."
       }
-    ]
+    ],
+    "result": {
+      "scenario": "Chest pain, 62",
+      "outOf": "/10",
+      "streak": "5-day streak",
+      "slogan": "A step for your brighter future",
+      "share": "Share result"
+    }
   },
   "what": {
     "eyebrow": "What it does",
@@ -76,6 +83,10 @@
       {
         "title": "You type what you'd do",
         "body": "There's nothing to pick between, which is the point. You have to come up with the answer yourself, the way you'd have to on the day."
+      },
+      {
+        "title": "It scores what you said",
+        "body": "At the end you get a mark out of ten and a card you can share if you feel like it. The app keeps your average as sessions add up."
       },
       {
         "title": "You can go back over it",

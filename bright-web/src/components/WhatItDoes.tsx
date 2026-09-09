@@ -11,7 +11,7 @@ export default async function WhatItDoes() {
 
   return (
     <Section id="what" eyebrow={t("eyebrow")} title={t("title")} lede={t("lede")}>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card, i) => (
           <Reveal key={card.title} delay={i * 0.08} className="h-full">
             <Card className="p-7 sm:p-8">
