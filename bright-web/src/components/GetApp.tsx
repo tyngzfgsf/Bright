@@ -16,7 +16,7 @@ export default async function GetApp() {
       eyebrow={t("eyebrow")}
       title={t("title")}
       lede={t("lede")}
-      className="bg-raised"
+      band
     >
       <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-start lg:gap-20">
         <Reveal>

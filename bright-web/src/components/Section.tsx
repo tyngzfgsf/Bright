@@ -8,6 +8,8 @@ type Props = {
   lede?: string;
   children: ReactNode;
   className?: string;
+  /** Renders the section as a soft tonal swell instead of a flat block. */
+  band?: boolean;
 };
 
 export default function Section({
@@ -17,11 +19,17 @@ export default function Section({
   lede,
   children,
   className = "",
+  band = false,
 }: Props) {
   return (
     <section
       id={id}
-      className={`scroll-mt-24 border-t border-line-subtle py-24 sm:py-32 ${className}`}
+      className={[
+        "scroll-mt-24 py-24 sm:py-32",
+        // A band separates itself by tone, so it doesn't also need a rule.
+        band ? "band" : "rule-soft",
+        className,
+      ].join(" ")}
     >
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
         <Reveal>

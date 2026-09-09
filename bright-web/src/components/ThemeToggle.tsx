@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { motion, useReducedMotion } from "framer-motion";
 import { THEME_STORAGE_KEY } from "@/lib/site";
@@ -24,6 +24,7 @@ export default function ThemeToggle() {
   const t = useTranslations("theme");
   const reduceMotion = useReducedMotion();
   const [theme, setTheme] = useState<Theme | null>(null);
+  const animTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     setTheme(currentTheme());
@@ -37,12 +38,25 @@ export default function ThemeToggle() {
       }
     };
     media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
+    return () => {
+      media.removeEventListener("change", onChange);
+      window.clearTimeout(animTimer.current);
+    };
   }, []);
 
   function toggle() {
     const next: Theme = currentTheme() === "dark" ? "light" : "dark";
     const root = document.documentElement;
+
+    // Cross-fade the surfaces instead of snapping. The class carries the
+    // transition and is removed straight after, so it never affects hovers.
+    root.classList.add("theme-anim");
+    window.clearTimeout(animTimer.current);
+    animTimer.current = window.setTimeout(
+      () => root.classList.remove("theme-anim"),
+      460,
+    );
+
     root.classList.remove("light", "dark");
     root.classList.add(next);
     try {

@@ -25,7 +25,7 @@ export default function PageHeader({ eyebrow, title, lede, meta, children }: Pro
         };
 
   return (
-    <section className="hero-wash border-b border-line-subtle">
+    <section className="hero-wash relative">
       <motion.div
         initial="hidden"
         animate="shown"
@@ -75,6 +75,12 @@ export default function PageHeader({ eyebrow, title, lede, meta, children }: Pro
           </motion.div>
         )}
       </motion.div>
+
+      {/* Bottom edge fades out rather than ruling off. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-line to-transparent"
+      />
     </section>
   );
 }

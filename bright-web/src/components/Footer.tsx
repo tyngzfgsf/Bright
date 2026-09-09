@@ -40,7 +40,7 @@ export default async function Footer() {
   ];
 
   return (
-    <footer className="border-t border-line bg-sunken">
+    <footer className="band-end rule-soft">
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
           <div>
@@ -82,7 +82,7 @@ export default async function Footer() {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 border-t border-line pt-7 text-[13px] text-ink-faint sm:flex-row sm:items-start sm:justify-between">
+        <div className="rule-soft mt-16 flex flex-col gap-4 pt-7 text-[13px] text-ink-faint sm:flex-row sm:items-start sm:justify-between">
           <p className="max-w-2xl leading-relaxed">{t("disclaimer")}</p>
           {/* Year passed as a string so it isn't formatted as "2,026". */}
           <p className="tnum shrink-0">

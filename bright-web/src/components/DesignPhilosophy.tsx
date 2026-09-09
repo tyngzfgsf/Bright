@@ -14,7 +14,7 @@ export default async function DesignPhilosophy() {
       eyebrow={t("eyebrow")}
       title={t("title")}
       lede={t("lede")}
-      className="bg-raised"
+      band
     >
       <div className="grid gap-x-16 gap-y-12 sm:grid-cols-2">
         {points.map((point, i) => (
