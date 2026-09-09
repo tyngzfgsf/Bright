@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { EASE } from "@/lib/motion";
 
 type Item = { q: string; a: string };
 
@@ -23,16 +24,26 @@ export default function FaqList() {
                 type="button"
                 onClick={() => setOpen(isOpen ? null : i)}
                 aria-expanded={isOpen}
-                className="group flex w-full items-start justify-between gap-6 py-5 text-left"
+                className="group flex w-full items-start justify-between gap-6 py-6 text-left"
               >
-                <span className="text-[16.5px] font-medium tracking-[-0.01em] transition-colors duration-200 group-hover:text-ink-soft">
+                <span
+                  className={[
+                    "text-[16.5px] font-medium tracking-[-0.018em] transition-colors duration-300",
+                    isOpen ? "text-ink" : "text-ink-soft group-hover:text-ink",
+                  ].join(" ")}
+                >
                   {item.q}
                 </span>
                 <motion.span
                   aria-hidden="true"
                   animate={{ rotate: isOpen ? 45 : 0 }}
-                  transition={{ duration: reduceMotion ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
-                  className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full border border-line text-ink-faint"
+                  transition={{ duration: reduceMotion ? 0 : 0.3, ease: EASE }}
+                  className={[
+                    "mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border transition-colors duration-300",
+                    isOpen
+                      ? "border-ink bg-ink text-paper"
+                      : "border-line text-ink-faint group-hover:border-line-strong group-hover:text-ink-soft",
+                  ].join(" ")}
                 >
                   <svg
                     viewBox="0 0 24 24"
@@ -54,10 +65,10 @@ export default function FaqList() {
                   initial={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
                   animate={reduceMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
                   exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.34, ease: EASE }}
                   className="overflow-hidden"
                 >
-                  <p className="max-w-2xl pb-6 pr-10 text-[15.5px] leading-[1.75] text-ink-soft">
+                  <p className="max-w-[42rem] pb-7 pr-12 text-[15.5px] leading-[1.78] text-ink-soft">
                     {item.a}
                   </p>
                 </motion.div>

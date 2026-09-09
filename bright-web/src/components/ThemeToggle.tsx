@@ -61,13 +61,15 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? t("toLight") : t("toDark")}
       title={t("label")}
-      className="grid size-9 place-items-center rounded-full border border-line text-ink-soft transition-colors duration-200 hover:border-line-strong hover:text-ink"
+      className="grid size-9 place-items-center overflow-hidden rounded-full border border-line text-ink-soft transition-colors duration-300 hover:border-line-strong hover:text-ink"
     >
+      {/* Swapped in place rather than through AnimatePresence: an exit
+          animation would leave the button empty while the icon changes. */}
       <motion.span
         key={theme ?? "unset"}
-        initial={reduceMotion ? false : { rotate: -35, opacity: 0 }}
-        animate={{ rotate: 0, opacity: 1 }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        initial={reduceMotion ? false : { rotate: -30, scale: 0.7, opacity: 0 }}
+        animate={{ rotate: 0, scale: 1, opacity: 1 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="grid place-items-center"
       >
         {isDark ? <MoonIcon /> : <SunIcon />}

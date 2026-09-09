@@ -561,5 +561,11 @@
     "lede": "The link may be old, or the page may have moved. The home page has everything.",
     "cta": "Back to the home page",
     "secondary": "Download the app"
+  },
+  "docsFooter": {
+    "title": "Anything unclear?",
+    "body": "These pages describe a project that's still moving. If something here doesn't match what the app actually does, that's a bug — tell me and I'll fix the page.",
+    "cta": "Open an issue",
+    "related": "Also read"
   }
 }

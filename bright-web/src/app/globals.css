@@ -3,61 +3,98 @@
 /* Theme follows the system by default; `.dark` / `.light` on <html> is the manual override. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ---------------------------------------------------------------- palette --
+   Monochrome, but not flat: four text weights, three surfaces and three line
+   strengths give the pages hierarchy without introducing a colour.           */
+
 :root {
   --paper: #ffffff;
-  --paper-raised: #fafafa;
-  --ink: #0b0b0c;
-  --ink-soft: #4a4a4f;
-  --ink-faint: #86868b;
-  --line: #e6e6e8;
-  --line-strong: #d3d3d7;
-  --glow: rgba(11, 11, 12, 0.06);
+  --raised: #fbfbfc;
+  --sunken: #f5f5f6;
+  --ink: #08080a;
+  --ink-soft: #45454c;
+  --ink-muted: #6b6b74;
+  --ink-faint: #8e8e97;
+  --line-subtle: #efeff1;
+  --line: #e3e3e6;
+  --line-strong: #cdcdd2;
+  --glow: rgba(8, 8, 10, 0.055);
+  --shadow-sm: 0 1px 2px rgba(8, 8, 10, 0.05), 0 1px 1px rgba(8, 8, 10, 0.03);
+  --shadow-md: 0 10px 30px -12px rgba(8, 8, 10, 0.16);
+  --shadow-lg: 0 40px 90px -50px rgba(8, 8, 10, 0.42);
+  --grain-opacity: 0.028;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --paper: #08080a;
-    --paper-raised: #101013;
-    --ink: #f7f7f8;
-    --ink-soft: #a9a9b1;
-    --ink-faint: #74747c;
-    --line: #232327;
-    --line-strong: #34343a;
-    --glow: rgba(255, 255, 255, 0.07);
+    --paper: #060607;
+    --raised: #0e0e11;
+    --sunken: #0a0a0c;
+    --ink: #fafafa;
+    --ink-soft: #b2b2ba;
+    --ink-muted: #85858e;
+    --ink-faint: #6c6c75;
+    --line-subtle: #171719;
+    --line: #232326;
+    --line-strong: #3a3a40;
+    --glow: rgba(255, 255, 255, 0.055);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.8);
+    --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.95);
+    --grain-opacity: 0.035;
   }
 }
 
 :root.dark {
-  --paper: #08080a;
-  --paper-raised: #101013;
-  --ink: #f7f7f8;
-  --ink-soft: #a9a9b1;
-  --ink-faint: #74747c;
-  --line: #232327;
-  --line-strong: #34343a;
-  --glow: rgba(255, 255, 255, 0.07);
+  --paper: #060607;
+  --raised: #0e0e11;
+  --sunken: #0a0a0c;
+  --ink: #fafafa;
+  --ink-soft: #b2b2ba;
+  --ink-muted: #85858e;
+  --ink-faint: #6c6c75;
+  --line-subtle: #171719;
+  --line: #232326;
+  --line-strong: #3a3a40;
+  --glow: rgba(255, 255, 255, 0.055);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.8);
+  --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.95);
+  --grain-opacity: 0.035;
 }
 
 @theme inline {
   --color-paper: var(--paper);
-  --color-raised: var(--paper-raised);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
   --color-ink-faint: var(--ink-faint);
+  --color-line-subtle: var(--line-subtle);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
 
+  --shadow-soft: var(--shadow-sm);
+  --shadow-raise: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
+
   --font-sans:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard Variable",
-    Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
+    var(--font-sans-latin), "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
+    "Segoe UI", Roboto, sans-serif;
   --font-mono:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    var(--font-mono-latin), ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+    Consolas, monospace;
 }
+
+/* ------------------------------------------------------------------ base -- */
 
 html {
   color-scheme: light dark;
   scroll-behavior: smooth;
+  /* Keep anchored headings clear of the sticky header. */
+  scroll-padding-top: 6rem;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -73,8 +110,20 @@ body {
   background-color: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
+  font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 ::selection {
@@ -85,7 +134,26 @@ body {
 :focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border: 3px solid var(--paper);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-faint);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--paper);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -102,29 +170,48 @@ body {
   }
 }
 
-/* Soft radial wash behind the hero — monochrome, barely there. */
+/* -------------------------------------------------------------- surfaces -- */
+
+/* Soft radial wash behind hero and page headers — monochrome, barely there. */
 .hero-wash {
+  position: relative;
   background:
-    radial-gradient(60rem 40rem at 50% -10%, var(--glow), transparent 70%),
-    radial-gradient(30rem 30rem at 85% 20%, var(--glow), transparent 70%);
+    radial-gradient(64rem 42rem at 50% -18%, var(--glow), transparent 68%),
+    radial-gradient(28rem 28rem at 88% 8%, var(--glow), transparent 70%);
 }
 
-.hairline {
+/* Fine film grain over the whole page: the detail that stops large flat areas
+   from banding, and reads as texture rather than noise at this opacity. */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* A hairline that reads as one device pixel on retina rather than a grey bar. */
+.rule {
   border-color: var(--line);
 }
 
-/* Section eyebrows / small caps labels. Wide Latin tracking looks broken on
+/* ---------------------------------------------------------------- labels -- */
+
+/* Section eyebrows / small-caps labels. Wide Latin tracking looks broken on
    Hangul, so Korean gets a much tighter setting. */
 .eyebrow {
   font-size: 11.5px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
 }
 
 .eyebrow-sm {
   font-size: 11px;
-  letter-spacing: 0.12em;
+  font-weight: 500;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
@@ -136,8 +223,63 @@ html[lang="ko"] .eyebrow-sm {
   letter-spacing: 0.02em;
 }
 
+/* Display type: optical tracking that tightens as the size grows. */
+.display {
+  letter-spacing: -0.038em;
+  line-height: 1.02;
+  font-weight: 600;
+}
+
+html[lang="ko"] .display {
+  letter-spacing: -0.028em;
+  line-height: 1.14;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ components -- */
+
+/* Underline that draws in from the left on hover. */
+.link-sweep {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link-sweep:hover {
+  background-size: 100% 1px;
+}
+
 /* Chat illustration: clipped messages fade out instead of being sliced. */
 .chat-mask {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 22px);
-  mask-image: linear-gradient(to bottom, transparent 0, black 22px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 26px);
+  mask-image: linear-gradient(to bottom, transparent 0, black 26px);
+}
+
+/* Card sheen: a barely-there top highlight, the way glass catches light. */
+.sheen {
+  position: relative;
+}
+
+.sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding-top: 1px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--ink) 7%, transparent),
+    transparent 55%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }

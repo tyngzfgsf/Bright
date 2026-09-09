@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import ThemeScript from "@/components/ThemeScript";
 import { alternatesFor } from "@/lib/metadata";
+import { mono, sans } from "@/lib/fonts";
 import { site } from "@/lib/site";
 import "../globals.css";
 
@@ -23,6 +24,13 @@ async function SkipLink() {
 }
 
 type Params = { locale: string };
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#060607" },
+  ],
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -71,7 +79,11 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html
+      lang={locale}
+      suppressHydrationWarning
+      className={`${sans.variable} ${mono.variable}`}
+    >
       <head>
         <ThemeScript />
         {/* Reveal animations start at opacity 0; without JS they'd never play. */}
@@ -79,7 +91,7 @@ export default async function LocaleLayout({
           <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
         </noscript>
       </head>
-      <body className="flex min-h-dvh flex-col antialiased">
+      <body className="grain flex min-h-dvh flex-col antialiased">
         <NextIntlClientProvider>
           <SkipLink />
           <Header />

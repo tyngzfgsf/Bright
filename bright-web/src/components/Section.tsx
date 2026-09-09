@@ -21,23 +21,24 @@ export default function Section({
   return (
     <section
       id={id}
-      className={`scroll-mt-20 border-t border-line py-20 sm:py-28 ${className}`}
+      className={`scroll-mt-24 border-t border-line-subtle py-24 sm:py-32 ${className}`}
     >
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
         <Reveal>
-          <p className="eyebrow text-ink-faint">
+          <p className="eyebrow flex items-center gap-3 text-ink-faint">
+            <span aria-hidden="true" className="block h-px w-6 bg-line-strong" />
             {eyebrow}
           </p>
-          <h2 className="mt-4 max-w-2xl text-[clamp(1.9rem,4.4vw,3rem)] font-semibold leading-[1.08] tracking-[-0.03em]">
+          <h2 className="display mt-6 max-w-3xl text-[clamp(2rem,4.6vw,3.15rem)]">
             {title}
           </h2>
           {lede && (
-            <p className="mt-5 max-w-2xl text-[16.5px] leading-relaxed text-ink-soft">
+            <p className="mt-6 max-w-[38rem] text-[17px] leading-[1.65] text-ink-soft">
               {lede}
             </p>
           )}
         </Reveal>
-        <div className="mt-12 sm:mt-16">{children}</div>
+        <div className="mt-14 sm:mt-18">{children}</div>
       </div>
     </section>
   );

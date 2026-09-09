@@ -3,8 +3,8 @@ import { alternatesFor } from "@/lib/metadata";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import ButtonLink from "@/components/ButtonLink";
 import PageHeader from "@/components/PageHeader";
+import LinkButton from "@/components/LinkButton";
 import Reveal from "@/components/Reveal";
-import { Link } from "@/i18n/navigation";
 import { fetchReleases } from "@/lib/releases";
 import { site } from "@/lib/site";
 
@@ -49,16 +49,16 @@ export default async function DownloadPage({
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         {/* Latest build, read live from the same feed the app checks. */}
         <Reveal>
-          <div className="rounded-2xl border border-line bg-raised p-7 sm:p-9">
+          <div className="sheen rounded-[1.6rem] border border-line bg-raised p-8 shadow-soft sm:p-10">
             <p className="eyebrow-sm text-ink-faint">{t("latestLabel")}</p>
             {latest ? (
               <>
                 <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                  <h2 className="text-[clamp(1.6rem,4vw,2.1rem)] font-semibold tracking-[-0.03em]">
+                  <h2 className="display text-[clamp(1.7rem,4vw,2.3rem)]">
                     {latest.name}
                   </h2>
                   {latest.apk && (
-                    <span className="font-mono text-[13px] text-ink-faint">
+                    <span className="tnum font-mono text-[13px] text-ink-faint">
                       {t("sizeLabel", { size: latest.apk.sizeMb })}
                     </span>
                   )}
@@ -75,15 +75,12 @@ export default async function DownloadPage({
                   </p>
                 )}
                 <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <ButtonLink href={latest.apk?.url ?? latest.htmlUrl} external>
+                  <ButtonLink href={latest.apk?.url ?? latest.htmlUrl} size="lg" external>
                     {t("cta")}
                   </ButtonLink>
-                  <Link
-                    href="/releases"
-                    className="inline-flex items-center rounded-full border border-line-strong px-5 py-3 text-[14.5px] font-medium tracking-[-0.01em] transition-colors duration-200 hover:border-ink"
-                  >
+                  <LinkButton href="/releases" variant="outline" size="lg">
                     {t("allReleases")}
-                  </Link>
+                  </LinkButton>
                 </div>
               </>
             ) : (
@@ -140,7 +137,7 @@ export default async function DownloadPage({
                 {requirements.map((requirement) => (
                   <div
                     key={requirement.label}
-                    className="grid grid-cols-[7rem_1fr] gap-4 border-b border-line py-3.5"
+                    className="grid grid-cols-[7.5rem_1fr] gap-4 border-b border-line-subtle py-4"
                   >
                     <dt className="text-[13.5px] text-ink-faint">
                       {requirement.label}
@@ -161,7 +158,7 @@ export default async function DownloadPage({
             { title: t("iosTitle"), body: t("iosBody") },
           ].map((card, i) => (
             <Reveal key={card.title} delay={i * 0.08}>
-              <div className="h-full rounded-2xl border border-line p-6 sm:p-7">
+              <div className="sheen h-full rounded-[1.35rem] border border-line bg-raised p-7 transition-colors duration-300 hover:border-line-strong sm:p-8">
                 <h2 className="text-[17px] font-semibold tracking-[-0.02em]">
                   {card.title}
                 </h2>

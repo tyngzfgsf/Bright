@@ -70,6 +70,15 @@ statically prerendered: `/en` and `/ko` are both SSG).
 Auto-detection deliberately does not write the cookie, so it never masquerades as a choice
 the visitor made.
 
+## Type
+
+Latin text is self-hosted **Geist** and **Geist Mono** through `next/font` (`src/lib/fonts.ts`).
+Hangul deliberately has **no webfont**: a full Korean family is megabytes, and every target
+OS ships a good one, so the stack falls through to Pretendard → Apple SD Gothic Neo →
+Malgun Gothic → Noto Sans KR. That also means Latin-only tracking rules would look wrong
+on Hangul, so `globals.css` tightens `.eyebrow`, `.eyebrow-sm` and `.display` under
+`html[lang="ko"]`.
+
 ## Theme
 
 Light/dark follows the system by default (`prefers-color-scheme`). The header toggle sets
@@ -80,9 +89,35 @@ there's no flash. Colors are CSS variables in `globals.css`, exposed to Tailwind
 
 ## Motion
 
+One easing curve and two springs live in `src/lib/motion.ts`; components import those
+rather than inventing timings. Scroll entrances (`Reveal`), the hero name reveal, the
+nav's sliding pill, the table-of-contents marker, the FAQ accordion and the route
+cross-fade all use them.
+
 Every animation checks `useReducedMotion()`, and `globals.css` also flattens transitions
-under `prefers-reduced-motion: reduce`. The chat mockup in the hero renders all messages
-at once instead of looping when reduced motion is on.
+under `prefers-reduced-motion: reduce`. The chat mockup renders all messages at once
+instead of looping when reduced motion is on.
+
+Two constraints worth keeping:
+
+- The route transition in `[locale]/template.tsx` animates **opacity only**. A transform
+  there would become the containing block for the fixed reading-progress bar.
+- The theme toggle swaps its icon in place rather than through `AnimatePresence` — an exit
+  animation left the button visibly empty for a moment on every load.
+
+## Surfaces
+
+Three surfaces (`paper`, `raised`, `sunken`), four text weights and three line strengths
+are defined as CSS variables and exposed to Tailwind via `@theme inline`, so the whole
+site stays monochrome without going flat. `.grain` puts a fixed film-grain overlay on the
+page, `.sheen` adds a one-pixel top highlight to cards, and `.hero-wash` is the radial
+gradient behind the hero and page headers.
+
+Favicons, the apple-touch icon and the OG card are all generated at request time from
+shapes (`app/icon.tsx`, `app/apple-icon.tsx`, `[locale]/opengraph-image.tsx`) — three
+ascending bars, the "step" in the slogan — so there are no binary assets to keep in sync.
+Because `/icon` and `/apple-icon` have no file extension, `middleware.ts` names them
+explicitly in its matcher; without that they get redirected to `/en/icon`.
 
 ## Copy
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { alternatesFor } from "@/lib/metadata";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import DocsFooter from "@/components/DocsFooter";
 import LegalDoc, { type LegalSection } from "@/components/LegalDoc";
 import PageHeader from "@/components/PageHeader";
 
@@ -41,6 +42,7 @@ export default async function PrivacyPage({
         meta={common("updated", { date: t("updated") })}
       />
       <LegalDoc sections={sections} />
+      <DocsFooter related="terms" />
     </>
   );
 }

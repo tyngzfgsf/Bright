@@ -77,5 +77,7 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  // `icon` and `apple-icon` are generated metadata routes with no file
+  // extension, so they need naming here or they'd be redirected to /en/icon.
+  matcher: ["/((?!api|_next|_vercel|icon|apple-icon|.*\\..*).*)"],
 };
