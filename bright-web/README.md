@@ -1,11 +1,34 @@
-# Bright — marketing site
+# Bright — website
 
-The landing site for **Bright**, the AI emergency-scenario training app. Single page,
-Korean and English, monochrome, built to be deployed on Vercel.
+The website for **Bright**, the AI emergency-scenario training app: landing page, download
+and install guide, a live releases list, FAQ, privacy policy and terms — Korean and
+English throughout, monochrome, built to be deployed on Vercel.
 
 This is a standalone Next.js project. It is **not** part of the Gradle build, and it is
 separate from `bright-site/` (the older Firebase-hosted static site that carries the
 Google-sign-in / Groq-key work).
+
+## Pages
+
+Every route exists in both locales, under `/en/…` and `/ko/…`:
+
+| Route | What it is |
+| --- | --- |
+| `/` | Landing page: hero, what it does, how it works, design philosophy, status, get the app |
+| `/download` | Install guide, requirements, and the latest build read live from GitHub |
+| `/releases` | Every published release, read live from the GitHub Releases feed |
+| `/faq` | Accordion FAQ, with `FAQPage` structured data for search results |
+| `/privacy` | Privacy policy — what's stored on device, what leaves it, what's never collected |
+| `/terms` | Terms of use, including the medical disclaimer |
+
+`/download` and `/releases` call the public GitHub API (`tyngzfgsf/Bright-app`) with a
+one-hour ISR revalidate — the same feed the Android app checks for updates. If GitHub is
+unreachable the pages fall back to a plain link rather than failing to render.
+
+The privacy and terms pages describe the app as it actually behaves today: local Room
+storage, the Groq key held in on-device preferences, exactly two network hosts
+(`api.groq.com` and `api.github.com`), and no analytics or crash-reporting SDK. **If the
+app's data handling changes, update `messages/*.json` in the same release.**
 
 ## Stack
 
@@ -74,14 +97,22 @@ described accurately — GitHub Releases, no Play Store listing.
 ## Layout
 
 ```
-messages/            en.json, ko.json — all site copy
-src/app/[locale]/    layout (metadata, theme script), page, not-found, opengraph-image
+messages/            en.json, ko.json — all site copy, including the legal pages
+src/app/[locale]/    layout (chrome, metadata, theme script), the six routes,
+                     not-found, opengraph-image
 src/app/globals.css  design tokens, theme switching, small shared classes
-src/components/      Header, Hero, ChatDemo, Section, Reveal, and the page sections
+src/components/      Header, Footer, Hero, ChatDemo, Section, Reveal, PageHeader,
+                     LegalDoc + TocNav, FaqList, ReleaseNotes, page sections
 src/i18n/            next-intl routing, request config, navigation helpers
 src/middleware.ts    locale detection + redirect
-src/lib/site.ts      links (repos, releases) and the site URL
+src/lib/site.ts      links (repos, releases API) and the site URL
+src/lib/releases.ts  GitHub Releases fetch, with a null return on any failure
+src/lib/metadata.ts  hreflang/canonical helper used by every route
 ```
+
+Header and footer live in the locale layout, so every page shares them. Internal links go
+through next-intl's `Link` so the locale prefix is preserved; the language switch keeps
+you on the page you're already reading.
 
 ## OG image
 

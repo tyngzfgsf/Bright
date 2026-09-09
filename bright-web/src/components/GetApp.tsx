@@ -2,10 +2,12 @@ import { getTranslations } from "next-intl/server";
 import ButtonLink from "./ButtonLink";
 import Reveal from "./Reveal";
 import Section from "./Section";
+import { Link } from "@/i18n/navigation";
 import { site } from "@/lib/site";
 
 export default async function GetApp() {
   const t = await getTranslations("get");
+  const nav = await getTranslations("nav");
   const steps = t.raw("steps") as string[];
 
   return (
@@ -37,10 +39,16 @@ export default async function GetApp() {
             <p className="font-mono text-[12.5px] text-ink-faint">
               {t("repoLabel")}
             </p>
-            <div className="mt-5">
+            <div className="mt-5 space-y-3">
               <ButtonLink href={site.releasesLatest} external className="w-full">
                 {t("cta")}
               </ButtonLink>
+              <Link
+                href="/download"
+                className="flex w-full items-center justify-center rounded-full border border-line-strong px-5 py-3 text-[14.5px] font-medium tracking-[-0.01em] transition-colors duration-200 hover:border-ink"
+              >
+                {nav("download")}
+              </Link>
             </div>
             <p className="mt-5 text-[13.5px] leading-relaxed text-ink-faint">
               {t("groqNote")}

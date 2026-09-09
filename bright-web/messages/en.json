@@ -11,7 +11,11 @@
     "github": "GitHub",
     "menu": "Menu",
     "close": "Close menu",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "download": "Download",
+    "faq": "FAQ",
+    "releases": "Releases",
+    "home": "Home"
   },
   "theme": {
     "label": "Theme",
@@ -38,7 +42,10 @@
     "label": "Emergency session",
     "caption": "An illustration of the interaction — not a recording of the app.",
     "messages": [
-      { "role": "scene", "text": "Scenario · Chest pain, 62" },
+      {
+        "role": "scene",
+        "text": "Scenario · Chest pain, 62"
+      },
       {
         "role": "ai",
         "text": "It started twenty minutes ago. Feels like something heavy is sitting on me."
@@ -175,10 +182,384 @@
   },
   "footer": {
     "tagline": "A step for your brighter future.",
-    "releases": "APK releases",
-    "source": "Source repo",
     "sourceNote": "private for now",
     "builtBy": "Built by one developer, in public.",
-    "rights": "© {year} Bright."
+    "rights": "© {year} Bright.",
+    "groups": {
+      "app": "App",
+      "project": "Project",
+      "legal": "Legal"
+    },
+    "links": {
+      "download": "Download",
+      "releases": "Releases",
+      "faq": "FAQ",
+      "howItWorks": "How it works",
+      "status": "Status",
+      "releasesRepo": "APK releases on GitHub",
+      "sourceRepo": "Source repo",
+      "issues": "Report an issue",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "disclaimer": "Bright is a training tool. It is not medical advice and must not be used to guide real patient care."
+  },
+  "common": {
+    "updated": "Last updated {date}",
+    "onThisPage": "On this page",
+    "backHome": "Back to the home page",
+    "openGithub": "Open on GitHub"
+  },
+  "download": {
+    "meta": {
+      "title": "Download Bright for Android",
+      "description": "Install the Bright APK from GitHub Releases. Free, no account, Android 8.0 or newer. There is no Play Store listing yet."
+    },
+    "eyebrow": "Download",
+    "title": "Get Bright on Android",
+    "lede": "Bright is distributed as an APK on GitHub Releases. It's free, there's no account, and there's nothing to buy.",
+    "latestLabel": "Latest release",
+    "latestUnknown": "Open the releases page for the latest build.",
+    "publishedOn": "Published {date}",
+    "sizeLabel": "{size} MB APK",
+    "cta": "Download the APK",
+    "allReleases": "See all releases",
+    "stepsTitle": "Installing it",
+    "steps": [
+      {
+        "title": "Open the releases page on your phone",
+        "body": "Downloading on the device you'll install on is the simplest route. Grab the .apk file attached to the newest release."
+      },
+      {
+        "title": "Approve the install",
+        "body": "Android will ask whether to allow installs from your browser or file manager. That permission is per-app and only needs granting once."
+      },
+      {
+        "title": "Open Bright and pick a language",
+        "body": "The first launch runs a short intro and picks Korean or English based on your phone. You can change it later in settings."
+      },
+      {
+        "title": "Add a Groq key when you're asked",
+        "body": "The AI runs on Groq's free tier. You can skip past the key during setup — Bright only asks again when a session actually needs it."
+      }
+    ],
+    "requirementsTitle": "What you need",
+    "requirements": [
+      {
+        "label": "Android",
+        "value": "8.0 (Oreo) or newer"
+      },
+      {
+        "label": "Size",
+        "value": "About 30 MB"
+      },
+      {
+        "label": "Connection",
+        "value": "Internet — the AI runs as a hosted service"
+      },
+      {
+        "label": "Account",
+        "value": "None. A free Groq API key covers the AI"
+      },
+      {
+        "label": "Price",
+        "value": "Free. No ads, no paid tier"
+      }
+    ],
+    "noPlayTitle": "Why isn't it on Google Play?",
+    "noPlayBody": "A submission was attempted before, but store distribution isn't being pursued right now — the effort is going into the app instead. GitHub Releases is the real, current way to get Bright, and the app checks that same releases feed to tell you when a newer version is out.",
+    "iosTitle": "What about iPhone?",
+    "iosBody": "An iOS version is in active development with Kotlin Multiplatform and Compose Multiplatform, sharing the same core as the Android app. There's no TestFlight or App Store build to hand out yet."
+  },
+  "releases": {
+    "meta": {
+      "title": "Bright releases",
+      "description": "Every published Bright release, pulled live from the GitHub Releases feed for tyngzfgsf/Bright-app."
+    },
+    "eyebrow": "Releases",
+    "title": "Every version, as published",
+    "lede": "This list is read straight from the GitHub Releases feed — the same one the app checks for updates. Nothing here is written by hand.",
+    "latest": "Latest",
+    "download": "Download APK",
+    "viewOnGithub": "View on GitHub",
+    "sizeLabel": "{size} MB",
+    "noNotes": "No release notes were published for this version.",
+    "errorTitle": "Couldn't reach GitHub just now",
+    "errorBody": "The releases feed didn't respond. It's a temporary problem on this page, not with the app — the releases page on GitHub has everything.",
+    "errorCta": "Open releases on GitHub",
+    "emptyTitle": "No releases published yet",
+    "emptyBody": "Once a version is tagged, it will appear here automatically."
+  },
+  "faq": {
+    "meta": {
+      "title": "Bright — frequently asked questions",
+      "description": "How Bright works, what it costs, where your history is stored, and what isn't built yet."
+    },
+    "eyebrow": "FAQ",
+    "title": "Questions, answered plainly",
+    "lede": "If something here is out of date or missing, open an issue on GitHub — it's the fastest way to reach me.",
+    "items": [
+      {
+        "q": "What does Bright cost?",
+        "a": "Nothing. There's no paid tier, no subscription, no ads, and no in-app purchases. The AI runs on Groq's free tier using a key you provide."
+      },
+      {
+        "q": "Do I need a Groq API key?",
+        "a": "Yes, for the AI to respond. Groq's free tier covers ordinary practice, and getting a key takes a minute on Groq's own console. Bright lets you skip the key during setup and only asks when a session actually needs it."
+      },
+      {
+        "q": "Is Bright on the Google Play Store?",
+        "a": "No. A submission was attempted before, but store distribution isn't being pursued right now. The APK on GitHub Releases is the real way to install it."
+      },
+      {
+        "q": "Where is my session history stored?",
+        "a": "On your device, in the app's own local database. It isn't uploaded anywhere, which also means it doesn't survive uninstalling the app or move to a new phone. Google sign-in and cloud sync are planned, not built."
+      },
+      {
+        "q": "Does it work offline?",
+        "a": "No. The AI is a hosted service, so a session needs an internet connection. Your saved history stays readable offline."
+      },
+      {
+        "q": "Can I speak my answers instead of typing?",
+        "a": "Voice input is planned, not shipped. Today a session is typed."
+      },
+      {
+        "q": "Is there an iPhone version?",
+        "a": "It's in active development, sharing the same core as the Android app through Kotlin Multiplatform. There's no build to install yet."
+      },
+      {
+        "q": "Which languages does it support?",
+        "a": "Korean and English. The first launch picks one based on your phone's language, and you can switch in settings at any time."
+      },
+      {
+        "q": "Which Android versions can run it?",
+        "a": "Android 8.0 (Oreo) and newer."
+      },
+      {
+        "q": "Can I rely on what the AI says?",
+        "a": "No. Bright is a practice tool, not a clinical reference. The AI invents scenarios and can be confidently wrong, so treat its scoring and feedback as drill material — never as guidance for a real patient."
+      },
+      {
+        "q": "Is the source code public?",
+        "a": "The APK releases repo is public; the source repo is private for now. That may change, but nothing about the app depends on it."
+      },
+      {
+        "q": "How do I report a bug or ask for a feature?",
+        "a": "Open an issue on the public releases repo on GitHub. It's a one-person project, so the honest answer on timing is: when I get to it."
+      }
+    ]
+  },
+  "privacy": {
+    "meta": {
+      "title": "Bright — privacy",
+      "description": "What Bright stores on your device, what leaves it, and what is never collected. No accounts, no analytics, no ads."
+    },
+    "eyebrow": "Privacy",
+    "title": "Privacy",
+    "lede": "Bright has no accounts and no analytics. Almost everything stays on your phone. This page describes exactly what happens to what you type.",
+    "updated": "9 September 2026",
+    "sections": [
+      {
+        "id": "summary",
+        "heading": "The short version",
+        "bullets": [
+          "Your sessions and history are stored only on your device.",
+          "What you type during a session is sent to Groq, the AI provider, to generate the reply. Nothing else leaves your phone during a session.",
+          "The app checks GitHub for a newer release. That request contains no personal data.",
+          "There is no account, no analytics or crash-reporting library, no advertising, and no third-party tracking in the app.",
+          "I never receive your session content. There's no server of mine for it to go to."
+        ]
+      },
+      {
+        "id": "on-device",
+        "heading": "What's stored on your device",
+        "paragraphs": [
+          "Bright keeps a local database on the phone. It holds your practice sessions, the messages in them, and the per-question records used to build your history and score summaries."
+        ],
+        "bullets": [
+          "Sessions, messages and question records — the drills you've done.",
+          "Your language choice, chosen AI model, and the flags that remember you've finished the intro.",
+          "Your Groq API key, stored in the app's own preference storage on the device.",
+          "A practice streak count and whether the app has already asked you about notifications."
+        ],
+        "after": "Uninstalling Bright removes all of it. Because none of it is backed up to a server, an uninstall is permanent — that's the trade-off of local-only storage."
+      },
+      {
+        "id": "leaves",
+        "heading": "What leaves your device",
+        "paragraphs": [
+          "The app talks to exactly two hosts, and nothing else."
+        ],
+        "bullets": [
+          "api.groq.com — during a session, your typed messages and the scenario context are sent to Groq using your own API key, so the AI can reply. Groq's handling of that data is covered by Groq's own privacy policy and the terms of the account your key belongs to.",
+          "api.github.com — the app reads the latest published release of the public tyngzfgsf/Bright-app repository to tell you when an update is available. This is an ordinary anonymous web request; it carries no session content and no identifier from the app."
+        ]
+      },
+      {
+        "id": "not-collected",
+        "heading": "What is never collected",
+        "bullets": [
+          "No account, sign-in, email address or profile.",
+          "No analytics, telemetry, or crash-reporting SDK is bundled in the app.",
+          "No advertising, and no advertising identifier.",
+          "No contacts, no location, no photos, no files from your phone.",
+          "Nothing is sold or shared with data brokers, because nothing is collected in the first place."
+        ]
+      },
+      {
+        "id": "permissions",
+        "heading": "Permissions the Android app asks for",
+        "bullets": [
+          "Internet and network state — to reach the AI and to check for updates.",
+          "Notifications — for practice reminders scheduled on the device itself. There is no push service behind them.",
+          "Install packages — so the app can offer to install a newer release it downloaded from GitHub.",
+          "Microphone — declared for speech input. Where it's used, the request is handed to Android's own speech recognition rather than recorded by Bright, and no audio is stored by the app."
+        ]
+      },
+      {
+        "id": "website",
+        "heading": "This website",
+        "bullets": [
+          "No analytics, no tracking pixels, and no advertising cookies.",
+          "One cookie, NEXT_LOCALE, is written only if you press the KO/EN language switch, so your choice sticks. Automatic language detection never writes it.",
+          "Your light/dark preference is kept in your browser's local storage and never leaves the browser.",
+          "The hosting provider keeps ordinary server request logs, as any web host does."
+        ]
+      },
+      {
+        "id": "patient-data",
+        "heading": "Don't type real patient information",
+        "paragraphs": [
+          "Bright is for practice on invented cases. Please don't enter real patients' details, identifiers, or records — that content would be sent to a third-party AI provider, and the app has no safeguards designed for handling real medical records."
+        ]
+      },
+      {
+        "id": "control",
+        "heading": "Your control over your data",
+        "bullets": [
+          "Delete individual sessions from your history inside the app.",
+          "Remove or replace your Groq API key in settings at any time.",
+          "Uninstalling the app deletes the local database and preferences along with it."
+        ]
+      },
+      {
+        "id": "children",
+        "heading": "Children",
+        "paragraphs": [
+          "Bright is aimed at people training in emergency medicine and isn't designed or directed at children."
+        ]
+      },
+      {
+        "id": "changes",
+        "heading": "Planned changes",
+        "paragraphs": [
+          "Google sign-in and cloud sync are on the roadmap. Neither exists today, and neither is silently switched on: when they ship, they'll be an explicit choice in the app and this page will be rewritten before that release goes out."
+        ]
+      },
+      {
+        "id": "contact",
+        "heading": "Contact",
+        "paragraphs": [
+          "Bright is made by one developer. Questions about privacy — or corrections to this page — are best raised as an issue on the public GitHub repository, which is also the fastest way to get an answer."
+        ]
+      }
+    ]
+  },
+  "terms": {
+    "meta": {
+      "title": "Bright — terms of use",
+      "description": "The terms for using Bright, including the medical disclaimer: it is a training tool and not medical advice."
+    },
+    "eyebrow": "Terms",
+    "title": "Terms of use",
+    "lede": "Plain terms for a free app made by one person. The important part is the first section: Bright is training, not medical advice.",
+    "updated": "9 September 2026",
+    "sections": [
+      {
+        "id": "not-advice",
+        "heading": "Bright is not medical advice",
+        "paragraphs": [
+          "Bright generates fictional emergency scenarios so you can practise responding to them. It is an educational tool. It is not a clinical decision-support system, not a reference, and not a substitute for training, supervision, protocols, or professional judgement.",
+          "Do not use Bright to make decisions about a real patient. In a real emergency, contact your local emergency service — 119 in Korea, 911 in the United States — or follow your institution's protocol."
+        ]
+      },
+      {
+        "id": "ai-limits",
+        "heading": "The AI can be wrong",
+        "paragraphs": [
+          "Responses, scenarios, scores and feedback are produced by a large language model. It can state incorrect things confidently, misjudge an answer, or invent details that don't reflect real clinical practice or your local guidelines. Treat everything it produces as drill material to be checked against real sources, not as an authority."
+        ]
+      },
+      {
+        "id": "your-use",
+        "heading": "Using the app",
+        "bullets": [
+          "Bright is free for personal training use.",
+          "Don't enter real patient information or anyone else's personal data into a session.",
+          "Don't use the app for anything unlawful, or in a way that breaks the terms of the AI provider whose key you're using.",
+          "You're responsible for keeping your own API key secure, and for any usage charges your provider account incurs."
+        ]
+      },
+      {
+        "id": "third-party",
+        "heading": "Third-party services",
+        "paragraphs": [
+          "The AI runs on Groq, using an API key that belongs to you. Your use of that service is governed by Groq's own terms and privacy policy, and Bright has no control over their availability, pricing, or model behaviour. Releases are distributed through GitHub, which has its own terms."
+        ]
+      },
+      {
+        "id": "no-warranty",
+        "heading": "No warranty",
+        "paragraphs": [
+          "Bright is provided as is, without warranty of any kind, express or implied — including fitness for a particular purpose. It's a free app built in someone's spare time; it may contain bugs, produce wrong output, lose locally-stored data, or stop working after a platform change.",
+          "To the fullest extent the law allows, the developer isn't liable for any loss or damage arising from using — or being unable to use — the app, including anything arising from relying on its output."
+        ]
+      },
+      {
+        "id": "availability",
+        "heading": "Availability and changes",
+        "paragraphs": [
+          "Bright is in active development. Features can change or be removed, releases can be delayed, and the project could stop being maintained. Because releases are published as APKs on GitHub, a version you've already installed keeps working as long as your device supports it."
+        ]
+      },
+      {
+        "id": "ownership",
+        "heading": "Ownership",
+        "paragraphs": [
+          "The Bright app, its name, and its design belong to the developer. Downloading and using released builds is fine; redistributing modified copies as though they were Bright is not. Sessions you produce with the app are yours."
+        ]
+      },
+      {
+        "id": "law",
+        "heading": "Governing law",
+        "paragraphs": [
+          "These terms are governed by the laws of the Republic of Korea, where the developer is based, without regard to conflict-of-law rules."
+        ]
+      },
+      {
+        "id": "updates",
+        "heading": "Changes to these terms",
+        "paragraphs": [
+          "If these terms change, the date at the top of this page changes with them. Continuing to use the app after that means the updated terms apply."
+        ]
+      },
+      {
+        "id": "contact",
+        "heading": "Contact",
+        "paragraphs": [
+          "Questions about these terms can be raised as an issue on the public GitHub repository."
+        ]
+      }
+    ]
+  },
+  "notFound": {
+    "meta": {
+      "title": "Page not found — Bright"
+    },
+    "code": "404",
+    "title": "That page isn't here",
+    "lede": "The link may be old, or the page may have moved. The home page has everything.",
+    "cta": "Back to the home page",
+    "secondary": "Download the app"
   }
 }

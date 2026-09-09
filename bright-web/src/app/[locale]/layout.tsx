@@ -3,9 +3,24 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
 import ThemeScript from "@/components/ThemeScript";
+import { alternatesFor } from "@/lib/metadata";
 import { site } from "@/lib/site";
 import "../globals.css";
+
+async function SkipLink() {
+  const t = await getTranslations("nav");
+  return (
+    <a
+      href="#main"
+      className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
+    >
+      {t("skip")}
+    </a>
+  );
+}
 
 type Params = { locale: string };
 
@@ -26,14 +41,7 @@ export async function generateMetadata({
     title: t("title"),
     description: t("description"),
     applicationName: site.name,
-    alternates: {
-      canonical: `/${locale}`,
-      languages: {
-        en: "/en",
-        ko: "/ko",
-        "x-default": "/en",
-      },
-    },
+    alternates: alternatesFor(locale),
     openGraph: {
       type: "website",
       siteName: site.name,
@@ -71,8 +79,15 @@ export default async function LocaleLayout({
           <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
         </noscript>
       </head>
-      <body className="min-h-dvh antialiased">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+      <body className="flex min-h-dvh flex-col antialiased">
+        <NextIntlClientProvider>
+          <SkipLink />
+          <Header />
+          <main id="main" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

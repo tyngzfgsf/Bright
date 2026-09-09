@@ -4,8 +4,13 @@ export const site = {
   /** Public repo: built APKs are published here on every version tag. */
   releasesRepo: "https://github.com/tyngzfgsf/Bright-app",
   releasesLatest: "https://github.com/tyngzfgsf/Bright-app/releases",
+  /** Contact route for privacy/terms questions and bug reports. */
+  issues: "https://github.com/tyngzfgsf/Bright-app/issues",
   /** Source repo — private for now. */
   sourceRepo: "https://github.com/tyngzfgsf/Bright",
+  /** Feed the app itself checks for updates; the releases page reads the same one. */
+  releasesApi:
+    "https://api.github.com/repos/tyngzfgsf/Bright-app/releases?per_page=30",
   /** Used for canonical/OG URLs; override with NEXT_PUBLIC_SITE_URL at build time. */
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://bright-34c23.web.app",
 } as const;
