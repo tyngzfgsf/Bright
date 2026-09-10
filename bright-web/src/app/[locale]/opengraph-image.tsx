@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { markGeometry } from "@/lib/mark";
 import { site } from "@/lib/site";
 
 export const size = { width: 1200, height: 630 };
@@ -11,6 +12,9 @@ export const alt = "Bright — a step for your brighter future";
  * `openGraph.images`) when there's one worth showing.
  */
 export default function OpengraphImage() {
+  const tile = 46;
+  const { sun, bar } = markGeometry(tile);
+
   return new ImageResponse(
     (
       <div
@@ -36,19 +40,39 @@ export default function OpengraphImage() {
           }}
         />
 
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 6 }}>
-            {[14, 22, 30].map((height) => (
-              <div
-                key={height}
-                style={{
-                  width: 7,
-                  height,
-                  borderRadius: 4,
-                  background: "#fafafa",
-                }}
-              />
-            ))}
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              width: tile,
+              height: tile,
+              borderRadius: 11,
+              border: "1px solid #2c2c32",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                left: sun.left,
+                top: sun.top,
+                width: sun.width,
+                height: sun.height,
+                background: "#fafafa",
+                borderRadius: `${sun.radius}px ${sun.radius}px 0 0`,
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: bar.left,
+                top: bar.top,
+                width: bar.width,
+                height: bar.height,
+                background: "#fafafa",
+                borderRadius: bar.radius,
+              }}
+            />
           </div>
           <div style={{ display: "flex", fontSize: 27, letterSpacing: 5, opacity: 0.62 }}>
             AI EMERGENCY-SCENARIO TRAINING

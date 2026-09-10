@@ -1,39 +1,51 @@
 import { ImageResponse } from "next/og";
+import { markGeometry } from "@/lib/mark";
 
 export const size = { width: 64, height: 64 };
 export const contentType = "image/png";
 
 /**
- * Favicon: three ascending bars — the "step" in the slogan. Drawn with shapes
- * rather than a letter so it stays crisp at 16px and needs no font.
+ * Browser-tab icon: the app's launcher icon, same sun and horizon on black.
+ * Built from boxes rather than SVG paths because that's what the generator
+ * renders reliably — `src/lib/mark.ts` holds the shared measurements.
  */
 export default function Icon() {
+  const { sun, bar } = markGeometry(size.width);
+
   return new ImageResponse(
     (
       <div
         style={{
+          position: "relative",
+          display: "flex",
           width: "100%",
           height: "100%",
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "center",
-          gap: 6,
-          background: "#08080a",
+          background: "#000000",
           borderRadius: 14,
-          padding: 14,
         }}
       >
-        {[16, 26, 36].map((height) => (
-          <div
-            key={height}
-            style={{
-              width: 8,
-              height,
-              borderRadius: 4,
-              background: "#fafafa",
-            }}
-          />
-        ))}
+        <div
+          style={{
+            position: "absolute",
+            left: sun.left,
+            top: sun.top,
+            width: sun.width,
+            height: sun.height,
+            background: "#ffffff",
+            borderRadius: `${sun.radius}px ${sun.radius}px 0 0`,
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: bar.left,
+            top: bar.top,
+            width: bar.width,
+            height: bar.height,
+            background: "#ffffff",
+            borderRadius: bar.radius,
+          }}
+        />
       </div>
     ),
     size,

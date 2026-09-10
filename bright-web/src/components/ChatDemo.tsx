@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import BrightMark from "./BrightMark";
 import ShareCard from "./ShareCard";
 import { EASE, PRESS } from "@/lib/motion";
 
@@ -99,9 +100,9 @@ export default function ChatDemo() {
                 <span className="flex items-center gap-2">
                   <span
                     aria-hidden="true"
-                    className="grid size-6 place-items-center rounded-full bg-ink text-[10px] font-semibold text-paper"
+                    className="grid size-6 place-items-center rounded-[7px] bg-ink text-paper"
                   >
-                    B
+                    <BrightMark className="size-[13px]" />
                   </span>
                   <span className="text-[12.5px] font-medium tracking-[-0.01em]">
                     {t("label")}

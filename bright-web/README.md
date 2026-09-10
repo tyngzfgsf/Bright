@@ -113,9 +113,23 @@ site stays monochrome without going flat. `.grain` puts a fixed film-grain overl
 page, `.sheen` adds a one-pixel top highlight to cards, and `.hero-wash` is the radial
 gradient behind the hero and page headers.
 
-Favicons, the apple-touch icon and the OG card are all generated at request time from
-shapes (`app/icon.tsx`, `app/apple-icon.tsx`, `[locale]/opengraph-image.tsx`) — three
-ascending bars, the "step" in the slogan — so there are no binary assets to keep in sync.
+## The mark
+
+The site logo, the favicon, the apple-touch icon and the OG card all use the app's own
+launcher icon: a rising sun over a horizon. The geometry is taken verbatim from
+`app/src/main/res/drawable/ic_launcher_foreground.xml` in the Android project, and the
+crop matches the framing of `iosApp/…/AppIcon-1024.png`, so all four stay one shape.
+
+- `src/components/BrightMark.tsx` — the inline SVG glyph, drawn in `currentColor` so it
+  works on either theme beside the wordmark.
+- `src/lib/mark.ts` — the same measurements as numbers, because the generated images
+  can't use SVG paths and rebuild the shapes out of boxes instead.
+- `app/icon.tsx`, `app/apple-icon.tsx`, `[locale]/opengraph-image.tsx` — the black tile
+  with the white mark, generated at request time, so there are no binary assets to keep
+  in sync.
+
+**If the app's launcher icon changes, update `BrightMark.tsx` and `mark.ts` together.**
+
 Because `/icon` and `/apple-icon` have no file extension, `middleware.ts` names them
 explicitly in its matcher; without that they get redirected to `/en/icon`.
 
