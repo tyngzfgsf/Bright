@@ -47,11 +47,18 @@ match** — otherwise the demo drifts away from what it's demonstrating.
 
 ## Layout
 
+The session view follows the shape the chat products settled on: a single narrow column,
+assistant turns as plain text with no bubble, the answer you typed in a soft bubble, the
+grade as a quiet line beneath it, near-empty chrome, and a roomy composer. The one thing
+that stays loud enough to read is the scripted/live disclosure under the composer.
+
+
 ```
 src/app/page.tsx            mounts the demo
 src/app/api/session/route.ts  Groq proxy — takes a key per request, keeps nothing
 src/components/Demo.tsx     the session: setup, transcript, grading, completion
 src/components/ResultCard.tsx  the end-of-session card, styled like the app's
+src/components/Segmented.tsx   one-line choice rows used on the setup screen
 src/lib/prompt.ts           ported prompt builder and turn contract
 src/lib/scenarios.ts        the ten emergencies, roles, difficulties
 src/lib/script.ts           the canned walkthrough used without a key

@@ -3,7 +3,12 @@ import type { Language } from "./prompt";
 /** UI strings for the demo. Small enough that a dictionary beats a library. */
 export const COPY = {
   en: {
-    demoChip: "Web demo",
+    demoChip: "Demo",
+    scriptedChip: "Scripted",
+    liveChip: "Live",
+    endShort: "End",
+    options: "Session",
+    scenarioHint: "Pick one, or describe your own.",
     setupTitle: "Set up a session",
     setupLede:
       "Same drill as the app: the AI stays in character and asks one thing at a time, you answer in your own words, and each answer gets a mark out of ten.",
@@ -42,7 +47,12 @@ export const COPY = {
       "A demo of the app in a browser. The real Bright is an Android app; nothing here is saved when you close the tab.",
   },
   ko: {
-    demoChip: "웹 데모",
+    demoChip: "데모",
+    scriptedChip: "스크립트",
+    liveChip: "실행 중",
+    endShort: "종료",
+    options: "세션",
+    scenarioHint: "하나를 고르거나 직접 적어 보세요.",
     setupTitle: "세션 설정",
     setupLede:
       "앱과 같은 방식입니다. AI가 배역을 유지한 채 한 번에 하나씩 묻고, 답은 직접 적고, 답마다 10점 만점으로 점수가 붙습니다.",

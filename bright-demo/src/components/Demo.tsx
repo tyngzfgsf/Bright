@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import BrightMark from "./BrightMark";
 import ResultCard from "./ResultCard";
+import Segmented from "./Segmented";
 import { COPY } from "@/lib/copy";
 import { EASE } from "@/lib/motion";
 import {
@@ -62,6 +63,7 @@ export default function Demo() {
   const scriptStep = useRef(0);
   const nextId = useRef(0);
   const transcriptEnd = useRef<HTMLDivElement>(null);
+  const composer = useRef<HTMLTextAreaElement>(null);
 
   const scripted = apiKey.trim() === "";
   const scenarioText =
@@ -84,6 +86,13 @@ export default function Demo() {
 
   function push(message: Omit<ChatMessage, "id">) {
     setMessages((current) => [...current, { ...message, id: nextId.current++ }]);
+  }
+
+  function growComposer() {
+    const el = composer.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 220)}px`;
   }
 
   /** One turn: either the scripted reply, or a real round-trip to Groq. */
@@ -151,6 +160,7 @@ export default function Demo() {
     const text = draft.trim();
     if (!text || busy) return;
     setDraft("");
+    requestAnimationFrame(growComposer);
     setError(null);
     push({ role: "user", text });
     setBusy(true);
@@ -215,67 +225,64 @@ export default function Demo() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b border-line-subtle bg-paper/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 w-full max-w-4xl items-center justify-between gap-3 px-5">
+      {/* Chrome stays nearly empty: name on the left, the two things you might
+          change on the right. */}
+      <header className="sticky top-0 z-30 bg-paper/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between px-6">
           <span className="flex items-center gap-2.5">
-            <BrightMark className="size-[20px]" />
+            <BrightMark className="size-[19px]" />
             <span className="text-[15px] font-semibold tracking-[-0.02em]">Bright</span>
-            <span className="eyebrow-sm rounded-full border border-line px-2 py-0.5 text-ink-faint">
-              {t.demoChip}
-            </span>
+            <span className="text-[12px] text-ink-faint">{t.demoChip}</span>
           </span>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center rounded-full border border-line p-0.5 text-[11px] font-medium">
-              {(["en", "ko"] as Language[]).map((code) => (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => setLanguage(code)}
-                  aria-pressed={language === code}
-                  className={`rounded-full px-2.5 py-1 transition-colors duration-200 ${
-                    language === code ? "bg-ink text-paper" : "text-ink-faint hover:text-ink"
-                  }`}
-                >
-                  {code.toUpperCase()}
-                </button>
-              ))}
-            </div>
+          <div className="flex items-center gap-1">
+            {phase === "session" && (
+              <button
+                type="button"
+                onClick={end}
+                disabled={busy}
+                className="rounded-full px-3 py-1.5 text-[13px] text-ink-muted transition-colors duration-200 hover:bg-raised hover:text-ink disabled:opacity-40"
+              >
+                {t.endShort}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setLanguage(language === "en" ? "ko" : "en")}
+              className="rounded-full px-3 py-1.5 text-[13px] text-ink-muted transition-colors duration-200 hover:bg-raised hover:text-ink"
+            >
+              {language === "en" ? "한국어" : "English"}
+            </button>
             <button
               type="button"
               onClick={() => {
                 setKeyDraft(apiKey);
                 setKeyOpen(true);
               }}
-              className="rounded-full border border-line px-3.5 py-1.5 text-[12.5px] text-ink-soft transition-colors duration-200 hover:border-line-strong hover:text-ink"
+              title={t.key}
+              aria-label={t.key}
+              className="grid size-9 place-items-center rounded-full text-ink-muted transition-colors duration-200 hover:bg-raised hover:text-ink"
             >
-              {t.key}
-              <span className={`ml-2 inline-block size-1.5 rounded-full align-middle ${scripted ? "bg-ink-faint" : "bg-ink"}`} />
-            </button>
-            {phase === "session" && (
-              <button
-                type="button"
-                onClick={end}
-                disabled={busy}
-                className="rounded-full bg-ink px-3.5 py-1.5 text-[12.5px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-50"
+              <svg
+                viewBox="0 0 24 24"
+                className="size-[17px]"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                {t.endSession}
-              </button>
-            )}
+                <circle cx="8" cy="12" r="3.4" />
+                <path d="M11.4 12H20M17.5 12v3M14.5 12v2.2" />
+              </svg>
+            </button>
           </div>
         </div>
-
-        <p
-          className={`px-5 py-2 text-center text-[12px] ${
-            scripted ? "bg-sunken text-ink-muted" : "bg-ink text-paper"
-          }`}
-        >
-          {scripted ? t.scriptedBanner : t.liveBanner}
-        </p>
       </header>
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-5">
-        {phase === "setup" && (
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6">
+        {phase === "setup" ? (
           <Setup
             t={t}
             language={language}
@@ -293,42 +300,39 @@ export default function Demo() {
             busy={busy}
             error={error}
           />
-        )}
-
-        {phase !== "setup" && (
-          <div className="flex flex-1 flex-col py-8">
-            <ol className="flex-1 space-y-6">
+        ) : (
+          <div className="flex flex-1 flex-col pb-10 pt-6">
+            <ol className="flex-1 space-y-10">
               {messages.map((message) => (
                 <motion.li
                   key={message.id}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, ease: EASE }}
-                  className={message.role === "user" ? "flex justify-end" : ""}
+                  transition={{ duration: 0.45, ease: EASE }}
                 >
                   {message.role === "ai" ? (
-                    <div className="max-w-[46rem] rounded-[1.2rem] rounded-bl-md bg-raised px-5 py-4 text-[15.5px] leading-[1.7] ring-1 ring-line-subtle">
-                      {message.text}
-                    </div>
+                    // Assistant turns are just text on the page, the way the
+                    // chat products do it — no bubble, nothing to box them in.
+                    <p className="text-[17px] leading-[1.8] text-ink">{message.text}</p>
                   ) : (
-                    <div className="max-w-[40rem]">
-                      <div className="rounded-[1.2rem] rounded-br-md bg-ink px-5 py-4 text-[15.5px] leading-[1.7] text-paper">
+                    <div className="flex flex-col items-end gap-3">
+                      <p className="max-w-[85%] rounded-[1.3rem] bg-raised px-5 py-3.5 text-[16px] leading-[1.7] text-ink">
                         {message.text}
-                      </div>
+                      </p>
                       {typeof message.score === "number" && (
                         <motion.div
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.45, ease: EASE, delay: 0.1 }}
-                          className="mt-2.5 flex items-start justify-end gap-3"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
+                          className="flex max-w-[85%] items-baseline gap-3"
                         >
-                          <p className="max-w-[32rem] text-right text-[13.5px] leading-relaxed text-ink-muted">
-                            {message.feedback}
-                          </p>
-                          <span className="tnum shrink-0 rounded-full border border-line-strong px-2.5 py-1 text-[12.5px] font-semibold">
+                          <span className="tnum shrink-0 text-[13px] font-semibold text-ink">
                             {message.score}
                             <span className="text-ink-faint">{t.scoreOf}</span>
                           </span>
+                          <p className="text-[14px] leading-[1.75] text-ink-muted">
+                            {message.feedback}
+                          </p>
                         </motion.div>
                       )}
                     </div>
@@ -337,29 +341,28 @@ export default function Demo() {
               ))}
 
               {busy && (
-                <li className="flex items-center gap-2 text-[13.5px] text-ink-faint">
+                <li>
                   <motion.span
-                    className="block size-1.5 rounded-full bg-ink-faint"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1.1, repeat: Infinity }}
+                    className="block size-2 rounded-full bg-ink-faint"
+                    animate={{ opacity: [0.25, 1, 0.25] }}
+                    transition={{ duration: 1.2, repeat: Infinity }}
                   />
-                  {t.thinking}
                 </li>
               )}
             </ol>
 
             {error && (
-              <p className="mt-4 rounded-[1rem] border border-line bg-raised px-4 py-3 text-[13.5px] text-ink-soft">
+              <p className="mt-8 rounded-[1rem] bg-raised px-5 py-4 text-[14px] text-ink-soft">
                 {error}
               </p>
             )}
 
             {phase === "complete" && (
               <motion.div
-                initial={{ opacity: 0, y: 14 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, ease: EASE }}
-                className="mt-10 flex flex-col items-center gap-7 border-t border-line-subtle pt-10"
+                className="mt-16 flex flex-col items-center gap-8"
               >
                 <ResultCard
                   scenario={scripted ? SCRIPTED_SCENARIO[language] : scenarioText}
@@ -368,17 +371,14 @@ export default function Demo() {
                   slogan={t.slogan}
                 />
                 {wrapUp && (
-                  <div className="max-w-[42rem] text-center">
-                    <p className="eyebrow-sm text-ink-faint">{t.wrapUp}</p>
-                    <p className="mt-3 text-[15.5px] leading-[1.75] text-ink-soft">
-                      {wrapUp}
-                    </p>
-                  </div>
+                  <p className="max-w-[34rem] text-center text-[16px] leading-[1.8] text-ink-soft">
+                    {wrapUp}
+                  </p>
                 )}
                 <button
                   type="button"
                   onClick={() => setPhase("setup")}
-                  className="rounded-full border border-line-strong px-5 py-3 text-[14.5px] font-medium transition-colors duration-200 hover:border-ink"
+                  className="rounded-full px-5 py-2.5 text-[14.5px] text-ink-muted transition-colors duration-200 hover:bg-raised hover:text-ink"
                 >
                   {t.again}
                 </button>
@@ -391,31 +391,53 @@ export default function Demo() {
       </main>
 
       {phase === "session" && (
-        <div className="sticky bottom-0 border-t border-line-subtle bg-paper/85 backdrop-blur-xl">
-          <div className="mx-auto flex w-full max-w-4xl items-end gap-3 px-5 py-4">
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  answer();
-                }
-              }}
-              rows={1}
-              placeholder={t.placeholder}
-              className="min-h-[3rem] flex-1 resize-none rounded-[1.2rem] border border-line bg-raised px-4 py-3 text-[15px] leading-[1.6] outline-none transition-colors duration-200 placeholder:text-ink-faint focus:border-line-strong"
-            />
-            <button
-              type="button"
-              onClick={answer}
-              disabled={busy || !draft.trim()}
-              className="rounded-full bg-ink px-5 py-3 text-[14.5px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-40"
-            >
-              {t.send}
-            </button>
+        <div className="sticky bottom-0 bg-gradient-to-t from-paper via-paper to-transparent pt-6">
+          <div className="mx-auto w-full max-w-3xl px-6 pb-4">
+            <div className="flex items-end gap-2 rounded-[1.6rem] border border-line bg-raised py-2.5 pl-5 pr-2.5 transition-colors duration-200 focus-within:border-line-strong">
+              <textarea
+                ref={composer}
+                value={draft}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  growComposer();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    answer();
+                  }
+                }}
+                rows={1}
+                placeholder={t.placeholder}
+                className="max-h-[220px] flex-1 resize-none bg-transparent py-2 text-[16px] leading-[1.7] outline-none placeholder:text-ink-faint"
+              />
+              <button
+                type="button"
+                onClick={answer}
+                disabled={busy || !draft.trim()}
+                aria-label={t.send}
+                className="mb-0.5 grid size-9 shrink-0 place-items-center rounded-full bg-ink text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-25"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="size-[16px]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 19V5M6 11l6-6 6 6" />
+                </svg>
+              </button>
+            </div>
+
+            {/* The one disclosure that has to stay visible, kept quiet. */}
+            <p className="mt-3 text-center text-[12px] text-ink-faint">
+              {scripted ? t.scriptedBanner : t.liveBanner}
+            </p>
           </div>
-          <p className="pb-3 text-center text-[11.5px] text-ink-faint">{t.notTheApp}</p>
         </div>
       )}
 
@@ -425,27 +447,27 @@ export default function Demo() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 grid place-items-center bg-ink/30 px-5 backdrop-blur-sm"
+            className="fixed inset-0 z-50 grid place-items-center bg-ink/25 px-5 backdrop-blur-sm"
             onClick={() => setKeyOpen(false)}
           >
             <motion.div
-              initial={{ opacity: 0, y: 14, scale: 0.98 }}
+              initial={{ opacity: 0, y: 12, scale: 0.985 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.99 }}
+              exit={{ opacity: 0, y: 6 }}
               transition={{ duration: 0.3, ease: EASE }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-md rounded-[1.4rem] border border-line bg-paper p-7 shadow-float"
+              className="w-full max-w-md rounded-[1.5rem] border border-line bg-paper p-8 shadow-float"
             >
               <h2 className="text-[18px] font-semibold tracking-[-0.02em]">{t.keyTitle}</h2>
-              <p className="mt-3 text-[14px] leading-[1.7] text-ink-soft">{t.keyBody}</p>
+              <p className="mt-3 text-[14px] leading-[1.75] text-ink-soft">{t.keyBody}</p>
               <input
                 type="password"
                 value={keyDraft}
                 onChange={(e) => setKeyDraft(e.target.value)}
                 placeholder={t.keyPlaceholder}
-                className="mt-5 w-full rounded-[0.9rem] border border-line bg-raised px-4 py-3 font-mono text-[14px] outline-none focus:border-line-strong"
+                className="mt-6 w-full rounded-[1rem] border border-line bg-raised px-4 py-3 font-mono text-[14px] outline-none focus:border-line-strong"
               />
-              <div className="mt-5 flex flex-wrap items-center gap-3">
+              <div className="mt-6 flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={saveKey}
@@ -464,7 +486,7 @@ export default function Demo() {
                       } catch {}
                       setKeyOpen(false);
                     }}
-                    className="rounded-full border border-line-strong px-5 py-2.5 text-[14px] transition-colors duration-200 hover:border-ink"
+                    className="rounded-full px-4 py-2.5 text-[14px] text-ink-muted transition-colors duration-200 hover:bg-raised hover:text-ink"
                   >
                     {t.keyClear}
                   </button>
@@ -473,7 +495,7 @@ export default function Demo() {
                   href="https://console.groq.com/keys"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[13px] text-ink-muted underline-offset-4 hover:text-ink hover:underline"
+                  className="ml-auto text-[13px] text-ink-muted underline-offset-4 hover:text-ink hover:underline"
                 >
                   {t.keyGet}
                 </a>
@@ -520,15 +542,19 @@ function Setup({
   error: string | null;
 }) {
   return (
-    <div className="py-12 sm:py-16">
-      <h1 className="display text-[clamp(1.9rem,4.5vw,2.6rem)]">{t.setupTitle}</h1>
-      <p className="mt-4 max-w-[38rem] text-[15.5px] leading-[1.7] text-ink-soft">
+    <div className="flex flex-1 flex-col justify-center py-16 sm:py-20">
+      <h1 className="display text-[clamp(2rem,4.5vw,2.7rem)]">{t.setupTitle}</h1>
+      <p className="mt-5 max-w-[34rem] text-[16.5px] leading-[1.75] text-ink-soft">
         {t.setupLede}
       </p>
 
-      <section className="mt-10">
-        <p className="eyebrow-sm text-ink-faint">{t.scenario}</p>
-        <div className="mt-4 flex flex-wrap gap-2">
+      <section className="mt-14">
+        <div className="flex items-baseline justify-between gap-4">
+          <p className="eyebrow-sm text-ink-faint">{t.scenario}</p>
+          <p className="text-[12.5px] text-ink-faint">{t.scenarioHint}</p>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2.5">
           {SCENARIOS.map((scenario) => {
             const selected = scenario.id === scenarioId && !customScenario.trim();
             return (
@@ -539,10 +565,10 @@ function Setup({
                   setScenarioId(scenario.id);
                   setCustomScenario("");
                 }}
-                className={`rounded-full border px-4 py-2 text-[14px] transition-colors duration-200 ${
+                className={`rounded-full px-4 py-2 text-[14px] transition-colors duration-200 ${
                   selected
-                    ? "border-ink bg-ink text-paper"
-                    : "border-line text-ink-soft hover:border-line-strong hover:text-ink"
+                    ? "bg-ink text-paper"
+                    : "bg-raised text-ink-soft hover:text-ink"
                 }`}
               >
                 {scenario[language]}
@@ -555,96 +581,59 @@ function Setup({
               setScenarioId(randomScenario().id);
               setCustomScenario("");
             }}
-            className="rounded-full border border-dashed border-line-strong px-4 py-2 text-[14px] text-ink-muted transition-colors duration-200 hover:text-ink"
+            className="rounded-full px-4 py-2 text-[14px] text-ink-faint transition-colors duration-200 hover:text-ink"
           >
             {t.surprise}
           </button>
         </div>
+
         <input
           value={customScenario}
           onChange={(e) => setCustomScenario(e.target.value)}
           placeholder={t.ownScenario}
-          className="mt-4 w-full max-w-[32rem] rounded-[0.9rem] border border-line bg-raised px-4 py-3 text-[14.5px] outline-none transition-colors duration-200 placeholder:text-ink-faint focus:border-line-strong"
+          className="mt-5 w-full rounded-[1.1rem] border border-line bg-raised px-5 py-3.5 text-[15px] outline-none transition-colors duration-200 placeholder:text-ink-faint focus:border-line-strong"
         />
       </section>
 
-      <div className="mt-10 grid gap-8 sm:grid-cols-3">
-        <Choice
+      <section className="mt-14 space-y-6">
+        <Segmented
           label={t.aiRole}
           options={AI_ROLES.map((r) => ({ id: r.id, label: r[language] }))}
           value={aiRole}
           onChange={(v) => setAiRole(v as AiRole)}
         />
-        <Choice
+        <Segmented
           label={t.traineeRole}
           options={TRAINEE_ROLES.map((r) => ({ id: r.id, label: r[language] }))}
           value={traineeRole}
           onChange={(v) => setTraineeRole(v as TraineeRole)}
         />
-        <Choice
+        <Segmented
           label={t.difficulty}
           options={DIFFICULTIES.map((d) => ({ id: d.id, label: d[language] }))}
           value={difficulty}
           onChange={(v) => setDifficulty(v as Difficulty)}
         />
-      </div>
+      </section>
 
       {error && (
-        <p className="mt-8 rounded-[1rem] border border-line bg-raised px-4 py-3 text-[13.5px] text-ink-soft">
+        <p className="mt-10 rounded-[1rem] bg-raised px-5 py-4 text-[14px] text-ink-soft">
           {error}
         </p>
       )}
 
-      <button
-        type="button"
-        onClick={onStart}
-        disabled={busy}
-        className="mt-10 rounded-full bg-ink px-6 py-3.5 text-[15.5px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-50"
-      >
-        {t.start}
-      </button>
-
-      <p className="mt-6 max-w-[34rem] text-[12.5px] leading-relaxed text-ink-faint">
-        {t.notTheApp}
-      </p>
-    </div>
-  );
-}
-
-function Choice({
-  label,
-  options,
-  value,
-  onChange,
-}: {
-  label: string;
-  options: { id: string; label: string }[];
-  value: string;
-  onChange: (id: string) => void;
-}) {
-  return (
-    <div>
-      <p className="eyebrow-sm text-ink-faint">{label}</p>
-      <div className="mt-4 space-y-2">
-        {options.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            onClick={() => onChange(option.id)}
-            className={`flex w-full items-center gap-3 rounded-[0.9rem] border px-4 py-2.5 text-left text-[14px] transition-colors duration-200 ${
-              value === option.id
-                ? "border-line-strong bg-raised text-ink"
-                : "border-line text-ink-muted hover:text-ink"
-            }`}
-          >
-            <span
-              className={`block size-2 shrink-0 rounded-full ${
-                value === option.id ? "bg-ink" : "border border-line-strong"
-              }`}
-            />
-            {option.label}
-          </button>
-        ))}
+      <div className="mt-14 flex flex-wrap items-center gap-5">
+        <button
+          type="button"
+          onClick={onStart}
+          disabled={busy}
+          className="rounded-full bg-ink px-7 py-3.5 text-[15.5px] font-medium text-paper transition-opacity duration-200 hover:opacity-90 disabled:opacity-50"
+        >
+          {t.start}
+        </button>
+        <p className="max-w-[26rem] text-[12.5px] leading-relaxed text-ink-faint">
+          {t.notTheApp}
+        </p>
       </div>
     </div>
   );
