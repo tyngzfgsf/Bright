@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+/* Theme follows the system by default; `.dark` / `.light` on <html> is the manual override. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------- palette --
+   Monochrome, but not flat: four text weights, three surfaces and three line
+   strengths give the pages hierarchy without introducing a colour.           */
+
+:root {
+  --paper: #ffffff;
+  --raised: #fcfcfd;
+  --sunken: #f8f8f9;
+  --ink: #08080a;
+  --ink-soft: #45454c;
+  --ink-muted: #6b6b74;
+  --ink-faint: #8e8e97;
+  --line-subtle: #efeff1;
+  --line: #e3e3e6;
+  --line-strong: #cdcdd2;
+  --glow: rgba(8, 8, 10, 0.055);
+  --shadow-sm: 0 1px 2px rgba(8, 8, 10, 0.05), 0 1px 1px rgba(8, 8, 10, 0.03);
+  --shadow-md: 0 10px 30px -12px rgba(8, 8, 10, 0.16);
+  --shadow-lg: 0 40px 90px -50px rgba(8, 8, 10, 0.42);
+  --grain-opacity: 0.028;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --paper: #060607;
+    --raised: #0c0c0e;
+    --sunken: #08080a;
+    --ink: #fafafa;
+    --ink-soft: #b2b2ba;
+    --ink-muted: #85858e;
+    --ink-faint: #6c6c75;
+    --line-subtle: #171719;
+    --line: #232326;
+    --line-strong: #3a3a40;
+    --glow: rgba(255, 255, 255, 0.055);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.8);
+    --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.95);
+    --grain-opacity: 0.035;
+  }
+}
+
+:root.dark {
+  --paper: #060607;
+  --raised: #0c0c0e;
+  --sunken: #08080a;
+  --ink: #fafafa;
+  --ink-soft: #b2b2ba;
+  --ink-muted: #85858e;
+  --ink-faint: #6c6c75;
+  --line-subtle: #171719;
+  --line: #232326;
+  --line-strong: #3a3a40;
+  --glow: rgba(255, 255, 255, 0.055);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.8);
+  --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.95);
+  --grain-opacity: 0.035;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-line-subtle: var(--line-subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --shadow-soft: var(--shadow-sm);
+  --shadow-raise: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
+
+  --font-sans:
+    var(--font-sans-latin), "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
+    "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    var(--font-mono-latin), ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+    Consolas, monospace;
+}
+
+/* ------------------------------------------------------------------ base -- */
+
+html {
+  color-scheme: light dark;
+  scroll-behavior: smooth;
+  /* Keep anchored headings clear of the sticky header. */
+  scroll-padding-top: 6rem;
+  -webkit-text-size-adjust: 100%;
+}
+
+:root.light {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border: 3px solid var(--paper);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-faint);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+
+/* ---------------------------------------------------------------- labels -- */
+
+.eyebrow-sm {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+html[lang="ko"] .eyebrow-sm {
+  letter-spacing: 0.02em;
+}
+
+.display {
+  letter-spacing: -0.038em;
+  line-height: 1.04;
+  font-weight: 600;
+}
+
+html[lang="ko"] .display {
+  letter-spacing: -0.028em;
+  line-height: 1.16;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Transcript fades where it's clipped rather than being sliced. */
+.chat-mask {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 28px);
+  mask-image: linear-gradient(to bottom, transparent 0, black 28px);
+}
