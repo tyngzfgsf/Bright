@@ -10,6 +10,7 @@ import {
 } from "framer-motion";
 import ButtonLink from "./ButtonLink";
 import ChatDemo from "./ChatDemo";
+import HeroName from "./HeroName";
 import LinkButton from "./LinkButton";
 import Magnetic from "./Magnetic";
 import { EASE } from "@/lib/motion";
@@ -19,7 +20,6 @@ export default function Hero() {
   const t = useTranslations("hero");
   const nav = useTranslations("nav");
   const reduceMotion = useReducedMotion();
-  const letters = t("name").split("");
 
   // The device drifts a little slower than the page — depth without theatrics.
   const { scrollY } = useScroll();
@@ -32,17 +32,6 @@ export default function Hero() {
       transition: { staggerChildren: reduceMotion ? 0 : 0.05, delayChildren: 0.08 },
     },
   };
-
-  const letter: Variants = reduceMotion
-    ? { hidden: { opacity: 1 }, shown: { opacity: 1 } }
-    : {
-        hidden: { y: "112%", opacity: 0 },
-        shown: {
-          y: "0%",
-          opacity: 1,
-          transition: { duration: 0.95, ease: EASE },
-        },
-      };
 
   const fadeUp = (delay: number): Variants =>
     reduceMotion
@@ -88,15 +77,7 @@ export default function Hero() {
 
           <h1 className="display mt-7 flex text-[clamp(3.6rem,12.5vw,7.5rem)]">
             <span className="sr-only">{t("name")}</span>
-            <span aria-hidden="true" className="flex">
-              {letters.map((char, i) => (
-                <span key={i} className="overflow-hidden pb-[0.08em]">
-                  <motion.span data-reveal="" className="block" variants={letter}>
-                    {char}
-                  </motion.span>
-                </span>
-              ))}
-            </span>
+            <HeroName text={t("name")} />
           </h1>
 
           <motion.p
