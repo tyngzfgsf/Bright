@@ -4,6 +4,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import ButtonLink from "@/components/ButtonLink";
 import PageHeader from "@/components/PageHeader";
 import LinkButton from "@/components/LinkButton";
+import Magnetic from "@/components/Magnetic";
 import Reveal from "@/components/Reveal";
 import { fetchReleases } from "@/lib/releases";
 import { site } from "@/lib/site";
@@ -75,9 +76,15 @@ export default async function DownloadPage({
                   </p>
                 )}
                 <div className="mt-7 flex flex-wrap items-center gap-3">
-                  <ButtonLink href={latest.apk?.url ?? latest.htmlUrl} size="lg" external>
-                    {t("cta")}
-                  </ButtonLink>
+                  <Magnetic>
+                    <ButtonLink
+                      href={latest.apk?.url ?? latest.htmlUrl}
+                      size="lg"
+                      external
+                    >
+                      {t("cta")}
+                    </ButtonLink>
+                  </Magnetic>
                   <LinkButton href="/releases" variant="outline" size="lg">
                     {t("allReleases")}
                   </LinkButton>

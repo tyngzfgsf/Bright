@@ -105,6 +105,21 @@ Two constraints worth keeping:
 - The theme toggle swaps its icon in place rather than through `AnimatePresence` — an exit
   animation left the button visibly empty for a moment on every load.
 
+## Pointer
+
+`Cursor.tsx` replaces the pointer with a dot that tracks it exactly and a ring that
+follows a beat behind, both drawn with `mix-blend-difference` so one white shape stays
+legible on paper, on the dark theme and on the black result card. The ring grows over
+anything clickable, tightens on press, and a click leaves a ripple that cleans itself up.
+
+It is deliberately conditional. The native cursor is hidden by a `has-cursor` class the
+script adds only after a real mouse has moved, so touch devices — and any visit where the
+script doesn't run — keep the system cursor. Reduced motion renders nothing at all.
+
+`Magnetic.tsx` pulls the primary calls to action a fraction of the way toward the pointer,
+and cards carry a highlight that follows the pointer across them (`.spotlight`, fed by
+`--mx` / `--my`).
+
 ## Surfaces
 
 Three surfaces (`paper`, `raised`, `sunken`), four text weights and three line strengths

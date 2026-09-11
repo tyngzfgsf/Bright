@@ -4,6 +4,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import BackToTop from "@/components/BackToTop";
+import Cursor from "@/components/Cursor";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import ThemeScript from "@/components/ThemeScript";
@@ -101,6 +102,7 @@ export default async function LocaleLayout({
           </main>
           <Footer />
           <BackToTop />
+          <Cursor />
         </NextIntlClientProvider>
       </body>
     </html>

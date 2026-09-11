@@ -354,3 +354,45 @@ html[lang="ko"] .display {
     transition: none !important;
   }
 }
+
+
+/* ---------------------------------------------------------------- cursor -- */
+
+/* The native cursor only goes away once a real mouse has moved: the class is
+   added by Cursor.tsx, so touch devices — and a page whose script never ran —
+   keep the system cursor. Fine pointers only. */
+@media (pointer: fine) {
+  html.has-cursor,
+  html.has-cursor a,
+  html.has-cursor button,
+  html.has-cursor [role="button"] {
+    cursor: none;
+  }
+}
+
+/* A soft highlight that follows the pointer across a card. The position comes
+   from --mx / --my, set on pointermove; with no pointer it simply never shows. */
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  background: radial-gradient(
+    16rem 16rem at var(--mx, 50%) var(--my, 0%),
+    color-mix(in srgb, var(--ink) 7%, transparent),
+    transparent 68%
+  );
+}
+
+.spotlight:hover::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight::after {
+    display: none;
+  }
+}
