@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // bright-web keeps a server runtime for next-intl's locale middleware, so it runs through the
+  // OpenNext Cloudflare adapter: `npm run deploy` builds .open-next/ and deploys it.
+  "name": "bright-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "bright-web" }],
+  "observability": { "enabled": true }
+}
