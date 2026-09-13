@@ -1,5 +1,7 @@
 package com.bright.app.ui.chat
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -18,6 +20,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +37,7 @@ import com.bright.app.resources.*
 import com.bright.app.domain.model.ChatMessage
 import com.bright.app.domain.model.MessageRole
 import com.bright.app.ui.theme.BrightMotion
+import kotlin.math.roundToInt
 
 @Composable
 fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
@@ -74,10 +82,18 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
             when {
                 isFeedback -> Column {
                     if (message.score != null) {
-                        ScoreBadge(score = message.score)
+                        var feedbackVisible by remember { mutableStateOf(false) }
+                        ScoreBadge(score = message.score, onCountUpFinished = { feedbackVisible = true })
                         Spacer(Modifier.height(6.dp))
+                        AnimatedVisibility(
+                            visible = feedbackVisible,
+                            enter = fadeIn(animationSpec = tween(BrightMotion.MEDIUM))
+                        ) {
+                            Text(text = message.text, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    } else {
+                        Text(text = message.text, color = textColor, style = MaterialTheme.typography.bodyMedium)
                     }
-                    Text(text = message.text, color = textColor, style = MaterialTheme.typography.bodyMedium)
                 }
                 isUserAsk -> Column {
                     Text(
@@ -114,8 +130,13 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ScoreBadge(score: Int) {
+private fun ScoreBadge(score: Int, onCountUpFinished: () -> Unit = {}) {
     val colors = MaterialTheme.colorScheme
+    val animatedScore = remember { Animatable(0f) }
+    LaunchedEffect(score) {
+        animatedScore.animateTo(score.toFloat(), animationSpec = tween(BrightMotion.SLOW))
+        onCountUpFinished()
+    }
     Box(
         modifier = Modifier
             .clip(CircleShape)
@@ -123,7 +144,7 @@ private fun ScoreBadge(score: Int) {
             .padding(horizontal = 10.dp, vertical = 4.dp)
     ) {
         Text(
-            text = "$score/10",
+            text = "${animatedScore.value.roundToInt()}/10",
             color = colors.background,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold
