@@ -30,10 +30,9 @@ demo can be shown to someone without handing over a key.
 
 **Live (your key).** Enter a Groq key in Settings › Groq key and every turn goes to Groq
 for real, using the same model the app defaults to (`openai/gpt-oss-120b`). The key is
-kept in this browser's localStorage and passed through `/api/session` for each request —
-it is never stored on the server, never logged, and the route holds nothing between
-requests. The proxy exists so the browser isn't sending an `Authorization` header
-cross-origin.
+kept in this browser's localStorage and passed through bright-proxy for each request — it
+is never stored there, never logged, and doesn't count against the daily free turns. Signed
+in without a key, turns use Bright's own key instead; see "Accounts and the AI" below.
 
 Get a free key at [console.groq.com/keys](https://console.groq.com/keys).
 
@@ -142,19 +141,30 @@ won't start audio on a page load without a gesture anyway. Under
 `prefers-reduced-motion: reduce` the rings stop, the meter parks and the frame loop never
 starts — the sound is unaffected.
 
-## Accounts
+## Accounts and the AI
 
-`src/lib/auth.tsx` is a **stub**. The sidebar account row, the sign-in sheet and the
-Account section of Settings are all built against its interface, but nothing talks to a
-server yet: pressing "Continue with Google" says so. Turning on Firebase is a change to
-that one file — the steps are written at the top of it. Note the repo-wide gotcha about
-pasting Firebase config: take the `firebaseConfig` object only, not the
-`import { initializeApp }` boilerplate around it.
+Google sign-in is real: `src/lib/auth.tsx` uses Firebase Auth (free on Spark) against the
+`bright-34c23` project, with the public web config in `src/lib/firebase.ts`. Each live turn goes
+to **bright-proxy** (`../bright-proxy`, a Cloudflare Worker), picked in this order:
+
+1. **Own Groq key** saved in Settings → sent as `X-Groq-Key`, not metered.
+2. **Signed in** → sent with the Firebase ID token; Bright's key is used, 40 turns a day.
+3. **Neither** → the scripted preview, no network at all.
+
+The site itself is a static export (`output: "export"`), served by Workers static assets.
+The proxy URL is baked in at build time:
+
+```bash
+NEXT_PUBLIC_PROXY_URL=https://bright-proxy.<subdomain>.workers.dev npm run build
+npx wrangler deploy          # serves ./out
+```
+
+Sign-in only works from domains listed under Firebase console → Authentication → Settings →
+Authorized domains, so the deployed `bright-demo.<subdomain>.workers.dev` has to be added there.
 
 ```
 src/app/layout.tsx            providers + the pre-paint theme script
 src/app/page.tsx              mounts the shell
-src/app/api/session/route.ts  Groq proxy — takes a key per request, keeps nothing
 
 src/components/App.tsx        the shell: rail, top bar, turn-taking, dialogs
 src/components/Sidebar.tsx    new session, history by day, Settings, account
@@ -168,7 +178,7 @@ src/components/StreamedText.tsx  a reply revealing itself, with a caret
 src/components/CountUp.tsx    a number running up to its value
 src/components/Thinking.tsx   the three dots while a turn is in flight
 src/components/SettingsDialog.tsx  General / defaults / key / account / data
-src/components/SignInDialog.tsx    the Google sheet, on the stubbed call
+src/components/SignInDialog.tsx    the Google sign-in sheet
 src/components/SelectPill.tsx      the pills inside the composer
 src/components/Dialog.tsx     the one modal shell
 src/components/Icons.tsx      the icon set
@@ -176,7 +186,8 @@ src/components/ResultCard.tsx the end-of-session card, styled like the app's
 
 src/lib/chill.ts      the four ambient pieces, synthesised as they play
 src/lib/prefs.tsx     theme, language and session defaults, persisted
-src/lib/auth.tsx      the account stub described above
+src/lib/auth.tsx      Google sign-in via Firebase Auth
+src/lib/firebase.ts   the public bright-34c23 web config
 src/lib/sessions.ts   session shape, persistence, day grouping
 src/lib/storage.ts    every localStorage key, and readers that never throw
 src/lib/prompt.ts     ported prompt builder and turn contract

@@ -3,6 +3,8 @@ import { markGeometry } from "@/lib/mark";
 
 export const size = { width: 64, height: 64 };
 export const contentType = "image/png";
+/** Rendered once at build time — the demo is a static export (see next.config.ts). */
+export const dynamic = "force-static";
 
 /**
  * Browser-tab icon: the app's launcher icon, same sun and horizon on black.

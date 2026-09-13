@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // A static site on Workers static assets — no Worker script, nothing billable beyond the
+  // free plan. Build with NEXT_PUBLIC_PROXY_URL set, then deploy: see README.
+  "name": "bright-demo",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "single-page-application"
+  }
+}

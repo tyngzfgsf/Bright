@@ -31,6 +31,10 @@ import {
   type Session,
 } from "@/lib/sessions";
 import { STORAGE, writeRaw } from "@/lib/storage";
+import { useAuth } from "@/lib/auth";
+
+/** bright-proxy. Baked in at build time; `wrangler dev` serves it on 8787 locally. */
+const PROXY_URL = process.env.NEXT_PUBLIC_PROXY_URL ?? "http://localhost:8787";
 
 /** What one round trip produces: the graded turn plus the session's new tail. */
 type TurnOutcome = { turn: TurnResult; history: ApiMessage[]; scriptStep: number };
@@ -73,7 +77,10 @@ export default function App() {
   }, []);
 
   const active = sessions.find((s) => s.id === activeId) ?? null;
-  const scripted = prefs.apiKey.trim() === "";
+  const { user, getIdToken } = useAuth();
+  // Own key → BYOK through the proxy. Signed in without one → Bright's hosted AI, metered per
+  // day. Neither → the canned script.
+  const scripted = prefs.apiKey.trim() === "" && !user;
 
   const commit = useCallback((list: Session[]) => {
     const sorted = byRecency(list);
@@ -89,7 +96,7 @@ export default function App() {
     [commit],
   );
 
-  /** One turn: the canned reply, or a real round trip through /api/session. */
+  /** One turn: the canned reply, or a real round trip through bright-proxy. */
   const takeTurn = useCallback(
     async (session: Session, userContent: string): Promise<TurnOutcome> => {
       if (session.config.scripted) {
@@ -110,14 +117,28 @@ export default function App() {
         { role: "user", content: userContent },
       ];
 
-      const response = await fetch("/api/session", {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const ownKey = prefs.apiKey.trim();
+      if (ownKey) {
+        headers["X-Groq-Key"] = ownKey;
+      } else {
+        const token = await getIdToken();
+        if (!token) throw new Error(t.signInRequired);
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${PROXY_URL}/v1/turn`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey: prefs.apiKey, messages: sent }),
+        headers,
+        body: JSON.stringify({ messages: sent }),
       });
 
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error ?? t.error);
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (payload?.code === "quota_exceeded") throw new Error(t.quotaExceeded);
+        if (payload?.code === "unauthenticated") throw new Error(t.signInRequired);
+        throw new Error(payload?.error ?? t.error);
+      }
 
       const turn = payload.turn as TurnResult;
       return {
@@ -126,7 +147,7 @@ export default function App() {
         scriptStep: session.scriptStep,
       };
     },
-    [prefs.apiKey, t.error],
+    [prefs.apiKey, getIdToken, t.error, t.quotaExceeded, t.signInRequired],
   );
 
   /** Opens a session and asks the first question. */

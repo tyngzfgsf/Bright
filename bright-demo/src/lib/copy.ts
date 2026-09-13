@@ -27,11 +27,12 @@ export const COPY = {
     signedOutHint: "Sessions stay in this browser",
     signInTitle: "Sign in to Bright",
     signInBody:
-      "An account will carry your sessions and your score history between devices. Right now everything lives in this browser only.",
+      "Sign in to train with Bright's AI — no API key needed. You get 40 free turns a day. Your sessions still live in this browser.",
     continueWithGoogle: "Continue with Google",
-    signInSoon:
-      "Google sign-in isn't wired up yet — it's the next thing going in. Nothing you've done here is lost in the meantime.",
     signInFailed: "That didn't go through. Try again.",
+    signInRequired: "Sign in, or add your own Groq key in Settings, to run a live session.",
+    quotaExceeded:
+      "You've used today's 40 free turns. They reset at midnight UTC — or add your own Groq key in Settings to keep going.",
     continueWithout: "Keep going without an account",
 
     // welcome
@@ -52,7 +53,7 @@ export const COPY = {
     // key
     key: "Groq key",
     keyBody:
-      "The demo sends each turn to Groq using your key, exactly as the app does. It's kept in this browser and passed through this machine's own server route for the request — never stored on a server, never logged.",
+      "Optional. With your own key, every turn goes to Groq on your quota and isn't counted against the daily free turns. The key stays in this browser and passes through Bright's proxy for each request — never stored, never logged.",
     keyPlaceholder: "gsk_…",
     keySave: "Save key",
     keySaved: "Saved",
@@ -132,11 +133,12 @@ export const COPY = {
     signedOutHint: "세션은 이 브라우저에만 남습니다",
     signInTitle: "Bright 로그인",
     signInBody:
-      "계정이 있으면 세션과 점수 기록을 기기 사이로 옮길 수 있습니다. 지금은 모두 이 브라우저에만 저장됩니다.",
+      "로그인하면 API 키 없이 Bright의 AI로 훈련할 수 있습니다. 하루 40턴까지 무료입니다. 세션 기록은 계속 이 브라우저에 저장됩니다.",
     continueWithGoogle: "Google로 계속하기",
-    signInSoon:
-      "Google 로그인은 아직 연결되지 않았습니다. 다음 작업으로 들어갑니다. 그동안 여기서 한 것은 사라지지 않습니다.",
     signInFailed: "로그인하지 못했습니다. 다시 시도해 주세요.",
+    signInRequired: "라이브 세션을 하려면 로그인하거나 설정에서 본인 Groq 키를 추가하세요.",
+    quotaExceeded:
+      "오늘의 무료 40턴을 모두 사용했습니다. UTC 자정에 초기화되며, 설정에서 본인 Groq 키를 추가하면 바로 계속할 수 있습니다.",
     continueWithout: "계정 없이 계속하기",
 
     // welcome
@@ -157,7 +159,7 @@ export const COPY = {
     // key
     key: "Groq 키",
     keyBody:
-      "앱과 똑같이, 각 턴을 사용자의 키로 Groq에 보냅니다. 키는 이 브라우저에 저장되고 요청은 이 컴퓨터의 서버 경로를 거칩니다. 서버에 저장되거나 기록되지 않습니다.",
+      "선택 사항입니다. 본인 키를 쓰면 각 턴이 본인 할당량으로 Groq에 전송되고, 하루 무료 턴에서 차감되지 않습니다. 키는 이 브라우저에만 저장되며 요청할 때마다 Bright 프록시를 거칠 뿐 저장되거나 기록되지 않습니다.",
     keyPlaceholder: "gsk_…",
     keySave: "키 저장",
     keySaved: "저장됨",

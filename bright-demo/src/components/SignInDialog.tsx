@@ -9,8 +9,7 @@ import type { Copy } from "@/lib/copy";
 import { useAuth } from "@/lib/auth";
 
 /**
- * The sign-in sheet. The Google button is real UI on a stubbed call — see
- * `lib/auth.tsx` for what switching Firebase on involves.
+ * The sign-in sheet: Google sign-in through Firebase Auth — see `lib/auth.tsx`.
  */
 export default function SignInDialog({
   open,
@@ -61,7 +60,7 @@ export default function SignInDialog({
               transition={{ duration: 0.3, ease: EASE }}
               className="overflow-hidden rounded-[0.9rem] bg-raised px-4 py-3 text-left text-[13px] leading-[1.7] text-ink-soft"
             >
-              {error === "not-configured" ? t.signInSoon : t.signInFailed}
+              {t.signInFailed}
             </motion.p>
           )}
         </AnimatePresence>

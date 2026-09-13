@@ -1,29 +1,24 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  type User,
+} from "firebase/auth";
+import { FirebaseError } from "firebase/app";
+import { auth } from "./firebase";
 
 /**
- * The account layer, stubbed.
+ * The account layer: Google sign-in through Firebase Auth (free on the Spark plan).
  *
- * Nothing here talks to a server yet — the sidebar, the sign-in sheet and the
- * Account section of Settings are all built against this interface so that
- * turning on Firebase is a change to this one file and nothing else.
- *
- * To wire it up:
- *   1. `npm i firebase`
- *   2. Add a `src/lib/firebase.ts` holding the `firebaseConfig` object from the
- *      console — the object *only*, no `initializeApp` import boilerplate
- *      (that snippet is written for a bundler and breaks the site's setup;
- *      see gotcha 4 in the repo's CLAUDE.md).
- *   3. Flip AUTH_CONFIGURED to true and replace the two bodies below with
- *      `signInWithPopup(auth, new GoogleAuthProvider())` and `signOut(auth)`,
- *      then subscribe to `onAuthStateChanged` in a `useEffect` to fill `user`.
- *
- * The rest of the app already handles a signed-in user: it only ever reads
- * `user.name` / `user.photoURL` and calls these two functions.
+ * The sidebar account row, the sign-in sheet and the Account section of Settings only read
+ * `user` and call these functions. Signing in is what lets a trainee use Bright's hosted AI
+ * without a key of their own: `getIdToken()` is sent to bright-proxy, which verifies it and
+ * meters the trainee's daily turns.
  */
-
-export const AUTH_CONFIGURED = false;
 
 export type BrightUser = {
   uid: string;
@@ -32,53 +27,73 @@ export type BrightUser = {
   photoURL: string | null;
 };
 
-export type AuthError = "not-configured" | "failed" | null;
+export type AuthError = "failed" | null;
 
 type AuthValue = {
   user: BrightUser | null;
-  /** False while an auth check or a popup is in flight. */
+  /** True until Firebase has reported the persisted session, and while a popup is open. */
   busy: boolean;
   error: AuthError;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   clearError: () => void;
+  /** A fresh Firebase ID token for the proxy, or null when signed out. Refreshed as needed. */
+  getIdToken: () => Promise<string | null>;
 };
 
 const AuthContext = createContext<AuthValue | null>(null);
 
+/** Closing or superseding the popup is the trainee changing their mind, not an error. */
+const DISMISSED = new Set(["auth/popup-closed-by-user", "auth/cancelled-popup-request"]);
+
+function toBrightUser(u: User): BrightUser {
+  return {
+    uid: u.uid,
+    name: u.displayName ?? u.email ?? "Bright user",
+    email: u.email ?? "",
+    photoURL: u.photoURL,
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<BrightUser | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
   const [error, setError] = useState<AuthError>(null);
+
+  // Firebase restores the session from the browser on its own; this is how we hear about it.
+  useEffect(
+    () =>
+      onAuthStateChanged(auth, (u) => {
+        setUser(u ? toBrightUser(u) : null);
+        setBusy(false);
+      }),
+    [],
+  );
 
   const signInWithGoogle = useCallback(async () => {
     setError(null);
-    if (!AUTH_CONFIGURED) {
-      setError("not-configured");
-      return;
-    }
     setBusy(true);
     try {
-      // TODO(firebase): signInWithPopup(auth, new GoogleAuthProvider())
-      setUser(null);
-    } catch {
-      setError("failed");
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch (e) {
+      if (!(e instanceof FirebaseError && DISMISSED.has(e.code))) setError("failed");
     } finally {
       setBusy(false);
     }
   }, []);
 
   const signOut = useCallback(async () => {
-    // TODO(firebase): await firebaseSignOut(auth)
-    setUser(null);
     setError(null);
+    await firebaseSignOut(auth);
   }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
+  const getIdToken = useCallback(async () => (auth.currentUser ? auth.currentUser.getIdToken() : null), []);
+
   const value = useMemo<AuthValue>(
-    () => ({ user, busy, error, signInWithGoogle, signOut, clearError }),
-    [user, busy, error, signInWithGoogle, signOut, clearError],
+    () => ({ user, busy, error, signInWithGoogle, signOut, clearError, getIdToken }),
+    [user, busy, error, signInWithGoogle, signOut, clearError, getIdToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
