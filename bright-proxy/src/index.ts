@@ -82,7 +82,8 @@ export default {
       );
     }
 
-    const response = await forward(env.GROQ_API_KEY, HOSTED_MODEL, parsed.messages, { exposeUpstreamErrors: false }, cors, {
+    // Trimmed: a key uploaded from a clipboard can carry a trailing newline, which breaks the header.
+    const response = await forward(env.GROQ_API_KEY.trim(), HOSTED_MODEL, parsed.messages, { exposeUpstreamErrors: false }, cors, {
       remaining: usage.remaining,
       limit,
       resetAt: usage.resetAt,
