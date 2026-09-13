@@ -1,5 +1,5 @@
-import Demo from "@/components/Demo";
+import App from "@/components/App";
 
 export default function Page() {
-  return <Demo />;
+  return <App />;
 }
