@@ -2,6 +2,7 @@ package com.bright.app
 
 import android.app.Application
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import com.bright.app.data.analytics.FirebaseAnalyticsTracker
 import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.local.buildDatabase
 import com.bright.app.data.local.getDatabaseBuilder
@@ -56,7 +57,8 @@ class BrightApplication : Application() {
             imageSharer = imageSharer,
             notifier = notifier,
             appVersionName = BuildConfig.VERSION_NAME,
-            appUpdater = AndroidAppUpdater(this)
+            appUpdater = AndroidAppUpdater(this),
+            analytics = FirebaseAnalyticsTracker(this)
         )
     }
 }

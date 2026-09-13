@@ -66,7 +66,7 @@ fun ChatScreen(
     val viewModel: ChatViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
-                ChatViewModel(sessionId, app.database.chatDao(), app.userPreferences, app.groqRepository, app.notifier)
+                ChatViewModel(sessionId, app.database.chatDao(), app.userPreferences, app.groqRepository, app.notifier, app.analytics)
             }
         }
     )

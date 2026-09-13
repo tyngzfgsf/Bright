@@ -69,7 +69,7 @@ fun StatsScreen(
     val app = LocalBrightDependencies.current
     val viewModel: StatsViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { StatsViewModel(app.database.chatDao(), app.userPreferences) }
+            initializer { StatsViewModel(app.database.chatDao(), app.userPreferences, app.analytics) }
         }
     )
     val uiState by viewModel.uiState.collectAsState()
