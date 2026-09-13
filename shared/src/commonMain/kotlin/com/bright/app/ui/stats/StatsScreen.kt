@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +57,7 @@ import com.bright.app.resources.*
 import com.bright.app.domain.SkillProfile
 import com.bright.app.domain.TriageSkillProfile
 import com.bright.app.domain.model.stringRes
+import com.bright.app.ui.components.EmptyState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,22 +94,14 @@ fun StatsScreen(
         }
     ) { padding ->
         if (uiState.stats.isEmpty() && dueForReview.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 32.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(Res.string.stats_empty_title),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = stringResource(Res.string.stats_empty_body),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            EmptyState(
+                icon = Icons.Filled.Insights,
+                title = stringResource(Res.string.stats_empty_title),
+                body = stringResource(Res.string.stats_empty_body),
+                actionLabel = stringResource(Res.string.home_start_session),
+                onAction = onBack,
+                modifier = Modifier.fillMaxSize().padding(padding)
+            )
             return@Scaffold
         }
 
