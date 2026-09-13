@@ -2,6 +2,9 @@ package com.bright.app.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bright.app.data.analytics.Analytics
+import com.bright.app.data.analytics.AnalyticsEvent
+import com.bright.app.data.analytics.NoOpAnalytics
 import com.bright.app.data.local.ChatDao
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqRepository
@@ -34,7 +37,8 @@ class SettingsViewModel(
     private val groqRepository: GroqRepository,
     private val currentVersionName: String,
     /** Null on platforms without sideloaded updates (iOS); the UI hides the section then. */
-    private val appUpdater: AppUpdater? = null
+    private val appUpdater: AppUpdater? = null,
+    private val analytics: Analytics = NoOpAnalytics
 ) : ViewModel() {
 
     private val _updateInfo = MutableStateFlow<AppUpdateInfo?>(null)
@@ -91,7 +95,14 @@ class SettingsViewModel(
 
     fun setApiKey(key: String) {
         viewModelScope.launch {
+            val previous = preferences.groqApiKey.first().orEmpty()
             preferences.setGroqApiKey(key)
+            // Only a real change counts: clearing the key or re-saving the same one isn't "added".
+            // The event carries whether a key was replaced, never the key.
+            val trimmed = key.trim()
+            if (trimmed.isNotEmpty() && trimmed != previous) {
+                analytics.log(AnalyticsEvent.SettingsKeyAdded(replacedExistingKey = previous.isNotEmpty()))
+            }
             fetchModelsAndUsage()
         }
     }

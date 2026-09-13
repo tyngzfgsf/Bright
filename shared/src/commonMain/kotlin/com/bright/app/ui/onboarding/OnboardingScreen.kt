@@ -44,6 +44,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.LocalBrightDependencies
+import com.bright.app.data.analytics.AnalyticsEvent
 import com.bright.app.resources.Res
 import com.bright.app.resources.*
 import com.bright.app.domain.model.Language
@@ -56,7 +57,7 @@ import kotlinx.coroutines.launch
 fun OnboardingScreen(onFinished: () -> Unit) {
     val app = LocalBrightDependencies.current
     val viewModel: OnboardingViewModel = viewModel(
-        factory = viewModelFactory { initializer { OnboardingViewModel(app.userPreferences) } }
+        factory = viewModelFactory { initializer { OnboardingViewModel(app.userPreferences, app.analytics) } }
     )
 
     var introFinished by rememberSaveable { mutableStateOf(false) }
@@ -135,6 +136,15 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     var apiKeyInput by rememberSaveable { mutableStateOf("") }
 
+    LaunchedEffect(pagerState.currentPage) {
+        viewModel.logStep(
+            when (pages[pagerState.currentPage]) {
+                PageKind.LANGUAGE -> AnalyticsEvent.OnboardingStep.LANGUAGE
+                PageKind.API_KEY -> AnalyticsEvent.OnboardingStep.KEY_ENTRY
+            }
+        )
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.height(56.dp))
 
@@ -177,6 +187,10 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
                 onClick = {
                     if (isLastPage) {
                         if (hasKey) viewModel.saveApiKey(apiKeyInput)
+                        viewModel.logStep(
+                            if (hasKey) AnalyticsEvent.OnboardingStep.KEY_SAVED
+                            else AnalyticsEvent.OnboardingStep.KEY_SKIPPED
+                        )
                         viewModel.completeOnboarding()
                         onFinished()
                     } else {

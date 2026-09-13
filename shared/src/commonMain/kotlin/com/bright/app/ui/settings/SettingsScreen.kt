@@ -74,7 +74,8 @@ fun SettingsScreen(
                     app.userPreferences,
                     app.groqRepository,
                     app.appVersionName,
-                    app.appUpdater
+                    app.appUpdater,
+                    app.analytics
                 )
             }
         }
