@@ -134,6 +134,8 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
     val scope = rememberCoroutineScope()
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     var apiKeyInput by rememberSaveable { mutableStateOf("") }
+    // Guards a double tap on "Get started" while the prefs writes are in flight.
+    var finishing by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(Modifier.height(56.dp))
@@ -176,9 +178,12 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
                 ),
                 onClick = {
                     if (isLastPage) {
-                        if (hasKey) viewModel.saveApiKey(apiKeyInput)
-                        viewModel.completeOnboarding()
-                        onFinished()
+                        if (finishing) return@BrightButton
+                        finishing = true
+                        scope.launch {
+                            viewModel.finishOnboarding(apiKeyInput)
+                            onFinished()
+                        }
                     } else {
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                     }
