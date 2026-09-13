@@ -115,6 +115,12 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <a
+            href={site.webApp}
+            className="hidden rounded-full bg-ink px-4 py-2 text-[13.5px] font-medium text-paper shadow-soft transition-shadow duration-300 hover:shadow-raise sm:inline-flex"
+          >
+            {t("openApp")}
+          </a>
           <LocaleToggle />
           <ThemeToggle />
           <button
@@ -153,6 +159,13 @@ export default function Header() {
             className="overflow-hidden border-t border-line-subtle bg-paper/95 lg:hidden"
           >
             <div className="mx-auto flex max-w-6xl flex-col px-5 py-1 sm:px-8">
+              <a
+                href={site.webApp}
+                onClick={() => setOpen(false)}
+                className="my-3 flex items-center justify-center rounded-full bg-ink py-3 text-[15px] font-medium text-paper sm:hidden"
+              >
+                {t("openApp")}
+              </a>
               {links.map((link, i) => (
                 <motion.div
                   key={link.key}

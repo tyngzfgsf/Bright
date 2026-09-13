@@ -102,8 +102,8 @@ export default function Hero() {
             className="mt-9 flex flex-wrap items-center gap-3"
           >
             <Magnetic>
-              <ButtonLink href={site.releasesLatest} size="lg" external>
-                {t("ctaPrimary")}
+              <ButtonLink href={site.webApp} size="lg">
+                {t("ctaWeb")}
               </ButtonLink>
             </Magnetic>
             <Magnetic strength={0.18}>

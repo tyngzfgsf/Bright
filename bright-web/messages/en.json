@@ -16,7 +16,8 @@
     "faq": "FAQ",
     "releases": "Releases",
     "home": "Home",
-    "backToTop": "Back to top"
+    "backToTop": "Back to top",
+    "openApp": "Open app"
   },
   "theme": {
     "label": "Theme",
@@ -31,13 +32,14 @@
     "koFull": "Korean"
   },
   "hero": {
-    "eyebrow": "Android · Free · Still being built",
+    "eyebrow": "Web & Android · Free · Still being built",
     "name": "Bright",
     "tagline": "A step for your brighter future.",
     "description": "I'm building an app for practising medical emergencies. The AI plays the patient, or a doctor asking what you'd do, and you type the response you'd actually give.",
+    "ctaWeb": "Open Bright in your browser",
     "ctaPrimary": "Get the Android app",
     "ctaSecondary": "See how it works",
-    "note": "The APK lives on GitHub Releases. It isn't on the Play Store."
+    "note": "Sign in with Google to train in the browser, no key needed. The Android APK lives on GitHub Releases — it isn't on the Play Store."
   },
   "demo": {
     "label": "Emergency session",

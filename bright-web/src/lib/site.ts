@@ -11,6 +11,8 @@ export const site = {
   /** Feed the app itself checks for updates; the releases page reads the same one. */
   releasesApi:
     "https://api.github.com/repos/tyngzfgsf/Bright-app/releases?per_page=30",
+  /** The chat app (bright-demo): sign in with Google, or bring a Groq key. */
+  webApp: process.env.NEXT_PUBLIC_WEB_APP_URL ?? "https://bright-demo.jchang2032.workers.dev",
   /** Used for canonical/OG URLs; override with NEXT_PUBLIC_SITE_URL at build time. */
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://bright-34c23.web.app",
 } as const;
