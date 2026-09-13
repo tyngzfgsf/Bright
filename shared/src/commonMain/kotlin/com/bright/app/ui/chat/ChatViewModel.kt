@@ -171,6 +171,8 @@ class ChatViewModel(
         val recent = messagesFlow.first()
         val question = recent.lastOrNull { it.role == MessageRole.AI_QUESTION.name } ?: return
         val answer = recent.lastOrNull { it.role == MessageRole.USER.name } ?: return
+        // An answer from before this question belongs to an earlier round — don't pair them.
+        if (answer.timestampMillis < question.timestampMillis) return
         val s = session ?: return
         val now = currentTimeMillis()
 
@@ -421,8 +423,19 @@ class ChatViewModel(
         viewModelScope.launch {
             _isSending.value = true
             _errorMessage.value = null
+            // Ending normally happens with a question still open. The prompt says to grade only
+            // an answer given in this turn, but models grade the open question anyway (0/10,
+            // "you ended early"), which drags the average down and files a review item pairing
+            // that question with the *previous* answer. Nothing was answered, so nothing is graded.
+            val lastExchange = messagesFlow.first().lastOrNull {
+                it.role == MessageRole.AI_QUESTION.name || it.role == MessageRole.USER.name
+            }
+            val hasUngradedAnswer = lastExchange?.role == MessageRole.USER.name
             when (val result = callAi(extraTrailingUserMessage = ScenarioPromptBuilder.endSessionPrompt(currentLanguage()))) {
-                is ApiResult.Success -> applyTurn(result.data.copy(sessionComplete = true))
+                is ApiResult.Success -> applyTurn(
+                    if (hasUngradedAnswer) result.data.copy(sessionComplete = true)
+                    else result.data.copy(score = null, feedback = null, sessionComplete = true)
+                )
                 is ApiResult.Error -> _errorMessage.value = result.message
             }
             _isSending.value = false
