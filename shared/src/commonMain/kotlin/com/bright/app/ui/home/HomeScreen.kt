@@ -45,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +60,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
@@ -68,6 +70,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
@@ -90,6 +93,7 @@ import com.bright.app.ui.theme.BrightMotion
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private val TOUR_STEPS = listOf(
@@ -98,6 +102,13 @@ private val TOUR_STEPS = listOf(
     TourStep("insights", Res.string.tour_insights_title, Res.string.tour_insights_body),
     TourStep("start", Res.string.tour_start_title, Res.string.tour_start_body)
 )
+
+/**
+ * How much vertical space Home's spacing can give back, roomy (fit = 0) to tightest (fit = 1),
+ * summed over the gaps and paddings that use [lerp] below. It only steers how fast the fit
+ * converges, so it needn't be exact.
+ */
+private const val FIT_RANGE_DP = 100f
 
 /**
  * Unclipped bounds in window coordinates.
@@ -147,26 +158,58 @@ private fun HomeProgressCard(
     dueForReviewCount: Int,
     weakest: SkillProfile.ScenarioStat?,
     streakDays: Int,
+    fit: Float,
     onReviewNow: () -> Unit,
     onDrillWeakSpot: (ScenarioType) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val hasPrimaryContent = dueForReviewCount > 0 || weakest != null
 
+    // The streak shares the label's row rather than taking a row of its own under the button —
+    // that extra row is what pushed Home past one screen on ordinary phones.
+    @Composable
+    fun LabelRow(label: String) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                color = colors.background.copy(alpha = 0.7f)
+            )
+            if (streakDays > 0) {
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(colors.background.copy(alpha = 0.14f))
+                        .padding(horizontal = 10.dp, vertical = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("🔥", style = MaterialTheme.typography.labelLarge)
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(Res.string.home_streak_days, streakDays),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = colors.background
+                    )
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .background(colors.onBackground)
-            .padding(20.dp)
+            .padding(lerp(20.dp, 16.dp, fit))
     ) {
         when {
             dueForReviewCount > 0 -> {
-                Text(
-                    text = stringResource(Res.string.stats_review_queue_title),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colors.background.copy(alpha = 0.7f)
-                )
+                LabelRow(stringResource(Res.string.stats_review_queue_title))
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = stringResource(Res.string.stats_review_queue_subtitle, dueForReviewCount),
@@ -174,7 +217,7 @@ private fun HomeProgressCard(
                     fontWeight = FontWeight.Bold,
                     color = colors.background
                 )
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(lerp(14.dp, 10.dp, fit)))
                 TextButton(
                     onClick = onReviewNow,
                     modifier = Modifier
@@ -191,11 +234,7 @@ private fun HomeProgressCard(
             }
 
             weakest != null -> {
-                Text(
-                    text = stringResource(Res.string.home_weak_spot_label),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colors.background.copy(alpha = 0.7f)
-                )
+                LabelRow(stringResource(Res.string.home_weak_spot_label))
                 Spacer(Modifier.height(4.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -214,7 +253,7 @@ private fun HomeProgressCard(
                         color = colors.background.copy(alpha = 0.8f)
                     )
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(lerp(14.dp, 10.dp, fit)))
                 TextButton(
                     onClick = { onDrillWeakSpot(weakest.type) },
                     modifier = Modifier
@@ -231,8 +270,8 @@ private fun HomeProgressCard(
             }
         }
 
-        if (streakDays > 0) {
-            if (hasPrimaryContent) Spacer(Modifier.height(14.dp))
+        // Streak on its own: nothing else to share a row with.
+        if (streakDays > 0 && !hasPrimaryContent) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("🔥")
                 Spacer(Modifier.width(6.dp))
@@ -240,7 +279,7 @@ private fun HomeProgressCard(
                     text = stringResource(Res.string.home_streak_days, streakDays),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = colors.background.copy(alpha = if (hasPrimaryContent) 0.85f else 1f)
+                    color = colors.background
                 )
             }
         }
@@ -285,6 +324,22 @@ fun HomeScreen(
     var scrollColumnOrigin by remember { mutableStateOf(Offset.Zero) }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
+
+    // Fit Home to the phone: 0 is the roomy spacing, 1 the tightest. Whenever the collapsed form
+    // is taller than the space between the top bar and the Start button, spacing tightens by
+    // about the overflow; when there's slack, it relaxes again. Once it's at 1 and still doesn't
+    // fit (a very small screen, or a large font setting) the column simply scrolls. Expanded
+    // options are meant to scroll, so the fit holds still while they're open.
+    var fit by remember { mutableFloatStateOf(0f) }
+    var viewportHeightPx by remember { mutableStateOf(0) }
+    var contentHeightPx by remember { mutableStateOf(0) }
+    LaunchedEffect(viewportHeightPx, contentHeightPx, optionsExpanded) {
+        if (optionsExpanded || viewportHeightPx == 0 || contentHeightPx == 0) return@LaunchedEffect
+        val overflowDp = with(density) { (contentHeightPx - viewportHeightPx).toDp().value }
+        val next = (fit + overflowDp / FIT_RANGE_DP).coerceIn(0f, 1f)
+        if (abs(next - fit) > 0.01f) fit = next
+    }
+    fun gap(roomy: Dp, tightest: Dp): Dp = lerp(roomy, tightest, fit)
 
     LaunchedEffect(showTour) {
         if (showTour) tourStepIndex = 0
@@ -391,7 +446,10 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(padding)
                     .onGloballyPositioned { scrollColumnOrigin = it.positionInWindow() }
+                    .onSizeChanged { viewportHeightPx = it.height }
                     .verticalScroll(scrollState)
+                    // After verticalScroll, so this is the content's full height, not the viewport's.
+                    .onSizeChanged { contentHeightPx = it.height }
                     .padding(horizontal = 20.dp)
             ) {
                 Text(
@@ -409,11 +467,12 @@ fun HomeScreen(
                     enter = fadeIn() + expandVertically()
                 ) {
                     Column {
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(gap(16.dp, 8.dp)))
                         HomeProgressCard(
                             dueForReviewCount = dueForReviewCount,
                             weakest = weakestStat,
                             streakDays = streakDays,
+                            fit = fit,
                             onReviewNow = {
                                 if (!isStarting) {
                                     haptic.performHapticFeedback(HapticFeedbackType.Confirm)
@@ -440,12 +499,12 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(gap(20.dp, 12.dp)))
 
                 // --- Scenario card ---
                 HomeSectionCard(
                     modifier = Modifier.onGloballyPositioned { tourBounds["scenario"] = it.unclippedBoundsInWindow() },
-                    contentPadding = 24.dp
+                    contentPadding = gap(24.dp, 16.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -467,10 +526,10 @@ fun HomeScreen(
                             )
                         }
                     }
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(gap(12.dp, 8.dp)))
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(gap(10.dp, 8.dp))
                     ) {
                         ScenarioType.entries.forEach { scenario ->
                             SelectableChip(
@@ -484,7 +543,7 @@ fun HomeScreen(
                         }
                     }
 
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(gap(8.dp, 0.dp)))
                     TextButton(
                         onClick = {
                             viewModel.pickRandomScenario()
@@ -496,7 +555,7 @@ fun HomeScreen(
                         Text(stringResource(Res.string.home_random_scenario))
                     }
 
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(gap(6.dp, 0.dp)))
                     BrightTextField(
                         value = uiState.customScenario,
                         onValueChange = { viewModel.setCustomScenario(it) },
@@ -505,7 +564,7 @@ fun HomeScreen(
                     )
                 }
 
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(gap(14.dp, 10.dp)))
 
                 // --- Collapsible "More options": role, AI role, difficulty. Defaults work fine,
                 // so this stays tucked away until someone taps it — keeps Home from feeling like
@@ -520,7 +579,7 @@ fun HomeScreen(
                                 optionsExpanded = !optionsExpanded
                                 advanceTourFrom("options")
                             }
-                            .padding(24.dp),
+                            .padding(horizontal = 24.dp, vertical = gap(24.dp, 16.dp)),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -608,7 +667,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(gap(24.dp, 12.dp)))
             }
         }
 
