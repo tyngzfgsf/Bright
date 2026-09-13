@@ -7,6 +7,12 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Firebase Analytics merges these in to read the advertising ID (Play services and
+         Android's Privacy Sandbox variants) and for ad attribution. Bright shows no ads and
+         collects no identifiers beyond Firebase's app-instance ID, so all three are removed. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" tools:node="remove" />
 
     <queries>
         <intent>
@@ -24,6 +30,10 @@
         android:localeConfig="@xml/locales_config"
         android:theme="@style/Theme.Bright.Splash"
         tools:targetApi="35">
+
+        <!-- Firebase Analytics: no advertising ID, no ad personalization signals. -->
+        <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
+        <meta-data android:name="google_analytics_default_allow_ad_personalization_signals" android:value="false" />
 
         <activity
             android:name=".MainActivity"

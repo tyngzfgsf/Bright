@@ -1,6 +1,8 @@
 package com.bright.app
 
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.bright.app.data.analytics.Analytics
+import com.bright.app.data.analytics.NoOpAnalytics
 import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.data.preferences.UserPreferences
@@ -43,7 +45,9 @@ class BrightDependencies(
      * string layer, or SwiftUI's `.environment(\.locale)`), just not through Compose
      * Resources' public API today. See JetBrains/compose-multiplatform#4197.
      */
-    val languageChangeRequiresRestart: Boolean = false
+    val languageChangeRequiresRestart: Boolean = false,
+    /** Firebase on Android; a no-op on iOS for now. See Analytics. */
+    val analytics: Analytics = NoOpAnalytics
 )
 
 /**
