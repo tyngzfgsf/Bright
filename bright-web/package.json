@@ -5,12 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "wrangler dev",
     "typecheck": "tsc --noEmit",
-    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "preview": "next build && wrangler dev",
+    "deploy": "next build && wrangler deploy"
   },
   "dependencies": {
+    "firebase": "^12.19.0",
     "framer-motion": "^12.23.12",
     "next": "^15.5.2",
     "next-intl": "^4.3.4",
@@ -18,7 +19,6 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "^1.20.6",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.12",

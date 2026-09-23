@@ -2,13 +2,13 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
-import { Link } from "@/i18n/navigation";
 import { PRESS } from "@/lib/motion";
-
-const MotionLink = motion.create(Link);
+import { useSiteNav, type Page } from "@/lib/site-nav";
 
 type Props = {
-  href: string;
+  to: Page;
+  /** An element id on that page to land on. */
+  section?: string;
   children: ReactNode;
   variant?: "solid" | "outline";
   size?: "md" | "lg";
@@ -25,22 +25,25 @@ const sizes = {
   lg: "px-6 py-3.5 text-[15.5px]",
 } as const;
 
-/** Same shape as ButtonLink, for internal routes (keeps the locale prefix). */
+/** Same shape as ButtonLink, for moving to another page of the site — in place, same URL. */
 export default function LinkButton({
-  href,
+  to,
+  section,
   children,
   variant = "solid",
   size = "md",
   className = "",
 }: Props) {
   const reduceMotion = useReducedMotion();
+  const { go } = useSiteNav();
   const press = reduceMotion
     ? {}
     : { whileHover: { scale: 1.017, y: -1 }, whileTap: { scale: 0.985, y: 0 } };
 
   return (
-    <MotionLink
-      href={href}
+    <motion.button
+      type="button"
+      onClick={() => go(to, section)}
       {...press}
       transition={PRESS}
       className={[
@@ -63,6 +66,6 @@ export default function LinkButton({
       >
         <path d="M5 12h13M12.5 6l6 6-6 6" />
       </svg>
-    </MotionLink>
+    </motion.button>
   );
 }

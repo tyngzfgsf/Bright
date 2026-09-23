@@ -56,6 +56,14 @@ export default function TocNav({
               )}
               <a
                 href={`#${entry.id}`}
+                // Scroll in place rather than following the hash: the site keeps one URL.
+                onClick={(event) => {
+                  event.preventDefault();
+                  document.getElementById(entry.id)?.scrollIntoView({
+                    behavior: reduceMotion ? "auto" : "smooth",
+                    block: "start",
+                  });
+                }}
                 aria-current={isActive ? "true" : undefined}
                 className={[
                   "block py-2 pl-5 leading-snug transition-colors duration-300",

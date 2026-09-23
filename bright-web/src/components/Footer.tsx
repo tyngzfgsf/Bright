@@ -1,25 +1,32 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import Wordmark from "./Wordmark";
-import { Link } from "@/i18n/navigation";
+import PageLink from "./PageLink";
+import type { Page } from "@/lib/site-nav";
 import { site } from "@/lib/site";
 
-export default async function Footer() {
-  const t = await getTranslations("footer");
+type Column = {
+  title: string;
+  links: { label: string; to: Page; section?: string }[];
+  external?: { label: string; href: string }[];
+};
 
-  const columns = [
+export default function Footer() {
+  const t = useTranslations("footer");
+
+  const columns: Column[] = [
     {
       title: t("groups.app"),
       links: [
-        { label: t("links.download"), href: "/download" },
-        { label: t("links.releases"), href: "/releases" },
-        { label: t("links.faq"), href: "/faq" },
+        { label: t("links.download"), to: "download" },
+        { label: t("links.releases"), to: "releases" },
+        { label: t("links.faq"), to: "faq" },
       ],
     },
     {
       title: t("groups.project"),
       links: [
-        { label: t("links.howItWorks"), href: "/#how" },
-        { label: t("links.status"), href: "/#status" },
+        { label: t("links.howItWorks"), to: "home", section: "how" },
+        { label: t("links.status"), to: "home", section: "status" },
       ],
       external: [
         { label: t("links.releasesRepo"), href: site.releasesRepo },
@@ -33,8 +40,8 @@ export default async function Footer() {
     {
       title: t("groups.legal"),
       links: [
-        { label: t("links.privacy"), href: "/privacy" },
-        { label: t("links.terms"), href: "/terms" },
+        { label: t("links.privacy"), to: "privacy" },
+        { label: t("links.terms"), to: "terms" },
       ],
     },
   ];
@@ -56,13 +63,14 @@ export default async function Footer() {
               <p className="eyebrow-sm text-ink-faint">{column.title}</p>
               <ul className="mt-5 space-y-3 text-[14px]">
                 {column.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
+                  <li key={link.label}>
+                    <PageLink
+                      to={link.to}
+                      section={link.section}
                       className="link-sweep text-ink-soft transition-colors duration-300 hover:text-ink"
                     >
                       {link.label}
-                    </Link>
+                    </PageLink>
                   </li>
                 ))}
                 {column.external?.map((link) => (

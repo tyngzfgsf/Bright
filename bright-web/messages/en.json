@@ -17,7 +17,8 @@
     "releases": "Releases",
     "home": "Home",
     "backToTop": "Back to top",
-    "openApp": "Open app"
+    "openApp": "Open app",
+    "signIn": "Sign in"
   },
   "theme": {
     "label": "Theme",

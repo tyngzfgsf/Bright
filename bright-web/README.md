@@ -1,74 +1,127 @@
 # Bright — website
 
-The website for **Bright**, the AI emergency-scenario training app: landing page, download
-and install guide, a live releases list, FAQ, privacy policy and terms — Korean and
-English throughout, monochrome, built to be deployed on Vercel.
+The website for **Bright**, the AI emergency-scenario training app, and the app itself in the
+browser: landing page, download and install guide, a live releases list, FAQ, privacy policy
+and terms, and the training app with Google sign-in — Korean and English throughout,
+monochrome.
+
+**It is all one page at one URL.** Home, the other pages, signing in and training all swap in
+place; the address bar always says `/`. The web app used to be a separate deployment
+(`bright-demo`) and lives here now, under `src/components/app/` and `src/lib/app/`.
 
 This is a standalone Next.js project. It is **not** part of the Gradle build, and it is
-separate from `bright-site/` (the older Firebase-hosted static site that carries the
-Google-sign-in / Groq-key work).
+separate from `bright-site/` (the older Firebase-hosted static site).
 
-## Pages
+## Pages — one URL
 
-Every route exists in both locales, under `/en/…` and `/ko/…`:
+What used to be routes are pages that `src/lib/site-nav.tsx` switches between. Nothing in the
+address bar changes, but the browser still behaves:
 
-| Route | What it is |
+- **Back / Forward** work: every page change pushes a history entry with the *same* URL and a
+  `{ page }` state, and `popstate` puts that page back.
+- **Reload** stays on the page you were on (sessionStorage, per tab).
+- **Old links** still land: a path like `/ko/faq` or `/en/privacy#rights` is read before first
+  paint by `BootScript`, which picks the page, section and language, then rewrites the address
+  bar to `/`. Unknown paths show the not-found page, also at `/`. The Worker's
+  `not_found_handling: "single-page-application"` is what serves the page for those paths.
+- The tab title follows the page.
+
+| Page | What it is |
 | --- | --- |
-| `/` | Landing page: hero, what it does, how it works, design philosophy, status, get the app |
-| `/download` | Install guide, requirements, and the latest build read live from GitHub |
-| `/releases` | Every published release, read live from the GitHub Releases feed |
-| `/faq` | Accordion FAQ, with `FAQPage` structured data for search results |
-| `/privacy` | Privacy policy — what's stored on device, what leaves it, what's never collected |
-| `/terms` | Terms of use, including the medical disclaimer |
+| `home` | Landing page: hero, what it does, how it works, design philosophy, status, get the app |
+| `app` | The training app — see "The app" below |
+| `download` | Install guide, requirements, and the latest build read live from GitHub |
+| `releases` | Every published release, read live from the GitHub Releases feed |
+| `faq` | Accordion FAQ |
+| `privacy` | Privacy policy — what's stored on device, what leaves it, what's never collected |
+| `terms` | Terms of use, including the medical disclaimer |
 
-`/download` and `/releases` call the public GitHub API (`tyngzfgsf/Bright-app`) with a
-one-hour ISR revalidate — the same feed the Android app checks for updates. If GitHub is
+Internal links are `LinkButton` / `PageLink` (buttons that call `go(page, section?)`), never
+`href`s — an `href` would change the URL. In-page jumps (the legal table of contents, the
+home sections) scroll instead of following a `#hash`.
+
+`download` and `releases` call the public GitHub API (`tyngzfgsf/Bright-app`) from the
+browser, once per visit — the same feed the Android app checks for updates. If GitHub is
 unreachable the pages fall back to a plain link rather than failing to render.
 
-The privacy and terms pages describe the app as it actually behaves today: local Room
-storage, the Groq key held in on-device preferences, exactly two network hosts
-(`api.groq.com` and `api.github.com`), and no analytics or crash-reporting SDK. **If the
-app's data handling changes, update `messages/*.json` in the same release.**
+The privacy and terms pages describe the app as it actually behaves today. **If the app's data
+handling changes, update `messages/*.json` in the same release.**
+
+## The app
+
+Sign in from the header (or inside the app) with Google, or open the app without an account:
+
+1. **Own Groq key** saved in the app's Settings → sent to bright-proxy as `X-Groq-Key`, not
+   metered.
+2. **Signed in** → the Firebase ID token goes to bright-proxy, which uses Bright's key, 40
+   turns a day.
+3. **Neither** → a scripted preview (`src/lib/app/script.ts`), no network at all.
+
+Signing in from the site's header takes you straight into the app once it succeeds. The app's
+rail logo goes back to the site. The app and the site share one theme and one language:
+changing either in the app's Settings changes the whole site, and the other way round.
+
+`src/lib/app/prompt.ts` is a port of the Android app's `ScenarioPromptBuilder`, and
+`scenarios.ts` of its scenario list. **If the app's prompt or scenarios change, update both.**
+Sessions persist in this browser's localStorage (newest 60). Chill mode (`ChillPlayer.tsx`,
+`lib/app/chill.ts`) synthesises its ambient audio with WebAudio — there are no audio files.
 
 ## Stack
 
-- Next.js 15 (App Router) + TypeScript
-- Tailwind CSS v4 (CSS-first config — tokens live in `src/app/globals.css`)
+- Next.js 15 (App Router) as a static export (`output: "export"`) — one prerendered page
+- TypeScript, Tailwind CSS v4 (CSS-first config — tokens live in `src/app/globals.css`)
 - Framer Motion for scroll reveals, the hero name reveal, and the looping chat illustration
-- next-intl for i18n (`en`, `ko`)
+- next-intl, client-side only (both locales' messages ship with the page)
+- Firebase Auth for Google sign-in (the public `bright-34c23` web config, `src/lib/app/firebase.ts`)
 
 ## Run it
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000 → redirects to /en or /ko
-npm run build      # production build
-npm start          # serve the production build
+npm run dev        # http://localhost:3000
+npm run build      # static export to out/
+npm start          # serve out/ the way production does (wrangler dev)
 npm run typecheck  # tsc --noEmit
 ```
 
+Live AI turns go through bright-proxy; `NEXT_PUBLIC_PROXY_URL` is baked in at build time and
+defaults to `http://localhost:8787` (the proxy's own `wrangler dev`).
+
 ## Deploy
 
-Vercel, no configuration needed — import the repo, set **Root Directory** to `bright-web`,
-and deploy. Set `NEXT_PUBLIC_SITE_URL` to the production origin so canonical/OG/sitemap
-URLs are right (it defaults to the Firebase Hosting origin).
+Cloudflare Workers static assets — no Worker script, nothing beyond the free plan:
 
-The site uses middleware for locale detection, so it needs a Node/edge runtime — a pure
-`next export` static build would drop the auto-detect redirect (everything else is
-statically prerendered: `/en` and `/ko` are both SSG).
+```bash
+NEXT_PUBLIC_PROXY_URL=https://bright-proxy.jchang2032.workers.dev npm run deploy
+```
+
+Three things outside this folder have to agree with the deployed origin:
+
+- **bright-proxy**'s `ALLOWED_ORIGINS` (`../bright-proxy/wrangler.jsonc`) must list it, or
+  live turns are refused. Redeploy the proxy after changing it.
+- **Firebase console → Authentication → Settings → Authorized domains** must list it, or
+  Google sign-in fails.
+- `NEXT_PUBLIC_SITE_URL` sets the canonical/OG/sitemap origin (defaults to the Firebase
+  Hosting origin in `src/lib/site.ts`).
+
+`public/_headers` names the content type of the generated icons, which are exported without a
+file extension.
 
 ## Language detection
 
-`src/middleware.ts` resolves the locale for any unprefixed path, in this order:
+`BootScript` (in `src/lib/site-nav.tsx`) picks the language before first paint, in this order:
 
-1. `NEXT_LOCALE` cookie — written **only** by the manual KO/EN toggle, so a visitor's own
-   choice always wins on return visits.
-2. `Accept-Language`, honouring q-values.
-3. IP geolocation — `x-vercel-ip-country` (also accepts `cf-ipcountry`): `KR` → Korean.
+1. A `/ko/…` or `/en/…` prefix on an old link.
+2. `bright-locale` in localStorage — written **only** by the manual KO/EN toggle (or the app's
+   language setting), so a visitor's own choice always wins on return visits. The old site's
+   `NEXT_LOCALE` cookie is still read after it.
+3. The browser's `navigator.languages`.
 4. English.
 
-Auto-detection deliberately does not write the cookie, so it never masquerades as a choice
-the visitor made.
+There is no server any more, so the old IP-geolocation step is gone. The prerendered HTML is
+English; when a visit starts in Korean (or on a page other than home) the body is held hidden
+(`html[data-booting]`) until the right page is in, so nothing flashes — and revealed after
+1.5s regardless, in case the script never runs.
 
 ## Type
 
@@ -100,7 +153,7 @@ instead of looping when reduced motion is on.
 
 Two constraints worth keeping:
 
-- The route transition in `[locale]/template.tsx` animates **opacity only**. A transform
+- The page cross-fade in `PageFade.tsx` animates **opacity only**. A transform
   there would become the containing block for the fixed reading-progress bar.
 - The theme toggle swaps its icon in place rather than through `AnimatePresence` — an exit
   animation left the button visibly empty for a moment on every load.
@@ -139,14 +192,14 @@ crop matches the framing of `iosApp/…/AppIcon-1024.png`, so all four stay one 
   works on either theme beside the wordmark.
 - `src/lib/mark.ts` — the same measurements as numbers, because the generated images
   can't use SVG paths and rebuild the shapes out of boxes instead.
-- `app/icon.tsx`, `app/apple-icon.tsx`, `[locale]/opengraph-image.tsx` — the black tile
-  with the white mark, generated at request time, so there are no binary assets to keep
+- `app/icon.tsx`, `app/apple-icon.tsx`, `app/opengraph-image.tsx` — the black tile
+  with the white mark, generated at build time, so there are no binary assets to keep
   in sync.
 
 **If the app's launcher icon changes, update `BrightMark.tsx` and `mark.ts` together.**
 
-Because `/icon` and `/apple-icon` have no file extension, `middleware.ts` names them
-explicitly in its matcher; without that they get redirected to `/en/icon`.
+Because `/icon` and `/apple-icon` have no file extension, `public/_headers` names their
+content type for Workers static assets.
 
 ## Copy
 
@@ -161,26 +214,25 @@ described accurately — GitHub Releases, no Play Store listing.
 ## Layout
 
 ```
-messages/            en.json, ko.json — all site copy, including the legal pages
-src/app/[locale]/    layout (chrome, metadata, theme script), the six routes,
-                     not-found, opengraph-image
-src/app/globals.css  design tokens, theme switching, small shared classes
-src/components/      Header, Footer, Hero, ChatDemo, Section, Reveal, PageHeader,
-                     LegalDoc + TocNav, FaqList, ReleaseNotes, page sections
-src/i18n/            next-intl routing, request config, navigation helpers
-src/middleware.ts    locale detection + redirect
-src/lib/site.ts      links (repos, releases API) and the site URL
-src/lib/releases.ts  GitHub Releases fetch, with a null return on any failure
-src/lib/metadata.ts  hreflang/canonical helper used by every route
+messages/               en.json, ko.json — all site copy, including the legal pages
+public/_headers         content types for the extensionless generated icons
+src/app/                layout (metadata, theme + boot scripts), page.tsx (mounts <Site>),
+                        icons, OG image, sitemap, robots, manifest
+src/app/globals.css     design tokens, theme switching, shared classes, the app's extras
+src/components/Site.tsx the whole site: providers, header/footer, which page is showing
+src/components/pages/   Home, Download, Releases, Faq, Privacy, Terms, NotFound
+src/components/app/     the training app: shell, rail, transcript, composer, dialogs, chill
+src/components/         Header, Footer, Hero, ChatDemo, Section, Reveal, PageHeader,
+                        LegalDoc + TocNav, FaqList, ReleaseNotes, LinkButton, PageLink, …
+src/lib/site-nav.tsx    the one-URL navigation, language, and the pre-paint BootScript
+src/lib/app/            auth, prefs, sessions, prompt, scenarios, script, copy, chill, storage
+src/i18n/routing.ts     the two locales and the storage key for a manual choice
+src/lib/site.ts         links (repos, releases API) and the site URL
+src/lib/releases.ts     GitHub Releases fetch + useReleases(), null on any failure
 ```
-
-Header and footer live in the locale layout, so every page shares them. Internal links go
-through next-intl's `Link` so the locale prefix is preserved; the language switch keeps
-you on the page you're already reading.
 
 ## OG image
 
-`src/app/[locale]/opengraph-image.tsx` generates a 1200×630 placeholder card at request
-time. It's Latin-only on purpose — the generator has no Korean face bundled. To use a real
-screenshot instead, drop `public/og.png` in and point `openGraph.images` at it in
-`src/app/[locale]/layout.tsx`.
+`src/app/opengraph-image.tsx` generates a 1200×630 card at build time. It's Latin-only on
+purpose — the generator has no Korean face bundled. To use a real screenshot instead, drop
+`public/og.png` in and point `openGraph.images` at it in `src/app/layout.tsx`.

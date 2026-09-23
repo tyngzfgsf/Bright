@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { site } from "./site";
 
 export type Release = {
@@ -29,17 +30,14 @@ type GithubRelease = {
 
 /**
  * Reads the public releases feed — the same one the Android app checks for
- * updates. Returns null on any failure so pages can fall back to a plain link
- * to GitHub rather than failing to render.
+ * updates — straight from the visitor's browser (GitHub's API allows it). Returns
+ * null on any failure so pages can fall back to a plain link to GitHub rather
+ * than failing to render.
  */
-export async function fetchReleases(): Promise<Release[] | null> {
+async function fetchReleases(): Promise<Release[] | null> {
   try {
     const response = await fetch(site.releasesApi, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        "User-Agent": "bright-web",
-      },
-      next: { revalidate: 3600 },
+      headers: { Accept: "application/vnd.github+json" },
     });
 
     if (!response.ok) return null;
@@ -71,4 +69,29 @@ export async function fetchReleases(): Promise<Release[] | null> {
   } catch {
     return null;
   }
+}
+
+/** One request per visit, shared by the Download and Releases pages. */
+let cached: Promise<Release[] | null> | null = null;
+
+/**
+ * `undefined` while loading, `null` if GitHub couldn't be reached, else the list.
+ * A failed read isn't cached, so coming back to the page tries again.
+ */
+export function useReleases(): Release[] | null | undefined {
+  const [releases, setReleases] = useState<Release[] | null | undefined>(undefined);
+
+  useEffect(() => {
+    let live = true;
+    cached ??= fetchReleases();
+    cached.then((result) => {
+      if (result === null) cached = null;
+      if (live) setReleases(result);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  return releases;
 }

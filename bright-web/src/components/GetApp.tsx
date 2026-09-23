@@ -1,13 +1,13 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import ButtonLink from "./ButtonLink";
 import LinkButton from "./LinkButton";
 import Reveal from "./Reveal";
 import Section from "./Section";
 import { site } from "@/lib/site";
 
-export default async function GetApp() {
-  const t = await getTranslations("get");
-  const nav = await getTranslations("nav");
+export default function GetApp() {
+  const t = useTranslations("get");
+  const nav = useTranslations("nav");
   const steps = t.raw("steps") as string[];
 
   return (
@@ -43,7 +43,7 @@ export default async function GetApp() {
               <ButtonLink href={site.releasesLatest} external className="w-full">
                 {t("cta")}
               </ButtonLink>
-              <LinkButton href="/download" variant="outline" className="w-full">
+              <LinkButton to="download" variant="outline" className="w-full">
                 {nav("download")}
               </LinkButton>
             </div>

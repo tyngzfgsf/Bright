@@ -1,38 +1,23 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { motion, useReducedMotion } from "framer-motion";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { LOCALE_COOKIE, locales, type Locale } from "@/i18n/routing";
+import { locales } from "@/i18n/routing";
 import { GLIDE } from "@/lib/motion";
-
-const ONE_YEAR = 60 * 60 * 24 * 365;
+import { useSiteNav } from "@/lib/site-nav";
 
 export default function LocaleToggle() {
   const t = useTranslations("lang");
-  const active = useLocale() as Locale;
-  const pathname = usePathname();
-  const router = useRouter();
+  // Switching language re-renders the page you're on in place — same page, same URL. The
+  // manual choice is the only thing persisted, so it always wins on the next visit.
+  const { locale: active, setLocale: choose } = useSiteNav();
   const reduceMotion = useReducedMotion();
-  const [isPending, startTransition] = useTransition();
-
-  function choose(locale: Locale) {
-    if (locale === active) return;
-    // A manual choice is the only thing that gets persisted — auto-detection
-    // never writes this cookie, so this always wins on the next visit.
-    document.cookie = `${LOCALE_COOKIE}=${locale};path=/;max-age=${ONE_YEAR};samesite=lax`;
-    startTransition(() => {
-      router.replace(pathname, { locale });
-    });
-  }
 
   return (
     <div
       role="group"
       aria-label={t("label")}
-      data-pending={isPending ? "" : undefined}
-      className="flex items-center rounded-full border border-line p-0.5 text-[11px] font-medium tracking-[0.02em] transition-colors duration-300 data-pending:opacity-70"
+      className="flex items-center rounded-full border border-line p-0.5 text-[11px] font-medium tracking-[0.02em] transition-colors duration-300"
     >
       {locales.map((locale) => {
         const selected = locale === active;

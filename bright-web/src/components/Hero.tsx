@@ -8,13 +8,11 @@ import {
   useTransform,
   type Variants,
 } from "framer-motion";
-import ButtonLink from "./ButtonLink";
 import ChatDemo from "./ChatDemo";
 import HeroName from "./HeroName";
 import LinkButton from "./LinkButton";
 import Magnetic from "./Magnetic";
 import { EASE } from "@/lib/motion";
-import { site } from "@/lib/site";
 
 export default function Hero() {
   const t = useTranslations("hero");
@@ -102,12 +100,12 @@ export default function Hero() {
             className="mt-9 flex flex-wrap items-center gap-3"
           >
             <Magnetic>
-              <ButtonLink href={site.webApp} size="lg">
+              <LinkButton to="app" size="lg">
                 {t("ctaWeb")}
-              </ButtonLink>
+              </LinkButton>
             </Magnetic>
             <Magnetic strength={0.18}>
-              <LinkButton href="/download" variant="outline" size="lg">
+              <LinkButton to="download" variant="outline" size="lg">
                 {nav("download")}
               </LinkButton>
             </Magnetic>

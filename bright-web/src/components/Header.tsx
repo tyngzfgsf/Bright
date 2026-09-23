@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Link, usePathname } from "@/i18n/navigation";
+import { useAuth } from "@/lib/app/auth";
+import { useSiteNav, type Page } from "@/lib/site-nav";
 import LocaleToggle from "./LocaleToggle";
 import ThemeToggle from "./ThemeToggle";
 import Wordmark from "./Wordmark";
@@ -11,18 +12,19 @@ import { GLIDE } from "@/lib/motion";
 import { useScrollDirection } from "@/lib/useScrollDirection";
 import { site } from "@/lib/site";
 
-/** Anchors only resolve on the home page, so they're written as absolute paths. */
-const links = [
-  { href: "/#what", key: "what" },
-  { href: "/#how", key: "how" },
-  { href: "/download", key: "download" },
-  { href: "/releases", key: "releases" },
-  { href: "/faq", key: "faq" },
-] as const;
+/** Every item is a page of this one-URL site; the first two are sections of the home page. */
+const links: { to: Page; section?: string; key: "what" | "how" | "download" | "releases" | "faq" }[] = [
+  { to: "home", section: "what", key: "what" },
+  { to: "home", section: "how", key: "how" },
+  { to: "download", key: "download" },
+  { to: "releases", key: "releases" },
+  { to: "faq", key: "faq" },
+];
 
-export default function Header() {
+export default function Header({ onSignIn }: { onSignIn: () => void }) {
   const t = useTranslations("nav");
-  const pathname = usePathname();
+  const { page, go } = useSiteNav();
+  const { user, busy: authBusy } = useAuth();
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export default function Header() {
   // Never while the mobile menu is open, and never near the top of the page.
   const hidden = !open && direction === "down" && scrollY > 180;
 
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => setOpen(false), [page]);
 
   useEffect(() => {
     if (!open) return;
@@ -54,25 +56,28 @@ export default function Header() {
       ].join(" ")}
     >
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={() => go("home")}
           className="-m-2 rounded-full p-2 transition-opacity duration-300 hover:opacity-70"
           aria-label={site.name}
         >
           <Wordmark />
-        </Link>
+        </button>
 
         <nav
           onMouseLeave={() => setHovered(null)}
           className="hidden items-center lg:flex"
         >
           {links.map((link) => {
-            const active = pathname === link.href;
+            const active = !link.section && page === link.to;
             const lit = hovered === link.key || (hovered === null && active);
             return (
-              <Link
+              <button
+                type="button"
                 key={link.key}
-                href={link.href}
+                onClick={() => go(link.to, link.section)}
+                aria-current={active ? "page" : undefined}
                 onMouseEnter={() => setHovered(link.key)}
                 className={[
                   "relative rounded-full px-3.5 py-2 text-[13.5px] transition-colors duration-300",
@@ -88,7 +93,7 @@ export default function Header() {
                   />
                 )}
                 {t(link.key)}
-              </Link>
+              </button>
             );
           })}
           <a
@@ -115,12 +120,25 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a
-            href={site.webApp}
-            className="hidden rounded-full bg-ink px-4 py-2 text-[13.5px] font-medium text-paper shadow-soft transition-shadow duration-300 hover:shadow-raise sm:inline-flex"
+          {/* Hidden until Firebase has said whether there's a session, so it never flickers
+              from "Sign in" to nothing for a returning visitor. */}
+          {!user && !authBusy && (
+            <button
+              type="button"
+              onClick={onSignIn}
+              className="hidden rounded-full px-3.5 py-2 text-[13.5px] text-ink-muted transition-colors duration-300 hover:text-ink sm:inline-flex"
+            >
+              {t("signIn")}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => go("app")}
+            className="hidden items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13.5px] font-medium text-paper shadow-soft transition-shadow duration-300 hover:shadow-raise sm:inline-flex"
           >
+            {user && <Avatar name={user.name} photoURL={user.photoURL} />}
             {t("openApp")}
-          </a>
+          </button>
           <LocaleToggle />
           <ThemeToggle />
           <button
@@ -159,13 +177,31 @@ export default function Header() {
             className="overflow-hidden border-t border-line-subtle bg-paper/95 lg:hidden"
           >
             <div className="mx-auto flex max-w-6xl flex-col px-5 py-1 sm:px-8">
-              <a
-                href={site.webApp}
-                onClick={() => setOpen(false)}
-                className="my-3 flex items-center justify-center rounded-full bg-ink py-3 text-[15px] font-medium text-paper sm:hidden"
-              >
-                {t("openApp")}
-              </a>
+              <div className="my-3 flex gap-2 sm:hidden">
+                {!user && !authBusy && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      onSignIn();
+                    }}
+                    className="flex flex-1 items-center justify-center rounded-full border border-line-strong py-3 text-[15px] font-medium text-ink"
+                  >
+                    {t("signIn")}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    go("app");
+                  }}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ink py-3 text-[15px] font-medium text-paper"
+                >
+                  {user && <Avatar name={user.name} photoURL={user.photoURL} />}
+                  {t("openApp")}
+                </button>
+              </div>
               {links.map((link, i) => (
                 <motion.div
                   key={link.key}
@@ -173,10 +209,13 @@ export default function Header() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.04 + i * 0.035, duration: 0.3 }}
                 >
-                  <Link
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className="flex items-center justify-between border-b border-line-subtle py-3.5 text-[15px] text-ink-soft transition-colors duration-200 hover:text-ink"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      go(link.to, link.section);
+                    }}
+                    className="flex w-full items-center justify-between border-b border-line-subtle py-3.5 text-[15px] text-ink-soft transition-colors duration-200 hover:text-ink"
                   >
                     {t(link.key)}
                     <svg
@@ -191,7 +230,7 @@ export default function Header() {
                     >
                       <path d="M9.5 6l6 6-6 6" />
                     </svg>
-                  </Link>
+                  </button>
                 </motion.div>
               ))}
               <a
@@ -220,5 +259,18 @@ export default function Header() {
         )}
       </AnimatePresence>
     </motion.header>
+  );
+}
+
+/** The signed-in account's picture, or its initial when there isn't one. */
+function Avatar({ name, photoURL }: { name: string; photoURL: string | null }) {
+  if (photoURL) {
+    // eslint-disable-next-line @next/next/no-img-element -- a remote avatar in a static export
+    return <img src={photoURL} alt="" referrerPolicy="no-referrer" className="size-5 rounded-full" />;
+  }
+  return (
+    <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-paper/20 text-[11px] font-semibold">
+      {name.slice(0, 1).toUpperCase()}
+    </span>
   );
 }

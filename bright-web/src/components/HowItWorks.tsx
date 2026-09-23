@@ -1,11 +1,11 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import Reveal from "./Reveal";
 import Section from "./Section";
 
 type Step = { title: string; body: string };
 
-export default async function HowItWorks() {
-  const t = await getTranslations("how");
+export default function HowItWorks() {
+  const t = useTranslations("how");
   const steps = t.raw("steps") as Step[];
 
   return (

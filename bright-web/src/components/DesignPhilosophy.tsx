@@ -1,11 +1,11 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import Reveal from "./Reveal";
 import Section from "./Section";
 
 type Point = { title: string; body: string };
 
-export default async function DesignPhilosophy() {
-  const t = await getTranslations("design");
+export default function DesignPhilosophy() {
+  const t = useTranslations("design");
   const points = t.raw("points") as Point[];
 
   return (

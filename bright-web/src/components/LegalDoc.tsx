@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import ReadingProgress from "./ReadingProgress";
 import Reveal from "./Reveal";
 import TocNav from "./TocNav";
@@ -15,8 +15,8 @@ export type LegalSection = {
  * Long-form document layout: sticky table of contents on the left, numbered
  * sections on the right. Used by the privacy and terms pages.
  */
-export default async function LegalDoc({ sections }: { sections: LegalSection[] }) {
-  const t = await getTranslations("common");
+export default function LegalDoc({ sections }: { sections: LegalSection[] }) {
+  const t = useTranslations("common");
 
   return (
     <>

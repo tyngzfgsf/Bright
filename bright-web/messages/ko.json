@@ -17,7 +17,8 @@
     "releases": "릴리스",
     "home": "홈",
     "backToTop": "맨 위로",
-    "openApp": "앱 열기"
+    "openApp": "앱 열기",
+    "signIn": "로그인"
   },
   "theme": {
     "label": "테마",

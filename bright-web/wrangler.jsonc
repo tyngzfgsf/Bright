@@ -1,15 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  // bright-web keeps a server runtime for next-intl's locale middleware, so it runs through the
-  // OpenNext Cloudflare adapter: `npm run deploy` builds .open-next/ and deploys it.
+  // The whole site — pages and the training app — is one static page on Workers static
+  // assets: no Worker script, nothing billable beyond the free plan. Any path that isn't a
+  // real file (an old /ko/faq link, say) serves that page, which reads the path, shows the
+  // right thing and puts `/` back in the address bar. Build with NEXT_PUBLIC_PROXY_URL set.
   "name": "bright-web",
-  "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-01",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
-  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "bright-web" }],
-  "observability": { "enabled": true }
+    "directory": "./out",
+    "not_found_handling": "single-page-application"
+  }
 }

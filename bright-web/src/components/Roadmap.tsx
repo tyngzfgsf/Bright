@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import Reveal from "./Reveal";
 import Section from "./Section";
 
@@ -19,8 +19,8 @@ const chip: Record<State, string> = {
   paused: "text-ink-faint",
 };
 
-export default async function Roadmap() {
-  const t = await getTranslations("status");
+export default function Roadmap() {
+  const t = useTranslations("status");
   const items = t.raw("items") as Item[];
 
   return (

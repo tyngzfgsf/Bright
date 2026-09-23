@@ -1,6 +1,9 @@
 import { ImageResponse } from "next/og";
 import { markGeometry } from "@/lib/mark";
 
+/** Generated once at build time: the site is a static export. */
+export const dynamic = "force-static";
+
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 

@@ -1,12 +1,12 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 import Card from "./Card";
 import Reveal from "./Reveal";
 import Section from "./Section";
 
 type CardCopy = { title: string; body: string };
 
-export default async function WhatItDoes() {
-  const t = await getTranslations("what");
+export default function WhatItDoes() {
+  const t = useTranslations("what");
   const cards = t.raw("cards") as CardCopy[];
 
   return (

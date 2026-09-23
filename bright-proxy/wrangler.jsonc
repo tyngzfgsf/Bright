@@ -6,8 +6,9 @@
   "observability": { "enabled": true },
   "vars": {
     "FIREBASE_PROJECT_ID": "bright-34c23",
-    // Exact origins only: the deployed demo, and the local dev server.
-    "ALLOWED_ORIGINS": "https://bright-demo.jchang2032.workers.dev,http://localhost:3001",
+    // Exact origins only: the site (the web app now lives inside it), the old standalone demo
+    // until it is retired, and the local dev server.
+    "ALLOWED_ORIGINS": "https://bright-web.jchang2032.workers.dev,https://bright-demo.jchang2032.workers.dev,http://localhost:3000",
     "DAILY_TURN_LIMIT": "40"
   },
   // GROQ_API_KEY is a secret, never a var:  npx wrangler secret put GROQ_API_KEY
