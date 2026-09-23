@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Dialog from "./Dialog";
 import { EASE, GLIDE, PRESS } from "@/lib/motion";
 import {
@@ -99,13 +99,17 @@ export default function SettingsDialog({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8 sm:py-7">
-          <AnimatePresence mode="wait" initial={false}>
+          {/* Sections cross-fade rather than waiting on each other ("popLayout" lifts the
+              outgoing one out of the flow), and the sheet eases to the new section's height
+              instead of snapping to it once the swap is done. */}
+          <AutoHeight>
+          <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={section}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: EASE }}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0, transition: { duration: 0.24, delay: 0.06, ease: EASE } }}
+            exit={{ opacity: 0, y: -4, transition: { duration: 0.14, ease: EASE } }}
+            className="w-full"
           >
           {section === "general" && (
             <div className="space-y-7">
@@ -231,6 +235,7 @@ export default function SettingsDialog({
           )}
           </motion.div>
           </AnimatePresence>
+          </AutoHeight>
         </div>
       </div>
     </Dialog>
@@ -411,5 +416,37 @@ function DataSection({
         {t.notTheApp}
       </p>
     </div>
+  );
+}
+
+/**
+ * Animates its own height to follow its content, so a section with more (or fewer) fields
+ * grows or shrinks the sheet smoothly. Measured with a ResizeObserver rather than framer's
+ * `layout`, which animates size with a scale transform and visibly stretches the text.
+ */
+function AutoHeight({ children }: { children: React.ReactNode }) {
+  const inner = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | "auto">("auto");
+  const reduceMotion = useReducedMotion();
+
+  useLayoutEffect(() => {
+    const el = inner.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => setHeight(el.offsetHeight));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <motion.div
+      initial={false}
+      animate={{ height }}
+      transition={reduceMotion ? { duration: 0 } : { duration: 0.34, ease: EASE }}
+      className="relative overflow-hidden"
+    >
+      <div ref={inner} className="relative">
+        {children}
+      </div>
+    </motion.div>
   );
 }
