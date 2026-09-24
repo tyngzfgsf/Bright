@@ -10,10 +10,10 @@ type Row = { name: string; score: number; trend: Trend };
 const arrow: Record<Trend, string> = { up: "↑", down: "↓", flat: "→" };
 
 // Colour backs up the arrow and the word; it never carries the meaning alone.
-const bar: Record<Trend, string> = { up: "bg-good", down: "bg-accent", flat: "bg-ink-faint" };
+const bar: Record<Trend, string> = { up: "bg-good", down: "bg-warn", flat: "bg-ink-faint" };
 const label: Record<Trend, string> = {
   up: "text-good",
-  down: "text-accent-ink",
+  down: "text-warn",
   flat: "text-ink-faint",
 };
 
@@ -31,9 +31,9 @@ export default function SkillPanel() {
     <figure className="sheen rounded-[1.35rem] border border-line bg-paper p-6 shadow-soft sm:p-7">
       <p className="eyebrow-sm text-ink-faint">{t("label")}</p>
 
-      <div className="mt-5 flex items-end justify-between gap-4 rounded-2xl bg-accent-soft px-5 py-4 ring-1 ring-accent/20">
+      <div className="mt-5 flex items-end justify-between gap-4 rounded-2xl bg-primary-soft px-5 py-4 ring-1 ring-line">
         <div>
-          <p className="text-[12.5px] text-accent-ink">{t("weakestLabel")}</p>
+          <p className="text-[12.5px] text-primary-ink">{t("weakestLabel")}</p>
           <p className="mt-1 text-[20px] font-semibold tracking-[-0.024em]">{weakest.name}</p>
         </div>
         {/* Looks like the app's button; here it's only part of the picture. */}

@@ -40,7 +40,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="band-end rule-soft">
+    <footer className="band-primary">
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
           <div>

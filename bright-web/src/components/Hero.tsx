@@ -56,14 +56,14 @@ export default function Hero() {
       <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-5 pb-24 pt-14 sm:px-8 sm:pb-32 sm:pt-20 lg:grid-cols-[1.06fr_0.94fr] lg:items-center lg:gap-10">
         <motion.div initial="hidden" animate="shown" variants={container}>
           <motion.div data-reveal="" variants={fadeUp(0)}>
-            <span className="inline-flex items-center gap-2.5 rounded-full border border-accent/25 bg-accent-soft py-1.5 pl-3 pr-3.5">
+            <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-primary-soft py-1.5 pl-3 pr-3.5">
               {/* CSS pulse rather than a motion branch, so the prerendered HTML never
                   depends on the visitor's motion setting. */}
               <span aria-hidden="true" className="relative flex size-2">
-                <span className="absolute inset-0 rounded-full bg-accent opacity-60 motion-safe:animate-ping" />
-                <span className="relative block size-2 rounded-full bg-accent" />
+                <span className="absolute inset-0 rounded-full bg-primary-ink opacity-50 motion-safe:animate-ping" />
+                <span className="relative block size-2 rounded-full bg-primary-ink" />
               </span>
-              <span className="eyebrow-sm text-accent-ink">{t("eyebrow")}</span>
+              <span className="eyebrow-sm text-primary-ink">{t("eyebrow")}</span>
             </span>
           </motion.div>
 
@@ -74,7 +74,7 @@ export default function Hero() {
             className="display mt-6 max-w-[14ch] text-[clamp(2.6rem,7vw,4.6rem)]"
           >
             {t.rich("title", {
-              hl: (chunks) => <span className="accent-text">{chunks}</span>,
+              hl: (chunks) => <span className="headline-mark">{chunks}</span>,
             })}
           </motion.h1>
 
