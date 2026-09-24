@@ -9,6 +9,14 @@ type Row = { name: string; score: number; trend: Trend };
 
 const arrow: Record<Trend, string> = { up: "↑", down: "↓", flat: "→" };
 
+// Colour backs up the arrow and the word; it never carries the meaning alone.
+const bar: Record<Trend, string> = { up: "bg-good", down: "bg-accent", flat: "bg-ink-faint" };
+const label: Record<Trend, string> = {
+  up: "text-good",
+  down: "text-accent-ink",
+  flat: "text-ink-faint",
+};
+
 /**
  * A drawing of the Android app's Stats screen: per-emergency averages, lowest first, with the
  * weakest one pulled out as a drill. Illustrative numbers — the caption says so.
@@ -23,15 +31,15 @@ export default function SkillPanel() {
     <figure className="sheen rounded-[1.35rem] border border-line bg-paper p-6 shadow-soft sm:p-7">
       <p className="eyebrow-sm text-ink-faint">{t("label")}</p>
 
-      <div className="mt-5 flex items-end justify-between gap-4 rounded-2xl bg-sunken px-5 py-4">
+      <div className="mt-5 flex items-end justify-between gap-4 rounded-2xl bg-accent-soft px-5 py-4 ring-1 ring-accent/20">
         <div>
-          <p className="text-[12.5px] text-ink-muted">{t("weakestLabel")}</p>
+          <p className="text-[12.5px] text-accent-ink">{t("weakestLabel")}</p>
           <p className="mt-1 text-[20px] font-semibold tracking-[-0.024em]">{weakest.name}</p>
         </div>
         {/* Looks like the app's button; here it's only part of the picture. */}
         <span
           aria-hidden="true"
-          className="shrink-0 rounded-full bg-ink px-4 py-2 text-[13px] font-medium text-paper"
+          className="shrink-0 rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-on-accent shadow-accent"
         >
           {t("drill")} →
         </span>
@@ -43,7 +51,7 @@ export default function SkillPanel() {
             <div className="flex items-baseline justify-between gap-3 text-[14px]">
               <span className="text-ink-soft">{row.name}</span>
               <span className="flex items-baseline gap-2.5">
-                <span className="text-[12px] text-ink-faint">
+                <span className={`text-[12px] font-medium ${label[row.trend]}`}>
                   <span aria-hidden="true">{arrow[row.trend]} </span>
                   {t(`trend.${row.trend}`)}
                 </span>
@@ -54,7 +62,7 @@ export default function SkillPanel() {
             </div>
             <div className="mt-2 h-1 overflow-hidden rounded-full bg-line-subtle">
               <motion.div
-                className="h-full origin-left rounded-full bg-ink"
+                className={`h-full origin-left rounded-full ${bar[row.trend]}`}
                 style={{ width: `${row.score * 10}%` }}
                 initial={reduceMotion ? false : { scaleX: 0 }}
                 whileInView={{ scaleX: 1 }}

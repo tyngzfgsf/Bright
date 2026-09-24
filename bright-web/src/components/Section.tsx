@@ -33,8 +33,8 @@ export default function Section({
     >
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
         <Reveal>
-          <p className="eyebrow flex items-center gap-3 text-ink-faint">
-            <span aria-hidden="true" className="block h-px w-6 bg-line-strong" />
+          <p className="eyebrow flex items-center gap-3 text-accent-ink">
+            <span aria-hidden="true" className="block h-[2px] w-6 rounded-full bg-accent" />
             {eyebrow}
           </p>
           <h2 className="display mt-6 max-w-3xl text-[clamp(2rem,4.6vw,3.15rem)]">

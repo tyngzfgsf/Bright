@@ -12,8 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "An AI plays the patient or the doctor. You type what you'd actually do.",
     start_url: "/",
     display: "standalone",
-    background_color: "#060607",
-    theme_color: "#060607",
+    background_color: "#11131a",
+    theme_color: "#11131a",
     icons: [
       { src: "/icon", sizes: "64x64", type: "image/png" },
       { src: "/apple-icon", sizes: "180x180", type: "image/png" },

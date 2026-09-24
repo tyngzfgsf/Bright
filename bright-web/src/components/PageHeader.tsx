@@ -34,9 +34,9 @@ export default function PageHeader({ eyebrow, title, lede, meta, children }: Pro
         <motion.p
           data-reveal=""
           variants={item(0)}
-          className="eyebrow flex items-center gap-3 text-ink-faint"
+          className="eyebrow flex items-center gap-3 text-accent-ink"
         >
-          <span aria-hidden="true" className="block h-px w-6 bg-line-strong" />
+          <span aria-hidden="true" className="block h-[2px] w-6 rounded-full bg-accent" />
           {eyebrow}
         </motion.p>
 

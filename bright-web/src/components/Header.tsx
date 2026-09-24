@@ -113,7 +113,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
           <button
             type="button"
             onClick={() => go("app")}
-            className="hidden items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13.5px] font-medium text-paper shadow-soft transition-shadow duration-300 hover:shadow-raise sm:inline-flex"
+            className="hidden items-center gap-2 rounded-full bg-accent px-4 py-2 text-[13.5px] font-medium text-on-accent shadow-accent transition-colors duration-300 hover:bg-accent-hover sm:inline-flex"
           >
             {user && <Avatar name={user.name} photoURL={user.photoURL} />}
             {t("openApp")}
@@ -175,7 +175,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
                     setOpen(false);
                     go("app");
                   }}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ink py-3 text-[15px] font-medium text-paper"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full bg-accent py-3 text-[15px] font-medium text-on-accent"
                 >
                   {user && <Avatar name={user.name} photoURL={user.photoURL} />}
                   {t("openApp")}

@@ -15,9 +15,9 @@ type Props = {
 
 const variants = {
   solid:
-    "bg-ink text-paper shadow-soft hover:shadow-raise",
+    "bg-accent text-on-accent shadow-accent hover:bg-accent-hover",
   outline:
-    "border border-line-strong text-ink hover:border-ink hover:bg-raised",
+    "border border-line-strong text-ink hover:border-accent hover:bg-accent-soft",
   ghost: "text-ink-soft hover:text-ink hover:bg-raised",
 } as const;
 

@@ -61,7 +61,7 @@ export default function ReleasesPage() {
                           {release.tag}
                         </h2>
                         {i === 0 && (
-                          <span className="eyebrow-sm rounded-full bg-ink px-2 py-0.5 text-paper">
+                          <span className="eyebrow-sm rounded-full bg-accent px-2 py-0.5 text-on-accent">
                             {t("latest")}
                           </span>
                         )}

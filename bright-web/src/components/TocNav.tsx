@@ -50,7 +50,7 @@ export default function TocNav({
                 <motion.span
                   layoutId="toc-marker"
                   aria-hidden="true"
-                  className="absolute -left-px top-0 h-full w-px bg-ink"
+                  className="absolute -left-px top-0 h-full w-[2px] bg-accent"
                   transition={reduceMotion ? { duration: 0 } : GLIDE}
                 />
               )}

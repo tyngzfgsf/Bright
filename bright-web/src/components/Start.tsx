@@ -22,6 +22,10 @@ export default function Start() {
         {paths.map((path, i) => (
           <Reveal key={path.key} delay={i * 0.08} className="h-full">
             <Card className="flex flex-col p-7 sm:p-9">
+              {/* The browser is the quickest way in, so it carries the colour. */}
+              {path.variant === "solid" && (
+                <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-accent" />
+              )}
               <h3 className="text-[22px] font-semibold tracking-[-0.026em]">
                 {t(`${path.key}.name`)}
               </h3>
@@ -32,7 +36,7 @@ export default function Start() {
                   <li key={point} className="flex gap-3.5 text-[15px] leading-[1.65] text-ink-soft">
                     <span
                       aria-hidden="true"
-                      className="mt-[0.8em] block h-px w-3 shrink-0 bg-line-strong"
+                      className="mt-[0.75em] block h-[2px] w-3 shrink-0 rounded-full bg-accent"
                     />
                     {point}
                   </li>

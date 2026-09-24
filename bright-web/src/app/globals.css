@@ -4,63 +4,98 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------- palette --
-   Monochrome, but not flat: four text weights, three surfaces and three line
-   strengths give the pages hierarchy without introducing a colour.           */
+   Warm neutrals instead of pure black and white — softer on the eye over a
+   long read — plus one "sunrise" accent taken from the logo's sun. Coral is
+   the brand colour; amber only ever appears as light behind it. Text colours
+   all clear WCAG AA (4.5:1) on every surface.
+
+   --accent       fills: buttons, bars, the sun, dots
+   --accent-ink   coral as *text* (a deeper shade in light mode for contrast)
+   --accent-soft  tinted backgrounds
+   --on-accent    text on an accent fill — dark in both themes (5.5:1+)
+   --good         "improving" in the skill panel; always paired with a label   */
 
 :root {
-  --paper: #ffffff;
-  --raised: #fcfcfd;
-  --sunken: #f8f8f9;
-  --ink: #08080a;
-  --ink-soft: #45454c;
-  --ink-muted: #6b6b74;
-  --ink-faint: #8e8e97;
-  --line-subtle: #efeff1;
-  --line: #e3e3e6;
-  --line-strong: #cdcdd2;
-  --glow: rgba(8, 8, 10, 0.055);
-  --shadow-sm: 0 1px 2px rgba(8, 8, 10, 0.05), 0 1px 1px rgba(8, 8, 10, 0.03);
-  --shadow-md: 0 10px 30px -12px rgba(8, 8, 10, 0.16);
-  --shadow-lg: 0 40px 90px -50px rgba(8, 8, 10, 0.42);
-  --grain-opacity: 0.028;
+  --paper: #fbf8f3;
+  --raised: #fffdf9;
+  --sunken: #f4efe7;
+  --ink: #1c1a29;
+  --ink-soft: #474457;
+  --ink-muted: #63606f;
+  --ink-faint: #716d7d;
+  --line-subtle: #efe9df;
+  --line: #e6ded2;
+  --line-strong: #d3c9ba;
+  --accent: #ff5a36;
+  --accent-hover: #ff4a22;
+  --accent-ink: #b23214;
+  --accent-soft: #ffe8df;
+  --amber: #ffb03a;
+  --on-accent: #1c1a29;
+  --good: #0b7a67;
+  --glow: rgba(255, 90, 54, 0.1);
+  --glow-warm: rgba(255, 176, 58, 0.16);
+  --shadow-sm: 0 1px 2px rgba(28, 26, 41, 0.05), 0 1px 1px rgba(28, 26, 41, 0.03);
+  --shadow-md: 0 10px 30px -12px rgba(28, 26, 41, 0.16);
+  --shadow-lg: 0 40px 90px -50px rgba(28, 26, 41, 0.38);
+  --shadow-accent: 0 10px 28px -10px rgba(255, 90, 54, 0.55);
+  --grain-opacity: 0.022;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --paper: #060607;
-    --raised: #0c0c0e;
-    --sunken: #08080a;
-    --ink: #fafafa;
-    --ink-soft: #b2b2ba;
-    --ink-muted: #85858e;
-    --ink-faint: #6c6c75;
-    --line-subtle: #171719;
-    --line: #232326;
-    --line-strong: #3a3a40;
-    --glow: rgba(255, 255, 255, 0.055);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.8);
-    --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.95);
-    --grain-opacity: 0.035;
+    --paper: #11131a;
+    --raised: #171a23;
+    --sunken: #0d0f15;
+    --ink: #f4f0e9;
+    --ink-soft: #c2bdcb;
+    --ink-muted: #9a95a6;
+    --ink-faint: #8a8597;
+    --line-subtle: #1d2029;
+    --line: #262a35;
+    --line-strong: #3a3f4d;
+    --accent: #ff7452;
+    --accent-hover: #ff8563;
+    --accent-ink: #ff8866;
+    --accent-soft: rgba(255, 116, 82, 0.14);
+    --amber: #ffbe5c;
+    --on-accent: #1c1a29;
+    --good: #3ccbae;
+    --glow: rgba(255, 116, 82, 0.13);
+    --glow-warm: rgba(255, 190, 92, 0.08);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
+    --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
+    --shadow-accent: 0 10px 30px -10px rgba(255, 116, 82, 0.5);
+    --grain-opacity: 0.03;
   }
 }
 
 :root.dark {
-  --paper: #060607;
-  --raised: #0c0c0e;
-  --sunken: #08080a;
-  --ink: #fafafa;
-  --ink-soft: #b2b2ba;
-  --ink-muted: #85858e;
-  --ink-faint: #6c6c75;
-  --line-subtle: #171719;
-  --line: #232326;
-  --line-strong: #3a3a40;
-  --glow: rgba(255, 255, 255, 0.055);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.8);
-  --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.95);
-  --grain-opacity: 0.035;
+  --paper: #11131a;
+  --raised: #171a23;
+  --sunken: #0d0f15;
+  --ink: #f4f0e9;
+  --ink-soft: #c2bdcb;
+  --ink-muted: #9a95a6;
+  --ink-faint: #8a8597;
+  --line-subtle: #1d2029;
+  --line: #262a35;
+  --line-strong: #3a3f4d;
+  --accent: #ff7452;
+  --accent-hover: #ff8563;
+  --accent-ink: #ff8866;
+  --accent-soft: rgba(255, 116, 82, 0.14);
+  --amber: #ffbe5c;
+  --on-accent: #1c1a29;
+  --good: #3ccbae;
+  --glow: rgba(255, 116, 82, 0.13);
+  --glow-warm: rgba(255, 190, 92, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
+  --shadow-accent: 0 10px 30px -10px rgba(255, 116, 82, 0.5);
+  --grain-opacity: 0.03;
 }
 
 @theme inline {
@@ -74,10 +109,18 @@
   --color-line-subtle: var(--line-subtle);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-amber: var(--amber);
+  --color-on-accent: var(--on-accent);
+  --color-good: var(--good);
 
   --shadow-soft: var(--shadow-sm);
   --shadow-raise: var(--shadow-md);
   --shadow-float: var(--shadow-lg);
+  --shadow-accent: var(--shadow-accent);
 
   --font-sans:
     var(--font-sans-latin), "Pretendard Variable", Pretendard, -apple-system,
@@ -127,12 +170,12 @@ p {
 }
 
 ::selection {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 :focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 6px;
 }
@@ -172,12 +215,19 @@ p {
 
 /* -------------------------------------------------------------- surfaces -- */
 
-/* Soft radial wash behind hero and page headers — monochrome, barely there. */
+/* Sunrise behind hero and page headers: a coral bloom over the top edge and a
+   warmer amber one off to the side, both fading well before the text. */
 .hero-wash {
   position: relative;
   background:
-    radial-gradient(64rem 42rem at 50% -18%, var(--glow), transparent 68%),
-    radial-gradient(28rem 28rem at 88% 8%, var(--glow), transparent 70%);
+    radial-gradient(64rem 40rem at 50% -20%, var(--glow), transparent 66%),
+    radial-gradient(30rem 30rem at 86% 10%, var(--glow-warm), transparent 70%),
+    radial-gradient(26rem 22rem at 6% 30%, var(--glow-warm), transparent 72%);
+}
+
+/* The one highlighted phrase in the hero headline. */
+.accent-text {
+  color: var(--accent-ink);
 }
 
 /* Fine film grain over the whole page: the detail that stops large flat areas
