@@ -1,0 +1,163 @@
+import { useFormatter, useTranslations } from "next-intl";
+import ButtonLink from "@/components/ButtonLink";
+import PageHeader from "@/components/PageHeader";
+import LinkButton from "@/components/LinkButton";
+import Magnetic from "@/components/Magnetic";
+import Reveal from "@/components/Reveal";
+import { useReleases } from "@/lib/releases";
+import { site } from "@/lib/site";
+
+type Step = { title: string; body: string };
+type Requirement = { label: string; value: string };
+
+export default function DownloadPage() {
+  const t = useTranslations("download");
+  const format = useFormatter();
+  const releases = useReleases();
+  const latest = releases?.[0] ?? null;
+
+  const steps = t.raw("steps") as Step[];
+  const requirements = t.raw("requirements") as Requirement[];
+
+  return (
+    <>
+      <PageHeader eyebrow={t("eyebrow")} title={t("title")} lede={t("lede")} />
+
+      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+        {/* Latest build, read live from the same feed the app checks. */}
+        <Reveal>
+          <div className="sheen rounded-[1.6rem] border border-line bg-raised p-8 shadow-soft sm:p-10">
+            <p className="eyebrow-sm text-ink-faint">{t("latestLabel")}</p>
+            {releases === undefined ? (
+              <div aria-busy="true" className="mt-4 space-y-3">
+                <div className="h-9 w-48 animate-pulse rounded-lg bg-sunken" />
+                <div className="h-4 w-36 animate-pulse rounded bg-sunken" />
+              </div>
+            ) : latest ? (
+              <>
+                <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  <h2 className="display text-[clamp(1.7rem,4vw,2.3rem)]">
+                    {latest.name}
+                  </h2>
+                  {latest.apk && (
+                    <span className="tnum font-mono text-[13px] text-ink-faint">
+                      {t("sizeLabel", { size: latest.apk.sizeMb })}
+                    </span>
+                  )}
+                </div>
+                {latest.publishedAt && (
+                  <p className="mt-2 text-[14px] text-ink-soft">
+                    {t("publishedOn", {
+                      date: format.dateTime(new Date(latest.publishedAt), {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }),
+                    })}
+                  </p>
+                )}
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  <Magnetic>
+                    <ButtonLink
+                      href={latest.apk?.url ?? latest.htmlUrl}
+                      size="lg"
+                      external
+                    >
+                      {t("cta")}
+                    </ButtonLink>
+                  </Magnetic>
+                  <LinkButton to="releases" variant="outline" size="lg">
+                    {t("allReleases")}
+                  </LinkButton>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-ink-soft">
+                  {t("latestUnknown")}
+                </p>
+                <div className="mt-7">
+                  <ButtonLink href={site.releasesLatest} external>
+                    {t("cta")}
+                  </ButtonLink>
+                </div>
+              </>
+            )}
+          </div>
+        </Reveal>
+
+        <div className="mt-16 grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
+          <div>
+            <Reveal>
+              <h2 className="text-[22px] font-semibold tracking-[-0.02em]">
+                {t("stepsTitle")}
+              </h2>
+            </Reveal>
+            <ol className="mt-7 space-y-7">
+              {steps.map((step, i) => (
+                <Reveal key={step.title} delay={i * 0.06} y={14}>
+                  <li className="flex gap-4">
+                    <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border border-line-strong font-mono text-[12px]">
+                      {i + 1}
+                    </span>
+                    <div>
+                      <h3 className="text-[16.5px] font-medium tracking-[-0.01em]">
+                        {step.title}
+                      </h3>
+                      <p className="mt-1.5 max-w-lg text-[15px] leading-relaxed text-ink-soft">
+                        {step.body}
+                      </p>
+                    </div>
+                  </li>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
+
+          <div>
+            <Reveal>
+              <h2 className="text-[22px] font-semibold tracking-[-0.02em]">
+                {t("requirementsTitle")}
+              </h2>
+            </Reveal>
+            <Reveal delay={0.08}>
+              <dl className="mt-7 border-t border-line">
+                {requirements.map((requirement) => (
+                  <div
+                    key={requirement.label}
+                    className="grid grid-cols-[7.5rem_1fr] gap-4 border-b border-line-subtle py-4"
+                  >
+                    <dt className="text-[13.5px] text-ink-faint">
+                      {requirement.label}
+                    </dt>
+                    <dd className="text-[14.5px] text-ink-soft">
+                      {requirement.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
+          </div>
+        </div>
+
+        <div className="mt-16 grid gap-4 sm:grid-cols-2">
+          {[
+            { title: t("noPlayTitle"), body: t("noPlayBody") },
+            { title: t("iosTitle"), body: t("iosBody") },
+          ].map((card, i) => (
+            <Reveal key={card.title} delay={i * 0.08}>
+              <div className="sheen h-full rounded-[1.35rem] border border-line bg-raised p-7 transition-colors duration-300 hover:border-line-strong sm:p-8">
+                <h2 className="text-[17px] font-semibold tracking-[-0.02em]">
+                  {card.title}
+                </h2>
+                <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
+                  {card.body}
+                </p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}

@@ -1,0 +1,586 @@
+{
+  "meta": {
+    "title": "Bright — practise medical emergencies with an AI",
+    "description": "The AI plays the patient, or the doctor asking the questions, and you type what you'd actually do. A free Android app I'm building on my own.",
+    "ogAlt": "Bright — a step for your brighter future"
+  },
+  "nav": {
+    "what": "What it does",
+    "how": "How it works",
+    "status": "Status",
+    "github": "GitHub",
+    "menu": "Menu",
+    "close": "Close menu",
+    "skip": "Skip to content",
+    "download": "Download",
+    "faq": "FAQ",
+    "releases": "Releases",
+    "home": "Home",
+    "backToTop": "Back to top",
+    "openApp": "Open app",
+    "signIn": "Sign in"
+  },
+  "theme": {
+    "label": "Theme",
+    "toLight": "Switch to light mode",
+    "toDark": "Switch to dark mode"
+  },
+  "lang": {
+    "label": "Language",
+    "en": "EN",
+    "ko": "KO",
+    "enFull": "English",
+    "koFull": "Korean"
+  },
+  "hero": {
+    "eyebrow": "Web & Android · Free · Still being built",
+    "name": "Bright",
+    "tagline": "A step for your brighter future.",
+    "description": "I'm building an app for practising medical emergencies. The AI plays the patient, or a doctor asking what you'd do, and you type the response you'd actually give.",
+    "ctaWeb": "Open Bright in your browser",
+    "ctaPrimary": "Get the Android app",
+    "ctaSecondary": "See how it works",
+    "note": "Sign in with Google to train in the browser, no key needed. The Android APK lives on GitHub Releases — it isn't on the Play Store."
+  },
+  "demo": {
+    "label": "Emergency session",
+    "caption": "An illustration of the interaction — not a recording of the app.",
+    "messages": [
+      {
+        "role": "scene",
+        "text": "Scenario · Chest pain, 62"
+      },
+      {
+        "role": "ai",
+        "text": "It started twenty minutes ago. Feels like something heavy is sitting on me."
+      },
+      {
+        "role": "user",
+        "text": "Vitals and a 12-lead ECG now. IV access, and chewable aspirin unless there's a contraindication."
+      },
+      {
+        "role": "ai",
+        "text": "BP 138/86, HR 102. The ECG shows ST elevation in II, III and aVF."
+      },
+      {
+        "role": "user",
+        "text": "Inferior STEMI. Activate the cath lab and get a right-sided ECG."
+      }
+    ],
+    "result": {
+      "scenario": "Chest pain, 62",
+      "outOf": "/10",
+      "streak": "5-day streak",
+      "slogan": "A step for your brighter future",
+      "share": "Share result"
+    }
+  },
+  "what": {
+    "eyebrow": "What it does",
+    "title": "You talk your way through a case",
+    "lede": "A case starts, the AI stays in character, and it keeps going until you stop. There's no list of answers to choose from.",
+    "cards": [
+      {
+        "title": "The AI plays the other person",
+        "body": "Sometimes it's the patient in front of you, sometimes a doctor asking what you'd do next. Either way it stays in character and the case unfolds as a conversation."
+      },
+      {
+        "title": "You type what you'd do",
+        "body": "There's nothing to pick between, which is the point. You have to come up with the answer yourself, the way you'd have to on the day."
+      },
+      {
+        "title": "It scores what you said",
+        "body": "At the end you get a mark out of ten and a card you can share if you feel like it. The app keeps your average as sessions add up."
+      },
+      {
+        "title": "You can go back over it",
+        "body": "Quit a session whenever you like. It's saved on your phone, so you can read the whole thing again afterwards."
+      }
+    ],
+    "note": "Sessions are saved on your phone and nowhere else. Signing in and syncing across devices is something I want to add, but it isn't there yet."
+  },
+  "how": {
+    "eyebrow": "How it works",
+    "title": "What using it actually looks like",
+    "steps": [
+      {
+        "title": "Open the app",
+        "body": "The first launch has a short intro and then asks which language you want. It guesses Korean or English from your phone, and you can change it later in settings."
+      },
+      {
+        "title": "Start a session",
+        "body": "The screen opens with the emergency already underway and the AI already in character."
+      },
+      {
+        "title": "Answer in your own words",
+        "body": "Type what you'd say or do, and the case moves on from there. Voice input is on my list, but for now it's typing."
+      },
+      {
+        "title": "Read it back later",
+        "body": "Leave whenever you want. Old sessions stay in your history, so you can go through one again."
+      }
+    ]
+  },
+  "design": {
+    "eyebrow": "Design",
+    "title": "Why it looks this plain",
+    "lede": "It's a tool for practising emergencies, so I wanted it to feel calm and dependable rather than exciting.",
+    "points": [
+      {
+        "title": "No colour anywhere",
+        "body": "Black, white and grey. I tried accent colours a few times and each one pulled attention away from the thing you're meant to be reading."
+      },
+      {
+        "title": "It follows your phone",
+        "body": "Light or dark comes from your system setting, so the app never asks. This site does the same, with a toggle if you disagree with it."
+      },
+      {
+        "title": "Everything moves a little",
+        "body": "Buttons and sliders shift when you touch them. It's small on purpose: it's there so the app feels like it heard you, not to be noticed."
+      },
+      {
+        "title": "The first launch got extra time",
+        "body": "The name appears, a few tutorial pages, then the language pick. It's the first thing anyone sees, so I spent longer on it than it probably deserved."
+      }
+    ]
+  },
+  "status": {
+    "eyebrow": "Status",
+    "title": "Where things actually stand",
+    "lede": "It's just me, putting out small versions when they're ready. The parts I haven't built are on this list too.",
+    "states": {
+      "available": "Available",
+      "building": "In development",
+      "planned": "Planned",
+      "paused": "Not right now"
+    },
+    "items": [
+      {
+        "state": "available",
+        "name": "Android app",
+        "body": "Install the APK from GitHub Releases. It's free and there's no account."
+      },
+      {
+        "state": "building",
+        "name": "iOS app",
+        "body": "I'm porting it with Kotlin Multiplatform, so both apps share the same core. There's nothing installable yet."
+      },
+      {
+        "state": "planned",
+        "name": "Voice input",
+        "body": "Answering out loud instead of typing. I've worked out how it should go, but no release has it."
+      },
+      {
+        "state": "planned",
+        "name": "Google sign-in and cloud sync",
+        "body": "Your history only exists on your phone right now. Signing in and syncing between devices is the next big piece."
+      },
+      {
+        "state": "paused",
+        "name": "Google Play",
+        "body": "I tried submitting once. For now I'd rather put the time into the app than into store review, so GitHub Releases is how you get it."
+      }
+    ]
+  },
+  "get": {
+    "eyebrow": "Get the app",
+    "title": "Install it from GitHub",
+    "lede": "Android only for now, from the releases page. It's free: no ads, no paid version, nothing to buy.",
+    "steps": [
+      "Open the releases page on your phone.",
+      "Download the newest APK.",
+      "Android will check that you meant it — you have to allow installs from your browser or files app once."
+    ],
+    "cta": "Open GitHub Releases",
+    "repoLabel": "github.com/tyngzfgsf/Bright-app",
+    "groqNote": "The AI runs on Groq's free tier, so you need a key of your own. The app asks for one the first time a session needs it, and you can skip past it during setup. I'd like to add a page here that helps with that."
+  },
+  "footer": {
+    "tagline": "A step for your brighter future.",
+    "sourceNote": "private for now",
+    "builtBy": "Made by one person, in the open.",
+    "rights": "© {year} Bright.",
+    "groups": {
+      "app": "App",
+      "project": "Project",
+      "legal": "Legal"
+    },
+    "links": {
+      "download": "Download",
+      "releases": "Releases",
+      "faq": "FAQ",
+      "howItWorks": "How it works",
+      "status": "Status",
+      "releasesRepo": "APK releases on GitHub",
+      "sourceRepo": "Source repo",
+      "issues": "Report an issue",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "disclaimer": "Bright is for practice. It isn't medical advice, and it shouldn't be used to guide care for a real patient."
+  },
+  "common": {
+    "updated": "Last updated {date}",
+    "onThisPage": "On this page",
+    "backHome": "Back to the home page",
+    "openGithub": "Open on GitHub"
+  },
+  "download": {
+    "meta": {
+      "title": "Download Bright for Android",
+      "description": "Install the APK from GitHub Releases. Free, no account, Android 8.0 or newer. It isn't on the Play Store."
+    },
+    "eyebrow": "Download",
+    "title": "Get Bright on Android",
+    "lede": "Bright goes out as an APK on GitHub Releases. It's free, there's no account, and there's nothing to buy.",
+    "latestLabel": "Latest release",
+    "latestUnknown": "The releases page has the newest build.",
+    "publishedOn": "Published {date}",
+    "sizeLabel": "{size} MB APK",
+    "cta": "Download the APK",
+    "allReleases": "See all releases",
+    "stepsTitle": "Installing it",
+    "steps": [
+      {
+        "title": "Open the releases page on your phone",
+        "body": "Easiest if you download on the phone you're installing on. Take the .apk file attached to the newest release."
+      },
+      {
+        "title": "Let Android install it",
+        "body": "It'll ask whether to allow installs from your browser or files app. That's a one-time thing, per app."
+      },
+      {
+        "title": "Open it and pick a language",
+        "body": "You get a short intro, and Korean or English is chosen from your phone's language. Settings has it if you want to switch."
+      },
+      {
+        "title": "Add a Groq key when it asks",
+        "body": "The AI runs on Groq's free tier. You can skip the key during setup — it only comes up again when a session actually needs it."
+      }
+    ],
+    "requirementsTitle": "What you need",
+    "requirements": [
+      {
+        "label": "Android",
+        "value": "8.0 (Oreo) or newer"
+      },
+      {
+        "label": "Size",
+        "value": "About 30 MB"
+      },
+      {
+        "label": "Connection",
+        "value": "Internet, since the AI runs on a server"
+      },
+      {
+        "label": "Account",
+        "value": "None. A free Groq key covers the AI"
+      },
+      {
+        "label": "Price",
+        "value": "Free. No ads, no paid version"
+      }
+    ],
+    "noPlayTitle": "Why isn't it on Google Play?",
+    "noPlayBody": "I tried submitting it once. Right now the time goes into the app instead of store review, so GitHub Releases is the real way to get it — and the app watches that same page to tell you when there's a new version.",
+    "iosTitle": "What about iPhone?",
+    "iosBody": "I'm porting it with Kotlin Multiplatform and Compose Multiplatform, so it shares a core with the Android app. There's no TestFlight build to hand out yet."
+  },
+  "releases": {
+    "meta": {
+      "title": "Bright releases",
+      "description": "Every published Bright release, pulled live from the GitHub Releases feed for tyngzfgsf/Bright-app."
+    },
+    "eyebrow": "Releases",
+    "title": "Every version, as published",
+    "lede": "This list comes straight from the GitHub Releases feed — the same one the app checks for updates. I don't type any of it by hand.",
+    "latest": "Latest",
+    "download": "Download APK",
+    "viewOnGithub": "View on GitHub",
+    "sizeLabel": "{size} MB",
+    "noNotes": "I didn't write notes for this one.",
+    "errorTitle": "Couldn't reach GitHub",
+    "errorBody": "The releases feed didn't answer just now. That's this page having a bad moment, not the app — everything is still on GitHub.",
+    "errorCta": "Open releases on GitHub",
+    "emptyTitle": "Nothing released yet",
+    "emptyBody": "As soon as a version is tagged it shows up here on its own."
+  },
+  "faq": {
+    "meta": {
+      "title": "Bright — frequently asked questions",
+      "description": "How Bright works, what it costs, where your history is stored, and what isn't built yet."
+    },
+    "eyebrow": "FAQ",
+    "title": "Questions people ask",
+    "lede": "If something here is out of date or missing, open an issue on GitHub — that's the quickest way to reach me.",
+    "items": [
+      {
+        "q": "What does it cost?",
+        "a": "Nothing. There's no paid version, no subscription, no ads and no in-app purchases. The AI runs on Groq's free tier with a key you provide."
+      },
+      {
+        "q": "Do I really need a Groq key?",
+        "a": "Yes, otherwise the AI can't answer. Getting one takes about a minute on Groq's site and the free tier is plenty for normal practice. You can skip it during setup, and the app only asks again when a session needs it."
+      },
+      {
+        "q": "Is it on the Play Store?",
+        "a": "No. I tried submitting once, but I'm not chasing store distribution at the moment. The APK on GitHub Releases is how you install it."
+      },
+      {
+        "q": "Where do my sessions get saved?",
+        "a": "In the app's own database on your phone. Nothing is uploaded, which also means it doesn't survive uninstalling and won't follow you to a new phone. Sign-in and sync are planned, not built."
+      },
+      {
+        "q": "Does it work offline?",
+        "a": "No — the AI runs on a server, so a session needs a connection. Sessions you've already finished are readable offline."
+      },
+      {
+        "q": "Can I speak my answers?",
+        "a": "Not yet. Voice input is something I want to add, but every release so far is typing only."
+      },
+      {
+        "q": "Is there an iPhone version?",
+        "a": "I'm working on it. It shares the same core as the Android app through Kotlin Multiplatform, but there's nothing to install yet."
+      },
+      {
+        "q": "Which languages does it speak?",
+        "a": "Korean and English. It picks one from your phone's language on the first launch, and you can switch in settings whenever."
+      },
+      {
+        "q": "Which Android versions work?",
+        "a": "Android 8.0 (Oreo) and up."
+      },
+      {
+        "q": "Can I trust what the AI tells me?",
+        "a": "No, and please don't. It makes the cases up and it can be wrong while sounding certain. Treat the scoring and feedback as practice material, never as guidance for a real patient."
+      },
+      {
+        "q": "Is the code public?",
+        "a": "The releases repo is public; the source repo is private for now. That might change, but nothing about using the app depends on it."
+      },
+      {
+        "q": "How do I report a bug?",
+        "a": "Open an issue on the public releases repo. It's a one-person project, so the honest answer on timing is whenever I get to it."
+      }
+    ]
+  },
+  "privacy": {
+    "meta": {
+      "title": "Bright — privacy",
+      "description": "What Bright stores on your device, what leaves it, and what is never collected. No accounts, no analytics, no ads."
+    },
+    "eyebrow": "Privacy",
+    "title": "Privacy",
+    "lede": "There's no account and no analytics, so almost everything stays on your phone. This page goes through exactly what happens to what you type.",
+    "updated": "9 September 2026",
+    "sections": [
+      {
+        "id": "summary",
+        "heading": "The short version",
+        "bullets": [
+          "Your sessions and history sit on your device and nowhere else.",
+          "What you type during a session goes to Groq, the AI provider, so it can write the reply. Nothing else leaves your phone while you're practising.",
+          "The app asks GitHub whether there's a newer release. That request carries nothing personal.",
+          "There's no account, no analytics or crash-reporting library, no ads and no third-party tracking in the app.",
+          "I never see your sessions. There's no server of mine for them to go to."
+        ]
+      },
+      {
+        "id": "on-device",
+        "heading": "What's kept on your phone",
+        "paragraphs": [
+          "The app keeps a local database on the device. It holds your practice sessions, the messages in them, and the per-question records that build your history and score summaries."
+        ],
+        "bullets": [
+          "Sessions, messages and question records — the practice you've done.",
+          "Your language, the AI model you picked, and the flags that remember you've finished the intro.",
+          "Your Groq API key, in the app's own settings storage on the device.",
+          "A practice streak, and whether the app has already asked you about notifications."
+        ],
+        "after": "Uninstalling takes all of it with it. Since none of it is backed up anywhere, that's permanent — which is the trade-off for keeping everything local."
+      },
+      {
+        "id": "leaves",
+        "heading": "What leaves your phone",
+        "paragraphs": [
+          "The app talks to two hosts and nothing else."
+        ],
+        "bullets": [
+          "api.groq.com — while you're in a session, your messages and the case context go to Groq under your own API key so the AI can respond. What Groq does with that is covered by their privacy policy and the terms of the account your key belongs to.",
+          "api.github.com — the app reads the latest release of the public tyngzfgsf/Bright-app repository to tell you when an update is out. It's an ordinary anonymous request with no session content and no identifier attached."
+        ]
+      },
+      {
+        "id": "not-collected",
+        "heading": "What I never collect",
+        "bullets": [
+          "No account, sign-in, email address or profile.",
+          "No analytics, telemetry or crash-reporting SDK is bundled in the app.",
+          "No advertising, and no advertising ID.",
+          "No contacts, location, photos or files from your phone.",
+          "Nothing sold or handed to data brokers, since there's nothing collected to sell."
+        ]
+      },
+      {
+        "id": "permissions",
+        "heading": "Permissions the app asks for",
+        "bullets": [
+          "Internet and network state — to reach the AI and check for updates.",
+          "Notifications — for practice reminders scheduled on the phone itself. There's no push server behind them.",
+          "Install packages — so the app can offer to install a newer release it downloaded from GitHub.",
+          "Microphone — declared for speech input. Where it's used the request goes to Android's own speech recognition rather than being recorded by the app, and no audio is stored."
+        ]
+      },
+      {
+        "id": "website",
+        "heading": "This website",
+        "bullets": [
+          "No analytics, no tracking pixels, no advertising cookies.",
+          "One cookie, NEXT_LOCALE, and only if you press the KO/EN switch, so your choice sticks. Automatic language detection never writes it.",
+          "Your light/dark preference lives in your browser's local storage and never leaves the browser.",
+          "The host keeps ordinary server request logs, like any web host does."
+        ]
+      },
+      {
+        "id": "patient-data",
+        "heading": "Please don't type real patient details",
+        "paragraphs": [
+          "This is for practising on invented cases. Don't put real patients' details, identifiers or records in — that text would be sent to a third-party AI provider, and the app has nothing in it designed for handling real medical records."
+        ]
+      },
+      {
+        "id": "control",
+        "heading": "What you can do about your data",
+        "bullets": [
+          "Delete individual sessions from your history inside the app.",
+          "Remove or replace your Groq key in settings at any time.",
+          "Uninstall, and the local database and settings go with it."
+        ]
+      },
+      {
+        "id": "children",
+        "heading": "Children",
+        "paragraphs": [
+          "It's aimed at people training in emergency medicine, and isn't designed or directed at children."
+        ]
+      },
+      {
+        "id": "changes",
+        "heading": "What's coming",
+        "paragraphs": [
+          "Sign-in and cloud sync are on the roadmap. Neither exists today, and neither will switch itself on quietly: when they ship they'll be something you choose in the app, and I'll rewrite this page before that release goes out."
+        ]
+      },
+      {
+        "id": "contact",
+        "heading": "Getting in touch",
+        "paragraphs": [
+          "It's one person making this. Questions about privacy, or corrections to this page, are best raised as an issue on the public GitHub repository — that's also the fastest way to get an answer."
+        ]
+      }
+    ]
+  },
+  "terms": {
+    "meta": {
+      "title": "Bright — terms of use",
+      "description": "The terms for using Bright, including the medical disclaimer: it is a training tool and not medical advice."
+    },
+    "eyebrow": "Terms",
+    "title": "Terms of use",
+    "lede": "Plain terms for a free app made by one person. The first section is the one that matters: this is practice, not medical advice.",
+    "updated": "9 September 2026",
+    "sections": [
+      {
+        "id": "not-advice",
+        "heading": "This isn't medical advice",
+        "paragraphs": [
+          "Bright makes up emergency cases so you can practise responding to them. It's an educational tool. It isn't clinical decision support, it isn't a reference, and it doesn't stand in for training, supervision, protocols or your own judgement.",
+          "Don't use it to decide anything about a real patient. In a real emergency call your local emergency number — 119 in Korea, 911 in the US — or follow your institution's protocol."
+        ]
+      },
+      {
+        "id": "ai-limits",
+        "heading": "The AI gets things wrong",
+        "paragraphs": [
+          "The replies, cases, scores and feedback all come from a large language model. It can state something incorrect with complete confidence, misjudge a good answer, or invent details that don't match real practice or your local guidelines. Check anything you plan to rely on against a real source."
+        ]
+      },
+      {
+        "id": "your-use",
+        "heading": "Using the app",
+        "bullets": [
+          "It's free to use for your own training.",
+          "Don't enter real patient information, or anyone else's personal data, into a session.",
+          "Don't use it for anything unlawful, or in a way that breaks the terms of the AI provider whose key you're using.",
+          "Your API key is yours to look after, along with any usage charges on that account."
+        ]
+      },
+      {
+        "id": "third-party",
+        "heading": "Other services involved",
+        "paragraphs": [
+          "The AI runs on Groq using a key that belongs to you, so your use of it is governed by Groq's own terms and privacy policy. I have no control over their availability, pricing or how the models behave. Releases go out through GitHub, which has its own terms."
+        ]
+      },
+      {
+        "id": "no-warranty",
+        "heading": "No warranty",
+        "paragraphs": [
+          "The app is provided as is, with no warranty of any kind, express or implied, including fitness for a particular purpose. It's a free app built in spare time: it may have bugs, produce wrong output, lose data stored on your device, or stop working after a platform change.",
+          "As far as the law allows, I'm not liable for loss or damage arising from using the app or being unable to use it, including anything that comes from relying on its output."
+        ]
+      },
+      {
+        "id": "availability",
+        "heading": "It changes, and it might stop",
+        "paragraphs": [
+          "This is still being built. Features can change or disappear, releases can be late, and the project could stop being maintained. Because releases are APKs on GitHub, a version you've already installed keeps working as long as your phone supports it."
+        ]
+      },
+      {
+        "id": "ownership",
+        "heading": "Ownership",
+        "paragraphs": [
+          "The app, its name and its design are mine. Downloading and using released builds is fine; redistributing modified copies as though they were Bright isn't. The sessions you write are yours."
+        ]
+      },
+      {
+        "id": "law",
+        "heading": "Governing law",
+        "paragraphs": [
+          "These terms follow the laws of the Republic of Korea, where I'm based, without regard to conflict-of-law rules."
+        ]
+      },
+      {
+        "id": "updates",
+        "heading": "If these terms change",
+        "paragraphs": [
+          "The date at the top of the page changes with them. Carrying on using the app after that means the updated terms apply."
+        ]
+      },
+      {
+        "id": "contact",
+        "heading": "Getting in touch",
+        "paragraphs": [
+          "Questions about any of this can go in an issue on the public GitHub repository."
+        ]
+      }
+    ]
+  },
+  "notFound": {
+    "meta": {
+      "title": "Page not found — Bright"
+    },
+    "code": "404",
+    "title": "This page isn't here",
+    "lede": "The link might be old, or the page moved. The home page has everything.",
+    "cta": "Back to the home page",
+    "secondary": "Download the app"
+  },
+  "docsFooter": {
+    "title": "Something not clear?",
+    "body": "These pages describe a project that keeps moving. If anything here doesn't match what the app does, that's a bug — tell me and I'll fix the page.",
+    "cta": "Open an issue",
+    "related": "Also read"
+  }
+}

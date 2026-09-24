@@ -1,0 +1,8 @@
+# The generated icons are exported without a file extension, so Workers static
+# assets can't infer their type. Name it, or the favicon may not render.
+/icon
+  Content-Type: image/png
+/apple-icon
+  Content-Type: image/png
+/opengraph-image
+  Content-Type: image/png
