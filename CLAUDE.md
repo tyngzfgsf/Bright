@@ -21,6 +21,13 @@ git tag vX.Y
 git push origin vX.Y
 ```
 
+Automation guarding this:
+- `.github/workflows/ci.yml` runs a strings-sync check plus `clean assembleDebug` on every push
+  to `main` and every PR, so compile errors show up before a tag, not on it.
+- `.claude/settings.json` hooks: Claude's `git tag v*` / tag pushes are blocked unless the exact
+  tree was clean-built (stamped automatically after a successful `./gradlew clean assemble…`, or
+  run `scripts/clean-build.sh` yourself). Edits to any `strings.xml` run `scripts/check-strings.sh`.
+
 If `git push` is rejected ("fetch first"), someone (usually me, editing via GitHub's web
 UI) pushed something I don't have locally. Run `git fetch origin && git log HEAD..origin/main --oneline`
 to see what, then `git pull --rebase origin main` before retrying — don't force-push over it blind.
