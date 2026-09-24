@@ -32,7 +32,7 @@
   },
   "hero": {
     "eyebrow": "Free · In your browser and on Android",
-    "title": "Practise the emergency before it's real.",
+    "title": "Practise the emergency <hl>before it's real.</hl>",
     "description": "The AI plays the patient, or a doctor asking what you'd do next. You type the answer you'd actually give, and every answer comes back scored, with a line on what you got right and what you missed.",
     "ctaWeb": "Start a drill",
     "ctaAndroid": "Get the Android app",

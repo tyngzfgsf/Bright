@@ -16,7 +16,7 @@ export default function ReadingProgress() {
     <motion.div
       aria-hidden="true"
       style={{ scaleX: reduceMotion ? scrollYProgress : scaleX }}
-      className="fixed inset-x-0 top-0 z-50 h-[2px] origin-left bg-ink/50"
+      className="fixed inset-x-0 top-0 z-50 h-[2px] origin-left bg-accent"
     />
   );
 }

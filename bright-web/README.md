@@ -2,8 +2,8 @@
 
 The website for **Bright**, the AI emergency-scenario training app, and the app itself in the
 browser: landing page, download and install guide, a live releases list, FAQ, privacy policy
-and terms, and the training app with Google sign-in — Korean and English throughout,
-monochrome.
+and terms, and the training app with Google sign-in — Korean and English throughout, in warm
+neutrals with one coral "sunrise" accent.
 
 **It is all one page at one URL.** Home, the other pages, signing in and training all swap in
 place; the address bar always says `/`. The web app used to be a separate deployment
@@ -176,10 +176,19 @@ and cards carry a highlight that follows the pointer across them (`.spotlight`, 
 ## Surfaces
 
 Three surfaces (`paper`, `raised`, `sunken`), four text weights and three line strengths
-are defined as CSS variables and exposed to Tailwind via `@theme inline`, so the whole
-site stays monochrome without going flat. `.grain` puts a fixed film-grain overlay on the
-page, `.sheen` adds a one-pixel top highlight to cards, and `.hero-wash` is the radial
-gradient behind the hero and page headers.
+are defined as CSS variables and exposed to Tailwind via `@theme inline`. The neutrals are
+warm off-white / blue-slate rather than pure white / black, which is easier on the eye.
+
+One accent, coral, taken from the logo's sun: `accent` for fills (primary buttons, the sun,
+bars, dots), `accent-ink` when it's text, `accent-soft` for tints, `on-accent` for text on a
+fill, plus `amber` (only as glow behind coral) and `good` (the "improving" trend, always
+next to a text label). Every text colour clears WCAG AA on every surface in both themes —
+check new pairings before adding them. The result/share card stays black because the app's
+real one is.
+
+`.grain` puts a fixed film-grain overlay on the page, `.sheen` adds a one-pixel top
+highlight to cards, and `.hero-wash` is the coral-and-amber radial wash behind the hero and
+page headers.
 
 ## The mark
 
