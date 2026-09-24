@@ -85,6 +85,16 @@ function scrollToSection(id: string, smooth: boolean) {
   requestAnimationFrame(attempt);
 }
 
+/**
+ * History state for a page, keeping whatever else is on the entry. Next's router keeps its own
+ * fields there (`__NA`, its tree) and does a full reload when it pops to an entry without
+ * them — so overwriting the state wholesale turned every Back into a page reload.
+ */
+function entryFor(nav: Nav) {
+  const current = history.state as Record<string, unknown> | null;
+  return { ...(current ?? {}), bright: nav };
+}
+
 function readStored(storage: "local" | "session", key: string): string | null {
   try {
     return (storage === "local" ? localStorage : sessionStorage).getItem(key);
@@ -120,7 +130,7 @@ export function SiteNavProvider({ children }: { children: React.ReactNode }) {
     pendingScroll.current = start.section ? { section: start.section, smooth: false } : null;
     // Browsers would otherwise restore a stale scroll position on Back: each page is new content.
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-    history.replaceState({ bright: start }, "");
+    history.replaceState(entryFor(start), "");
     setReady(true);
   }, []);
 
@@ -166,7 +176,7 @@ export function SiteNavProvider({ children }: { children: React.ReactNode }) {
       }
       const next: Nav = { page, section: section ?? null };
       // Same URL on purpose: the entry exists so Back returns to the previous page.
-      history.pushState({ bright: next }, "", window.location.href);
+      history.pushState(entryFor(next), "", window.location.href);
       pendingScroll.current = { section: next.section, smooth: false };
       setNav(next);
     },
