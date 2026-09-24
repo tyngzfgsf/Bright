@@ -2,8 +2,8 @@
 
 The website for **Bright**, the AI emergency-scenario training app, and the app itself in the
 browser: landing page, download and install guide, a live releases list, FAQ, privacy policy
-and terms, and the training app with Google sign-in — Korean and English throughout, in warm
-neutrals with one coral "sunrise" accent.
+and terms, and the training app with Google sign-in — Korean and English throughout, on a
+60-30-10 palette: parchment, pine and tangerine.
 
 **It is all one page at one URL.** Home, the other pages, signing in and training all swap in
 place; the address bar always says `/`. The web app used to be a separate deployment
@@ -179,12 +179,21 @@ Three surfaces (`paper`, `raised`, `sunken`), four text weights and three line s
 are defined as CSS variables and exposed to Tailwind via `@theme inline`. The neutrals are
 warm off-white / blue-slate rather than pure white / black, which is easier on the eye.
 
-One accent, coral, taken from the logo's sun: `accent` for fills (primary buttons, the sun,
-bars, dots), `accent-ink` when it's text, `accent-soft` for tints, `on-accent` for text on a
-fill, plus `amber` (only as glow behind coral) and `good` (the "improving" trend, always
-next to a text label). Every text colour clears WCAG AA on every surface in both themes —
-check new pairings before adding them. The result/share card stays black because the app's
-real one is.
+The palette is **60-30-10**:
+
+- **60% Parchment** — the neutrals above: every page background, cards, lines, body text.
+- **30% Pine** — structure. `primary` (fill), `primary-ink` (headings, section labels; mint
+  on dark surfaces), `primary-soft` (tint), `on-primary`. Two sections sit fully on it via
+  `.band-primary` — Progress (`<Section tone="primary">`) and the footer. That class
+  re-points the surface/ink tokens, so anything inside adapts without its own dark styles.
+- **10% Tangerine** — calls to action only: `accent` / `on-accent` on primary buttons, "Open
+  app", the demo's send and "Drill it" buttons, and the logo's sun. If it isn't something to
+  press, don't make it tangerine.
+
+`good` / `warn` are the skill panel's improving / slipping trends, always next to an arrow
+and a word. Every text colour clears WCAG AA on every surface in both themes, bands
+included — check new pairings before adding them. The result/share card stays black because
+the app's real one is.
 
 `.grain` puts a fixed film-grain overlay on the page, `.sheen` adds a one-pixel top
 highlight to cards, and `.hero-wash` is the coral-and-amber radial wash behind the hero and

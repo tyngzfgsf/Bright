@@ -17,8 +17,8 @@ export default function Drill() {
         {steps.map((step, i) => (
           <li key={step.title}>
             <Reveal delay={i * 0.07}>
-              <div className="flex items-center gap-3 border-t-2 border-accent pt-5">
-                <span className="tnum font-mono text-[12px] font-semibold text-accent-ink">
+              <div className="flex items-center gap-3 border-t-2 border-primary pt-5">
+                <span className="tnum font-mono text-[12px] font-semibold text-primary-ink">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="eyebrow-sm text-ink-muted">{step.label}</span>
@@ -41,7 +41,7 @@ export default function Drill() {
             {SCENARIOS.map((scenario) => (
               <li
                 key={scenario.id}
-                className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13.5px] text-ink-soft transition-colors duration-300 hover:border-accent/40 hover:bg-accent-soft hover:text-ink"
+                className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13.5px] text-ink-soft transition-colors duration-300 hover:border-primary/40 hover:bg-primary-soft hover:text-ink"
               >
                 {scenario[locale]}
               </li>

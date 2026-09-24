@@ -11,7 +11,7 @@ export default function Progress() {
   const points = t.raw("points") as Point[];
 
   return (
-    <Section id="progress" eyebrow={t("eyebrow")} title={t("title")} lede={t("lede")} band>
+    <Section id="progress" eyebrow={t("eyebrow")} title={t("title")} lede={t("lede")} tone="primary">
       <div className="grid gap-14 lg:grid-cols-[1fr_minmax(0,26rem)] lg:items-start lg:gap-20">
         <div>
           <ul className="space-y-9">

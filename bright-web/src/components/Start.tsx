@@ -24,7 +24,7 @@ export default function Start() {
             <Card className="flex flex-col p-7 sm:p-9">
               {/* The browser is the quickest way in, so it carries the colour. */}
               {path.variant === "solid" && (
-                <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-accent" />
+                <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-primary" />
               )}
               <h3 className="text-[22px] font-semibold tracking-[-0.026em]">
                 {t(`${path.key}.name`)}
@@ -36,7 +36,7 @@ export default function Start() {
                   <li key={point} className="flex gap-3.5 text-[15px] leading-[1.65] text-ink-soft">
                     <span
                       aria-hidden="true"
-                      className="mt-[0.75em] block h-[2px] w-3 shrink-0 rounded-full bg-accent"
+                      className="mt-[0.75em] block h-[2px] w-3 shrink-0 rounded-full bg-primary"
                     />
                     {point}
                   </li>

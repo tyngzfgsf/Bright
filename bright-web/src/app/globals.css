@@ -4,98 +4,169 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------- palette --
-   Warm neutrals instead of pure black and white — softer on the eye over a
-   long read — plus one "sunrise" accent taken from the logo's sun. Coral is
-   the brand colour; amber only ever appears as light behind it. Text colours
-   all clear WCAG AA (4.5:1) on every surface.
+   60 · 30 · 10 — "Parchment, Pine, Tangerine".
 
-   --accent       fills: buttons, bars, the sun, dots
-   --accent-ink   coral as *text* (a deeper shade in light mode for contrast)
-   --accent-soft  tinted backgrounds
-   --on-accent    text on an accent fill — dark in both themes (5.5:1+)
-   --good         "improving" in the skill panel; always paired with a label   */
+   60%  Parchment  the neutral page: paper / raised / sunken, lines, body ink.
+   30%  Pine       the structure: headings, section labels, chat bubbles, and
+                   two full-bleed bands (Progress and the footer) — a deep
+                   scrubs teal, so the site reads as clinical without going cold.
+   10%  Tangerine  calls to action only: primary buttons, "Open app", the
+                   send / "Drill it" buttons, and the sun in the logo. If it
+                   isn't something to press, it isn't tangerine.
+
+   --primary       pine fill (bands, bubbles, badges)
+   --primary-ink   pine as text — headings, labels (mint on dark surfaces)
+   --primary-soft  pine tint
+   --on-primary    text on a pine fill
+   --accent        tangerine fill · --on-accent text on it · --accent-ink rare text
+   --good / --warn skill-panel trends; always next to an arrow and a word
+
+   Every text colour clears WCAG AA (4.5:1) on every surface it can land on,
+   bands included. Check new pairings before adding them.                     */
 
 :root {
-  --paper: #fbf8f3;
-  --raised: #fffdf9;
-  --sunken: #f4efe7;
-  --ink: #1c1a29;
-  --ink-soft: #474457;
-  --ink-muted: #63606f;
-  --ink-faint: #716d7d;
-  --line-subtle: #efe9df;
-  --line: #e6ded2;
-  --line-strong: #d3c9ba;
-  --accent: #ff5a36;
-  --accent-hover: #ff4a22;
-  --accent-ink: #b23214;
-  --accent-soft: #ffe8df;
-  --amber: #ffb03a;
-  --on-accent: #1c1a29;
-  --good: #0b7a67;
-  --glow: rgba(255, 90, 54, 0.1);
-  --glow-warm: rgba(255, 176, 58, 0.16);
-  --shadow-sm: 0 1px 2px rgba(28, 26, 41, 0.05), 0 1px 1px rgba(28, 26, 41, 0.03);
-  --shadow-md: 0 10px 30px -12px rgba(28, 26, 41, 0.16);
-  --shadow-lg: 0 40px 90px -50px rgba(28, 26, 41, 0.38);
-  --shadow-accent: 0 10px 28px -10px rgba(255, 90, 54, 0.55);
+  --paper: #f8f4ec;
+  --raised: #fffcf6;
+  --sunken: #efe9dd;
+  --ink: #14201f;
+  --ink-soft: #3e4b49;
+  --ink-muted: #5a6664;
+  --ink-faint: #5e6967;
+  --line-subtle: #ece5d8;
+  --line: #e1d9ca;
+  --line-strong: #cbc1b0;
+  --primary: #0f4c47;
+  --primary-hover: #0b3e3a;
+  --primary-ink: #0f4c47;
+  --primary-soft: #dcebe6;
+  --on-primary: #f8f4ec;
+  --accent: #ff6b35;
+  --accent-hover: #ff5a1f;
+  --accent-ink: #b03d0c;
+  --on-accent: #14201f;
+  --good: #0e6e5f;
+  --warn: #9a4a06;
+  --glow: rgba(15, 76, 71, 0.09);
+  --glow-warm: rgba(255, 107, 53, 0.035);
+  --shadow-sm: 0 1px 2px rgba(20, 32, 31, 0.05), 0 1px 1px rgba(20, 32, 31, 0.03);
+  --shadow-md: 0 10px 30px -12px rgba(20, 32, 31, 0.16);
+  --shadow-lg: 0 40px 90px -50px rgba(20, 32, 31, 0.4);
+  --shadow-accent: 0 10px 26px -10px rgba(255, 107, 53, 0.6);
   --grain-opacity: 0.022;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --paper: #11131a;
-    --raised: #171a23;
-    --sunken: #0d0f15;
-    --ink: #f4f0e9;
-    --ink-soft: #c2bdcb;
-    --ink-muted: #9a95a6;
-    --ink-faint: #8a8597;
-    --line-subtle: #1d2029;
-    --line: #262a35;
-    --line-strong: #3a3f4d;
-    --accent: #ff7452;
-    --accent-hover: #ff8563;
-    --accent-ink: #ff8866;
-    --accent-soft: rgba(255, 116, 82, 0.14);
-    --amber: #ffbe5c;
-    --on-accent: #1c1a29;
-    --good: #3ccbae;
-    --glow: rgba(255, 116, 82, 0.13);
-    --glow-warm: rgba(255, 190, 92, 0.08);
+    --paper: #0b1716;
+    --raised: #10201f;
+    --sunken: #081110;
+    --ink: #eef3f0;
+    --ink-soft: #bccac6;
+    --ink-muted: #95a5a1;
+    --ink-faint: #879793;
+    --line-subtle: #142524;
+    --line: #1c3230;
+    --line-strong: #2e4947;
+    --primary: #1e6b63;
+    --primary-hover: #247a71;
+    --primary-ink: #86d6c6;
+    --primary-soft: rgba(134, 214, 198, 0.12);
+    --on-primary: #eef3f0;
+    --accent: #ff7a45;
+    --accent-hover: #ff8b5c;
+    --accent-ink: #ff9466;
+    --on-accent: #14201f;
+    --good: #86d6c6;
+    --warn: #ffc46b;
+    --glow: rgba(134, 214, 198, 0.08);
+    --glow-warm: rgba(255, 122, 69, 0.06);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
     --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
     --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-    --shadow-accent: 0 10px 30px -10px rgba(255, 116, 82, 0.5);
+    --shadow-accent: 0 10px 28px -10px rgba(255, 122, 69, 0.5);
     --grain-opacity: 0.03;
   }
 }
 
 :root.dark {
-  --paper: #11131a;
-  --raised: #171a23;
-  --sunken: #0d0f15;
-  --ink: #f4f0e9;
-  --ink-soft: #c2bdcb;
-  --ink-muted: #9a95a6;
-  --ink-faint: #8a8597;
-  --line-subtle: #1d2029;
-  --line: #262a35;
-  --line-strong: #3a3f4d;
-  --accent: #ff7452;
-  --accent-hover: #ff8563;
-  --accent-ink: #ff8866;
-  --accent-soft: rgba(255, 116, 82, 0.14);
-  --amber: #ffbe5c;
-  --on-accent: #1c1a29;
-  --good: #3ccbae;
-  --glow: rgba(255, 116, 82, 0.13);
-  --glow-warm: rgba(255, 190, 92, 0.08);
+  --paper: #0b1716;
+  --raised: #10201f;
+  --sunken: #081110;
+  --ink: #eef3f0;
+  --ink-soft: #bccac6;
+  --ink-muted: #95a5a1;
+  --ink-faint: #879793;
+  --line-subtle: #142524;
+  --line: #1c3230;
+  --line-strong: #2e4947;
+  --primary: #1e6b63;
+  --primary-hover: #247a71;
+  --primary-ink: #86d6c6;
+  --primary-soft: rgba(134, 214, 198, 0.12);
+  --on-primary: #eef3f0;
+  --accent: #ff7a45;
+  --accent-hover: #ff8b5c;
+  --accent-ink: #ff9466;
+  --on-accent: #14201f;
+  --good: #86d6c6;
+  --warn: #ffc46b;
+  --glow: rgba(134, 214, 198, 0.08);
+  --glow-warm: rgba(255, 122, 69, 0.06);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
   --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
   --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-  --shadow-accent: 0 10px 30px -10px rgba(255, 116, 82, 0.5);
+  --shadow-accent: 0 10px 28px -10px rgba(255, 122, 69, 0.5);
   --grain-opacity: 0.03;
+}
+
+/* The pine band: a whole section on the 30% colour. It re-points the surface
+   and ink tokens instead of restyling children, so everything inside — cards,
+   lists, the skill panel — adapts on its own. */
+.band-primary {
+  --paper: #0f4c47;
+  --raised: #145851;
+  --sunken: #0c403c;
+  --ink: #f8f4ec;
+  --ink-soft: #d2e4df;
+  --ink-muted: #afcbc4;
+  --ink-faint: #a9c7c0;
+  --line-subtle: rgba(248, 244, 236, 0.08);
+  --line: rgba(248, 244, 236, 0.13);
+  --line-strong: rgba(248, 244, 236, 0.24);
+  --primary-ink: #a6e3d5;
+  --primary-soft: rgba(166, 227, 213, 0.13);
+  --good: #a6e3d5;
+  --warn: #ffc46b;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 12px 30px -14px rgba(0, 0, 0, 0.35);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .band-primary {
+    --paper: #123a36;
+    --raised: #164541;
+    --sunken: #0f312e;
+    --ink: #eef3f0;
+    --ink-soft: #c5d8d3;
+    --ink-muted: #a3bdb7;
+    --ink-faint: #94b0aa;
+    --primary-ink: #9adfd0;
+    --good: #9adfd0;
+  }
+}
+
+:root.dark .band-primary {
+  --paper: #123a36;
+  --raised: #164541;
+  --sunken: #0f312e;
+  --ink: #eef3f0;
+  --ink-soft: #c5d8d3;
+  --ink-muted: #a3bdb7;
+  --ink-faint: #94b0aa;
+  --primary-ink: #9adfd0;
+  --good: #9adfd0;
 }
 
 @theme inline {
@@ -109,13 +180,17 @@
   --color-line-subtle: var(--line-subtle);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-ink: var(--accent-ink);
-  --color-accent-soft: var(--accent-soft);
-  --color-amber: var(--amber);
   --color-on-accent: var(--on-accent);
   --color-good: var(--good);
+  --color-warn: var(--warn);
 
   --shadow-soft: var(--shadow-sm);
   --shadow-raise: var(--shadow-md);
@@ -170,8 +245,8 @@ p {
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--primary);
+  color: var(--on-primary);
 }
 
 :focus-visible {
@@ -225,9 +300,13 @@ p {
     radial-gradient(26rem 22rem at 6% 30%, var(--glow-warm), transparent 72%);
 }
 
-/* The one highlighted phrase in the hero headline. */
-.accent-text {
-  color: var(--accent-ink);
+/* The one highlighted phrase in the hero headline: pine, with a highlighter
+   stroke under the lower part of the letters. Structure colour, not the CTA one. */
+.headline-mark {
+  color: var(--primary-ink);
+  background-image: linear-gradient(transparent 64%, var(--primary-soft) 64%, var(--primary-soft) 92%, transparent 92%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* Fine film grain over the whole page: the detail that stops large flat areas

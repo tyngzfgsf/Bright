@@ -105,7 +105,7 @@ export default function ChatDemo() {
                 <span className="flex items-center gap-2">
                   <span
                     aria-hidden="true"
-                    className="grid size-6 place-items-center rounded-[7px] bg-accent text-on-accent"
+                    className="grid size-6 place-items-center rounded-[7px] bg-primary text-on-primary"
                   >
                     <BrightMark className="size-[13px]" />
                   </span>
@@ -280,7 +280,7 @@ function Bubble({
       className={[
         "max-w-[86%] rounded-[1.15rem] px-3.5 py-2.5 text-[12.5px] leading-[1.55]",
         isUser
-          ? "rounded-br-[0.45rem] bg-accent text-on-accent shadow-soft"
+          ? "rounded-br-[0.45rem] bg-primary text-on-primary shadow-soft"
           : "rounded-bl-[0.45rem] bg-sunken text-ink ring-1 ring-line-subtle",
       ].join(" ")}
     >
