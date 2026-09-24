@@ -4,167 +4,155 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------- palette --
-   60 · 30 · 10 — "Porcelain, Navy, Clinical red".
+   60 · 30 · 10, built from a five-colour template:
 
-   60%  Porcelain  the neutral page: paper / raised / sunken, lines, body ink.
-                   Cool off-white rather than pure white, so it's easy on the eye.
-   30%  Navy       the structure: headings, section labels, chat bubbles, and
-                   two full-bleed bands (Progress and the footer).
-   10%  Red        calls to action only: primary buttons, "Open app", the send /
-                   "Drill it" buttons, and the sun in the logo. A clinical red —
-                   the emergency colour — so it only ever means "press this".
+     #141619 charcoal   #2C2E3A slate   #050A44 deep navy
+     #0A21C0 royal blue #B3B4BD silver
+
+   60%  Neutrals   light: a silver-tinted off-white page, charcoal / slate text,
+                   silver lines · dark: charcoal page, slate lines, silver text.
+   30%  Deep navy  the structure: headings (light), section labels, chat
+                   bubbles, and two full-bleed bands (Progress and the footer).
+   10%  Royal blue calls to action only: primary buttons, "Open app", the send /
+                   "Drill it" buttons, and the sun in the logo. Exact #0A21C0 on
+                   light surfaces; on charcoal and inside the navy bands it lifts
+                   to #3A54F2 (same hue) so the button still stands out (≥3:1)
+                   with white text on it (5.6:1).
+
+   The template's navy and blue are too dark to read as *text* on dark
+   surfaces, so there --primary-ink / --accent-ink use lighter tints of them.
 
    --primary       navy fill (bands, bubbles, badges)
    --primary-ink   navy as text — headings, labels (periwinkle on dark surfaces)
    --primary-soft  navy tint
    --on-primary    text on a navy fill
-   --accent        red fill · --on-accent text on it · --accent-ink rare text
+   --accent        blue fill · --on-accent text on it · --accent-ink rare text
    --good / --warn skill-panel trends; always next to an arrow and a word
 
    Every text colour clears WCAG AA (4.5:1) on every surface it can land on,
    bands included. Check new pairings before adding them.                     */
 
 :root {
-  --paper: #f5f6f8;
-  --raised: #fbfbfc;
-  --sunken: #eceef2;
-  --ink: #121a2b;
-  --ink-soft: #3b4558;
-  --ink-muted: #535d70;
-  --ink-faint: #596376;
-  --line-subtle: #e8ebf0;
-  --line: #dde1e8;
-  --line-strong: #c5cbd5;
-  --primary: #14264a;
-  --primary-hover: #0f1d3a;
-  --primary-ink: #1b3263;
-  --primary-soft: #e3e9f4;
-  --on-primary: #f5f6f8;
-  --accent: #c8323b;
-  --accent-hover: #b02a33;
-  --accent-ink: #b02a33;
+  --paper: #f3f3f6;
+  --raised: #fafafb;
+  --sunken: #e8e8ec;
+  --ink: #141619;
+  --ink-soft: #2c2e3a;
+  --ink-muted: #4a4c58;
+  --ink-faint: #555764;
+  --line-subtle: #e6e6eb;
+  --line: #d6d7dd;
+  --line-strong: #b3b4bd;
+  --primary: #050a44;
+  --primary-hover: #0a1160;
+  --primary-ink: #050a44;
+  --primary-soft: #e4e6f6;
+  --on-primary: #f3f3f6;
+  --accent: #0a21c0;
+  --accent-hover: #0819a0;
+  --accent-ink: #0a21c0;
   --on-accent: #ffffff;
   --good: #1d6b47;
-  --warn: #94540a;
-  --glow: rgba(20, 38, 74, 0.07);
-  --glow-warm: rgba(27, 50, 99, 0.04);
-  --shadow-sm: 0 1px 2px rgba(18, 26, 43, 0.05), 0 1px 1px rgba(18, 26, 43, 0.03);
-  --shadow-md: 0 10px 30px -12px rgba(18, 26, 43, 0.16);
-  --shadow-lg: 0 40px 90px -50px rgba(18, 26, 43, 0.4);
-  --shadow-accent: 0 8px 22px -10px rgba(200, 50, 59, 0.5);
+  --warn: #8f5308;
+  --glow: rgba(10, 33, 192, 0.06);
+  --glow-warm: rgba(5, 10, 68, 0.04);
+  --shadow-sm: 0 1px 2px rgba(20, 22, 25, 0.05), 0 1px 1px rgba(20, 22, 25, 0.03);
+  --shadow-md: 0 10px 30px -12px rgba(20, 22, 25, 0.16);
+  --shadow-lg: 0 40px 90px -50px rgba(20, 22, 25, 0.42);
+  --shadow-accent: 0 8px 22px -10px rgba(10, 33, 192, 0.55);
   --grain-opacity: 0.018;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --paper: #0c111c;
-    --raised: #121a28;
-    --sunken: #080c14;
-    --ink: #edf0f5;
-    --ink-soft: #bac3d2;
-    --ink-muted: #939db0;
-    --ink-faint: #8792a6;
-    --line-subtle: #151d2b;
-    --line: #1e2a3d;
-    --line-strong: #2f3d55;
-    --primary: #2a4a85;
-    --primary-hover: #325698;
-    --primary-ink: #9db8ea;
-    --primary-soft: rgba(157, 184, 234, 0.12);
-    --on-primary: #edf0f5;
-    --accent: #f0595f;
-    --accent-hover: #f46b71;
-    --accent-ink: #ff8a8e;
-    --on-accent: #0c111c;
+    --paper: #141619;
+    --raised: #1c1e24;
+    --sunken: #0f1113;
+    --ink: #eeeff3;
+    --ink-soft: #b3b4bd;
+    --ink-muted: #9c9da8;
+    --ink-faint: #8e909b;
+    --line-subtle: #1f2128;
+    --line: #2c2e3a;
+    --line-strong: #3c3f4d;
+    --primary: #1b2477;
+    --primary-hover: #232d8c;
+    --primary-ink: #a9b3ff;
+    --primary-soft: rgba(169, 179, 255, 0.1);
+    --on-primary: #eeeff3;
+    --accent: #3a54f2;
+    --accent-hover: #4a63f7;
+    --accent-ink: #8c9bff;
+    --on-accent: #ffffff;
     --good: #8fd6b0;
     --warn: #f5c26b;
-    --glow: rgba(157, 184, 234, 0.07);
-    --glow-warm: rgba(157, 184, 234, 0.04);
+    --glow: rgba(58, 84, 242, 0.08);
+    --glow-warm: rgba(5, 10, 68, 0.3);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
     --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
     --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-    --shadow-accent: 0 8px 24px -10px rgba(240, 89, 95, 0.45);
+    --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.55);
     --grain-opacity: 0.028;
   }
 }
 
 :root.dark {
-  --paper: #0c111c;
-  --raised: #121a28;
-  --sunken: #080c14;
-  --ink: #edf0f5;
-  --ink-soft: #bac3d2;
-  --ink-muted: #939db0;
-  --ink-faint: #8792a6;
-  --line-subtle: #151d2b;
-  --line: #1e2a3d;
-  --line-strong: #2f3d55;
-  --primary: #2a4a85;
-  --primary-hover: #325698;
-  --primary-ink: #9db8ea;
-  --primary-soft: rgba(157, 184, 234, 0.12);
-  --on-primary: #edf0f5;
-  --accent: #f0595f;
-  --accent-hover: #f46b71;
-  --accent-ink: #ff8a8e;
-  --on-accent: #0c111c;
+  --paper: #141619;
+  --raised: #1c1e24;
+  --sunken: #0f1113;
+  --ink: #eeeff3;
+  --ink-soft: #b3b4bd;
+  --ink-muted: #9c9da8;
+  --ink-faint: #8e909b;
+  --line-subtle: #1f2128;
+  --line: #2c2e3a;
+  --line-strong: #3c3f4d;
+  --primary: #1b2477;
+  --primary-hover: #232d8c;
+  --primary-ink: #a9b3ff;
+  --primary-soft: rgba(169, 179, 255, 0.1);
+  --on-primary: #eeeff3;
+  --accent: #3a54f2;
+  --accent-hover: #4a63f7;
+  --accent-ink: #8c9bff;
+  --on-accent: #ffffff;
   --good: #8fd6b0;
   --warn: #f5c26b;
-  --glow: rgba(157, 184, 234, 0.07);
-  --glow-warm: rgba(157, 184, 234, 0.04);
+  --glow: rgba(58, 84, 242, 0.08);
+  --glow-warm: rgba(5, 10, 68, 0.3);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
   --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
   --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-  --shadow-accent: 0 8px 24px -10px rgba(240, 89, 95, 0.45);
+  --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.55);
   --grain-opacity: 0.028;
 }
 
-/* The navy band: a whole section on the 30% colour. It re-points the surface
-   and ink tokens instead of restyling children, so everything inside — cards,
-   lists, the skill panel — adapts on its own. */
+/* The navy band: a whole section on the template's #050A44. It re-points the
+   surface and ink tokens instead of restyling children, so everything inside —
+   cards, lists, the skill panel — adapts on its own. Same in both themes. */
 .band-primary {
-  --paper: #14264a;
-  --raised: #1a3058;
-  --sunken: #10203f;
-  --ink: #f5f6f8;
-  --ink-soft: #d3dae7;
-  --ink-muted: #b0bcd2;
-  --ink-faint: #a5b2ca;
-  --line-subtle: rgba(245, 246, 248, 0.08);
-  --line: rgba(245, 246, 248, 0.13);
-  --line-strong: rgba(245, 246, 248, 0.24);
-  --primary-ink: #a9c1ec;
-  --primary-soft: rgba(169, 193, 236, 0.13);
+  --paper: #050a44;
+  --raised: #0c1257;
+  --sunken: #03072f;
+  --ink: #f3f3f6;
+  --ink-soft: #d4d5de;
+  --ink-muted: #b3b4bd;
+  --ink-faint: #a9aab6;
+  --line-subtle: rgba(243, 243, 246, 0.08);
+  --line: rgba(243, 243, 246, 0.13);
+  --line-strong: rgba(243, 243, 246, 0.24);
+  --primary-ink: #a9b3ff;
+  --primary-soft: rgba(169, 179, 255, 0.12);
+  --accent: #3a54f2;
+  --accent-hover: #4a63f7;
+  --on-accent: #ffffff;
   --good: #8fd6b0;
   --warn: #f5c26b;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 12px 30px -14px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 12px 30px -14px rgba(0, 0, 0, 0.45);
+  --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.6);
   background: var(--paper);
   color: var(--ink);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) .band-primary {
-    --paper: #13213a;
-    --raised: #182946;
-    --sunken: #0f1b30;
-    --ink: #edf0f5;
-    --ink-soft: #c3cddc;
-    --ink-muted: #a0aec4;
-    --ink-faint: #93a2ba;
-    --primary-ink: #a9c1ec;
-  }
-}
-
-:root.dark .band-primary {
-  --paper: #13213a;
-  --raised: #182946;
-  --sunken: #0f1b30;
-  --ink: #edf0f5;
-  --ink-soft: #c3cddc;
-  --ink-muted: #a0aec4;
-  --ink-faint: #93a2ba;
-  --primary-ink: #a9c1ec;
 }
 
 @theme inline {

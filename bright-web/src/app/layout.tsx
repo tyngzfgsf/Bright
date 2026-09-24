@@ -8,8 +8,8 @@ import "./globals.css";
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f6f8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0c111c" },
+    { media: "(prefers-color-scheme: light)", color: "#f3f3f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#141619" },
   ],
 };
 
