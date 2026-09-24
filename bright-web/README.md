@@ -3,7 +3,7 @@
 The website for **Bright**, the AI emergency-scenario training app, and the app itself in the
 browser: landing page, download and install guide, a live releases list, FAQ, privacy policy
 and terms, and the training app with Google sign-in — Korean and English throughout, on a
-60-30-10 palette: porcelain, navy and clinical red.
+60-30-10 palette built from a five-colour template (charcoal, slate, deep navy, royal blue, silver).
 
 **It is all one page at one URL.** Home, the other pages, signing in and training all swap in
 place; the address bar always says `/`. The web app used to be a separate deployment
@@ -181,14 +181,14 @@ warm off-white / blue-slate rather than pure white / black, which is easier on t
 
 The palette is **60-30-10**:
 
-- **60% Porcelain** — the neutrals above: every page background, cards, lines, body text.
-- **30% Navy** — structure. `primary` (fill), `primary-ink` (headings, section labels; periwinkle
+- **60% Neutrals** — charcoal `#141619`, slate `#2C2E3A`, silver `#B3B4BD` (plus a silver-tinted off-white page in light mode): backgrounds, cards, lines, body text.
+- **30% Deep navy `#050A44`** — structure. `primary` (fill), `primary-ink` (headings, section labels; periwinkle
   on dark surfaces), `primary-soft` (tint), `on-primary`. Two sections sit fully on it via
   `.band-primary` — Progress (`<Section tone="primary">`) and the footer. That class
   re-points the surface/ink tokens, so anything inside adapts without its own dark styles.
-- **10% Clinical red** — calls to action only: `accent` / `on-accent` on primary buttons, "Open
+- **10% Royal blue `#0A21C0`** (lifted to `#3A54F2` on dark surfaces so buttons stay visible) — calls to action only: `accent` / `on-accent` on primary buttons, "Open
   app", the demo's send and "Drill it" buttons, and the logo's sun. If it isn't something to
-  press, don't make it red.
+  press, don't make it blue.
 
 `good` / `warn` are the skill panel's improving / slipping trends, always next to an arrow
 and a word. Every text colour clears WCAG AA on every surface in both themes, bands
