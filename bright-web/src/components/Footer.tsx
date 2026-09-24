@@ -25,17 +25,10 @@ export default function Footer() {
     {
       title: t("groups.project"),
       links: [
-        { label: t("links.howItWorks"), to: "home", section: "how" },
-        { label: t("links.status"), to: "home", section: "status" },
+        { label: t("links.drill"), to: "home", section: "what" },
+        { label: t("links.progress"), to: "home", section: "progress" },
       ],
-      external: [
-        { label: t("links.releasesRepo"), href: site.releasesRepo },
-        { label: t("links.issues"), href: site.issues },
-        {
-          label: `${t("links.sourceRepo")} (${t("sourceNote")})`,
-          href: site.sourceRepo,
-        },
-      ],
+      external: [{ label: t("links.releasesRepo"), href: site.releasesRepo }],
     },
     {
       title: t("groups.legal"),
@@ -55,7 +48,6 @@ export default function Footer() {
             <p className="mt-4 text-[14.5px] tracking-[-0.01em] text-ink-soft">
               {t("tagline")}
             </p>
-            <p className="mt-1.5 text-[13px] text-ink-faint">{t("builtBy")}</p>
           </div>
 
           {columns.map((column) => (

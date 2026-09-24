@@ -28,7 +28,7 @@ address bar changes, but the browser still behaves:
 
 | Page | What it is |
 | --- | --- |
-| `home` | Landing page: hero, what it does, how it works, design philosophy, status, get the app |
+| `home` | Landing page: hero, the drill (`#what`), progress / skill profile (`#progress`), two ways in (`#how`) |
 | `app` | The training app — see "The app" below |
 | `download` | Install guide, requirements, and the latest build read live from GitHub |
 | `releases` | Every published release, read live from the GitHub Releases feed |

@@ -22,9 +22,14 @@ const CARD_MS = 5200;
 export default function ChatDemo() {
   const t = useTranslations("demo");
   const messages = t.raw("messages") as DemoMessage[];
-  const reduceMotion = useReducedMotion();
+  // The prerendered HTML can't know the visitor's motion setting, so the first render on the
+  // client must match it (motion on); the preference takes over once mounted.
+  const prefersReducedMotion = useReducedMotion();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const reduceMotion = mounted && !!prefersReducedMotion;
   const cardPhase = messages.length + 1;
-  const [phase, setPhase] = useState(reduceMotion ? cardPhase : 1);
+  const [phase, setPhase] = useState(1);
 
   useEffect(() => {
     if (reduceMotion) {

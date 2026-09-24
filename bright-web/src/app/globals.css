@@ -233,6 +233,8 @@ html[lang="ko"] .eyebrow-sm {
 html[lang="ko"] .display {
   letter-spacing: -0.028em;
   line-height: 1.14;
+  /* Break Hangul headings between words, never inside one. */
+  word-break: keep-all;
 }
 
 .tnum {
