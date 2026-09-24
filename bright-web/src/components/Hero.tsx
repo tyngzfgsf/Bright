@@ -9,14 +9,12 @@ import {
   type Variants,
 } from "framer-motion";
 import ChatDemo from "./ChatDemo";
-import HeroName from "./HeroName";
 import LinkButton from "./LinkButton";
 import Magnetic from "./Magnetic";
 import { EASE } from "@/lib/motion";
 
 export default function Hero() {
   const t = useTranslations("hero");
-  const nav = useTranslations("nav");
   const reduceMotion = useReducedMotion();
 
   // The device drifts a little slower than the page — depth without theatrics.
@@ -57,46 +55,30 @@ export default function Hero() {
 
       <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-5 pb-24 pt-14 sm:px-8 sm:pb-32 sm:pt-20 lg:grid-cols-[1.06fr_0.94fr] lg:items-center lg:gap-10">
         <motion.div initial="hidden" animate="shown" variants={container}>
-          <motion.div data-reveal="" variants={fadeUp(0)}>
-            <span className="inline-flex items-center gap-2.5 rounded-full border border-line bg-raised/70 py-1.5 pl-2.5 pr-3.5 backdrop-blur-sm">
-              <span aria-hidden="true" className="relative flex size-1.5">
-                {!reduceMotion && (
-                  <motion.span
-                    className="absolute inset-0 rounded-full bg-ink"
-                    animate={{ scale: [1, 2.6], opacity: [0.5, 0] }}
-                    transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut" }}
-                  />
-                )}
-                <span className="relative block size-1.5 rounded-full bg-ink" />
-              </span>
-              <span className="eyebrow-sm text-ink-soft">{t("eyebrow")}</span>
-            </span>
-          </motion.div>
-
-          <h1 className="display mt-7 flex text-[clamp(3.6rem,12.5vw,7.5rem)]">
-            <span className="sr-only">{t("name")}</span>
-            <HeroName text={t("name")} />
-          </h1>
-
-          <motion.p
-            data-reveal=""
-            variants={fadeUp(0.42)}
-            className="mt-5 text-[clamp(1.2rem,2.6vw,1.65rem)] font-medium tracking-[-0.024em]"
-          >
-            {t("tagline")}
+          <motion.p data-reveal="" variants={fadeUp(0)} className="eyebrow-sm text-ink-muted">
+            {t("eyebrow")}
           </motion.p>
 
+          {/* The promise leads, not the name: the header already says "Bright". */}
+          <motion.h1
+            data-reveal=""
+            variants={fadeUp(0.12)}
+            className="display mt-6 max-w-[14ch] text-[clamp(2.6rem,7vw,4.6rem)]"
+          >
+            {t("title")}
+          </motion.h1>
+
           <motion.p
             data-reveal=""
-            variants={fadeUp(0.54)}
-            className="mt-5 max-w-[34rem] text-[16.5px] leading-[1.65] text-ink-soft"
+            variants={fadeUp(0.3)}
+            className="mt-7 max-w-[34rem] text-[17px] leading-[1.65] text-ink-soft"
           >
             {t("description")}
           </motion.p>
 
           <motion.div
             data-reveal=""
-            variants={fadeUp(0.66)}
+            variants={fadeUp(0.42)}
             className="mt-9 flex flex-wrap items-center gap-3"
           >
             <Magnetic>
@@ -106,14 +88,14 @@ export default function Hero() {
             </Magnetic>
             <Magnetic strength={0.18}>
               <LinkButton to="download" variant="outline" size="lg">
-                {nav("download")}
+                {t("ctaAndroid")}
               </LinkButton>
             </Magnetic>
           </motion.div>
 
           <motion.p
             data-reveal=""
-            variants={fadeUp(0.76)}
+            variants={fadeUp(0.52)}
             className="mt-6 max-w-md text-[13px] leading-relaxed text-ink-faint"
           >
             {t("note")}

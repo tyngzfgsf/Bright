@@ -6,8 +6,6 @@ export const site = {
   releasesLatest: "https://github.com/tyngzfgsf/Bright-app/releases",
   /** Contact route for privacy/terms questions and bug reports. */
   issues: "https://github.com/tyngzfgsf/Bright-app/issues",
-  /** Source repo — private for now. */
-  sourceRepo: "https://github.com/tyngzfgsf/Bright",
   /** Feed the app itself checks for updates; the releases page reads the same one. */
   releasesApi:
     "https://api.github.com/repos/tyngzfgsf/Bright-app/releases?per_page=30",

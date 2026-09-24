@@ -13,9 +13,9 @@ import { useScrollDirection } from "@/lib/useScrollDirection";
 import { site } from "@/lib/site";
 
 /** Every item is a page of this one-URL site; the first two are sections of the home page. */
-const links: { to: Page; section?: string; key: "what" | "how" | "download" | "releases" | "faq" }[] = [
+const links: { to: Page; section?: string; key: "what" | "progress" | "download" | "releases" | "faq" }[] = [
   { to: "home", section: "what", key: "what" },
-  { to: "home", section: "how", key: "how" },
+  { to: "home", section: "progress", key: "progress" },
   { to: "download", key: "download" },
   { to: "releases", key: "releases" },
   { to: "faq", key: "faq" },
@@ -96,27 +96,6 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
               </button>
             );
           })}
-          <a
-            href={site.releasesRepo}
-            target="_blank"
-            rel="noopener noreferrer"
-            onMouseEnter={() => setHovered(null)}
-            className="ml-1.5 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13.5px] text-ink-muted transition-colors duration-300 hover:text-ink"
-          >
-            {t("github")}
-            <svg
-              viewBox="0 0 24 24"
-              className="size-[13px] opacity-60"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.9"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M8 16 16 8M9.5 8H16v6.5" />
-            </svg>
-          </a>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -233,27 +212,6 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
                   </button>
                 </motion.div>
               ))}
-              <a
-                href={site.releasesRepo}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-between py-3.5 text-[15px] text-ink-soft transition-colors duration-200 hover:text-ink"
-              >
-                {t("github")}
-                <svg
-                  viewBox="0 0 24 24"
-                  className="size-[15px] text-ink-faint"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M8 16 16 8M9.5 8H16v6.5" />
-                </svg>
-              </a>
             </div>
           </motion.nav>
         )}

@@ -1,14 +1,11 @@
 {
   "meta": {
     "title": "Bright — practise medical emergencies with an AI",
-    "description": "The AI plays the patient, or the doctor asking the questions, and you type what you'd actually do. A free Android app I'm building on my own.",
+    "description": "Practise medical emergencies by typing what you'd actually do. The AI plays the patient or a doctor quizzing you, scores every answer, and shows you where you're weakest. Free, in your browser or on Android.",
     "ogAlt": "Bright — a step for your brighter future"
   },
   "nav": {
-    "what": "What it does",
-    "how": "How it works",
-    "status": "Status",
-    "github": "GitHub",
+    "what": "The drill",
     "menu": "Menu",
     "close": "Close menu",
     "skip": "Skip to content",
@@ -18,7 +15,8 @@
     "home": "Home",
     "backToTop": "Back to top",
     "openApp": "Open app",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "progress": "Progress"
   },
   "theme": {
     "label": "Theme",
@@ -33,14 +31,12 @@
     "koFull": "Korean"
   },
   "hero": {
-    "eyebrow": "Web & Android · Free · Still being built",
-    "name": "Bright",
-    "tagline": "A step for your brighter future.",
-    "description": "I'm building an app for practising medical emergencies. The AI plays the patient, or a doctor asking what you'd do, and you type the response you'd actually give.",
-    "ctaWeb": "Open Bright in your browser",
-    "ctaPrimary": "Get the Android app",
-    "ctaSecondary": "See how it works",
-    "note": "Sign in with Google to train in the browser, no key needed. The Android APK lives on GitHub Releases — it isn't on the Play Store."
+    "eyebrow": "Free · In your browser and on Android",
+    "title": "Practise the emergency before it's real.",
+    "description": "The AI plays the patient, or a doctor asking what you'd do next. You type the answer you'd actually give, and every answer comes back scored, with a line on what you got right and what you missed.",
+    "ctaWeb": "Start a drill",
+    "ctaAndroid": "Get the Android app",
+    "note": "Look around without an account. Sign in with Google for graded answers in the browser — no key needed."
   },
   "demo": {
     "label": "Emergency session",
@@ -75,130 +71,108 @@
       "share": "Share result"
     }
   },
-  "what": {
-    "eyebrow": "What it does",
-    "title": "You talk your way through a case",
-    "lede": "A case starts, the AI stays in character, and it keeps going until you stop. There's no list of answers to choose from.",
-    "cards": [
-      {
-        "title": "The AI plays the other person",
-        "body": "Sometimes it's the patient in front of you, sometimes a doctor asking what you'd do next. Either way it stays in character and the case unfolds as a conversation."
-      },
-      {
-        "title": "You type what you'd do",
-        "body": "There's nothing to pick between, which is the point. You have to come up with the answer yourself, the way you'd have to on the day."
-      },
-      {
-        "title": "It scores what you said",
-        "body": "At the end you get a mark out of ten and a card you can share if you feel like it. The app keeps your average as sessions add up."
-      },
-      {
-        "title": "You can go back over it",
-        "body": "Quit a session whenever you like. It's saved on your phone, so you can read the whole thing again afterwards."
-      }
-    ],
-    "note": "Sessions are saved on your phone and nowhere else. Signing in and syncing across devices is something I want to add, but it isn't there yet."
-  },
-  "how": {
-    "eyebrow": "How it works",
-    "title": "What using it actually looks like",
+  "drill": {
+    "eyebrow": "The drill",
+    "title": "One case, answered in your own words",
+    "lede": "No multiple choice. The case moves one focused question at a time, and each answer is graded before the next one comes.",
     "steps": [
       {
-        "title": "Open the app",
-        "body": "The first launch has a short intro and then asks which language you want. It guesses Korean or English from your phone, and you can change it later in settings."
+        "label": "Pick the case",
+        "title": "Choose the emergency and your role",
+        "body": "Ten emergencies at three difficulty levels. You're the doctor, nurse or EMT; the AI is the patient, or a doctor quizzing you."
       },
       {
-        "title": "Start a session",
-        "body": "The screen opens with the emergency already underway and the AI already in character."
+        "label": "Answer",
+        "title": "Type what you'd actually do",
+        "body": "Nothing to pick between. You have to come up with the assessment and the next step yourself, the way you would on the day."
       },
       {
-        "title": "Answer in your own words",
-        "body": "Type what you'd say or do, and the case moves on from there. Voice input is on my list, but for now it's typing."
-      },
-      {
-        "title": "Read it back later",
-        "body": "Leave whenever you want. Old sessions stay in your history, so you can go through one again."
+        "label": "Get graded",
+        "title": "A score and a reason, every turn",
+        "body": "Each answer gets a mark out of ten and a sentence or two on what was right or missing. Ending the session gives you a short wrap-up."
       }
-    ]
+    ],
+    "scenariosLabel": "The ten cases"
   },
-  "design": {
-    "eyebrow": "Design",
-    "title": "Why it looks this plain",
-    "lede": "It's a tool for practising emergencies, so I wanted it to feel calm and dependable rather than exciting.",
+  "progress": {
+    "eyebrow": "Progress",
+    "title": "It remembers where you're weak",
+    "lede": "A chatbot forgets you after every conversation. Bright keeps score across sessions, so the fiftieth drill is aimed better than the first.",
     "points": [
       {
-        "title": "No colour anywhere",
-        "body": "Black, white and grey. I tried accent colours a few times and each one pulled attention away from the thing you're meant to be reading."
+        "title": "An average for every emergency",
+        "body": "Every graded answer counts toward that case's average, so you can see which ones you're solid on and which you're guessing at."
       },
       {
-        "title": "It follows your phone",
-        "body": "Light or dark comes from your system setting, so the app never asks. This site does the same, with a toggle if you disagree with it."
+        "title": "Which way it's heading",
+        "body": "Your last few sessions are compared with your all-time average, so improving and slipping are both obvious."
       },
       {
-        "title": "Everything moves a little",
-        "body": "Buttons and sliders shift when you touch them. It's small on purpose: it's there so the app feels like it heard you, not to be noticed."
-      },
-      {
-        "title": "The first launch got extra time",
-        "body": "The name appears, a few tutorial pages, then the language pick. It's the first thing anyone sees, so I spent longer on it than it probably deserved."
+        "title": "Your weakest area, one tap away",
+        "body": "Once a case has enough answers to judge fairly, the lowest one is pinned to the home screen as a drill you can start straight away."
       }
-    ]
-  },
-  "status": {
-    "eyebrow": "Status",
-    "title": "Where things actually stand",
-    "lede": "It's just me, putting out small versions when they're ready. The parts I haven't built are on this list too.",
-    "states": {
-      "available": "Available",
-      "building": "In development",
-      "planned": "Planned",
-      "paused": "Not right now"
-    },
-    "items": [
-      {
-        "state": "available",
-        "name": "Android app",
-        "body": "Install the APK from GitHub Releases. It's free and there's no account."
-      },
-      {
-        "state": "building",
-        "name": "iOS app",
-        "body": "I'm porting it with Kotlin Multiplatform, so both apps share the same core. There's nothing installable yet."
-      },
-      {
-        "state": "planned",
-        "name": "Voice input",
-        "body": "Answering out loud instead of typing. I've worked out how it should go, but no release has it."
-      },
-      {
-        "state": "planned",
-        "name": "Google sign-in and cloud sync",
-        "body": "Your history only exists on your phone right now. Signing in and syncing between devices is the next big piece."
-      },
-      {
-        "state": "paused",
-        "name": "Google Play",
-        "body": "I tried submitting once. For now I'd rather put the time into the app than into store review, so GitHub Releases is how you get it."
-      }
-    ]
-  },
-  "get": {
-    "eyebrow": "Get the app",
-    "title": "Install it from GitHub",
-    "lede": "Android only for now, from the releases page. It's free: no ads, no paid version, nothing to buy.",
-    "steps": [
-      "Open the releases page on your phone.",
-      "Download the newest APK.",
-      "Android will check that you meant it — you have to allow installs from your browser or files app once."
     ],
-    "cta": "Open GitHub Releases",
-    "repoLabel": "github.com/tyngzfgsf/Bright-app",
-    "groqNote": "The AI runs on Groq's free tier, so you need a key of your own. The app asks for one the first time a session needs it, and you can skip past it during setup. I'd like to add a page here that helps with that."
+    "availability": "In the Android app. The browser version scores every answer but doesn't keep a profile yet.",
+    "panel": {
+      "label": "Skill profile",
+      "weakestLabel": "Weakest right now",
+      "drill": "Drill it",
+      "caption": "An illustration of the Stats screen, not real data.",
+      "trend": {
+        "up": "Improving",
+        "down": "Slipping",
+        "flat": "Steady"
+      },
+      "rows": [
+        {
+          "name": "Sepsis",
+          "score": 5.8,
+          "trend": "down"
+        },
+        {
+          "name": "Stroke",
+          "score": 6.9,
+          "trend": "flat"
+        },
+        {
+          "name": "Anaphylaxis",
+          "score": 7.6,
+          "trend": "up"
+        },
+        {
+          "name": "Cardiac arrest",
+          "score": 8.4,
+          "trend": "up"
+        }
+      ]
+    }
+  },
+  "start": {
+    "eyebrow": "Get started",
+    "title": "Two ways in",
+    "web": {
+      "name": "In your browser",
+      "tagline": "Nothing to install.",
+      "points": [
+        "Sign in with Google and the AI grades you, up to 40 turns a day, with no key.",
+        "Have your own Groq key? Add it in Settings and there's no daily cap.",
+        "No account at all opens a scripted preview, so you can see how it works first."
+      ],
+      "cta": "Start a drill"
+    },
+    "android": {
+      "name": "On Android",
+      "tagline": "Free, no ads, nothing to buy.",
+      "points": [
+        "Install the APK from GitHub Releases. It isn't on the Play Store.",
+        "It runs on Groq's free tier with a key of your own, asked for the first time a session needs it.",
+        "Adds the skill profile, and your history stays on your phone."
+      ],
+      "cta": "How to install"
+    }
   },
   "footer": {
     "tagline": "A step for your brighter future.",
-    "sourceNote": "private for now",
-    "builtBy": "Made by one person, in the open.",
     "rights": "© {year} Bright.",
     "groups": {
       "app": "App",
@@ -206,13 +180,12 @@
       "legal": "Legal"
     },
     "links": {
+      "drill": "The drill",
+      "progress": "Progress",
       "download": "Download",
       "releases": "Releases",
       "faq": "FAQ",
-      "howItWorks": "How it works",
-      "status": "Status",
       "releasesRepo": "APK releases on GitHub",
-      "sourceRepo": "Source repo",
       "issues": "Report an issue",
       "privacy": "Privacy",
       "terms": "Terms"
