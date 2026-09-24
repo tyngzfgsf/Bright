@@ -4,169 +4,167 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------- palette --
-   60 · 30 · 10 — "Parchment, Pine, Tangerine".
+   60 · 30 · 10 — "Porcelain, Navy, Clinical red".
 
-   60%  Parchment  the neutral page: paper / raised / sunken, lines, body ink.
-   30%  Pine       the structure: headings, section labels, chat bubbles, and
-                   two full-bleed bands (Progress and the footer) — a deep
-                   scrubs teal, so the site reads as clinical without going cold.
-   10%  Tangerine  calls to action only: primary buttons, "Open app", the
-                   send / "Drill it" buttons, and the sun in the logo. If it
-                   isn't something to press, it isn't tangerine.
+   60%  Porcelain  the neutral page: paper / raised / sunken, lines, body ink.
+                   Cool off-white rather than pure white, so it's easy on the eye.
+   30%  Navy       the structure: headings, section labels, chat bubbles, and
+                   two full-bleed bands (Progress and the footer).
+   10%  Red        calls to action only: primary buttons, "Open app", the send /
+                   "Drill it" buttons, and the sun in the logo. A clinical red —
+                   the emergency colour — so it only ever means "press this".
 
-   --primary       pine fill (bands, bubbles, badges)
-   --primary-ink   pine as text — headings, labels (mint on dark surfaces)
-   --primary-soft  pine tint
-   --on-primary    text on a pine fill
-   --accent        tangerine fill · --on-accent text on it · --accent-ink rare text
+   --primary       navy fill (bands, bubbles, badges)
+   --primary-ink   navy as text — headings, labels (periwinkle on dark surfaces)
+   --primary-soft  navy tint
+   --on-primary    text on a navy fill
+   --accent        red fill · --on-accent text on it · --accent-ink rare text
    --good / --warn skill-panel trends; always next to an arrow and a word
 
    Every text colour clears WCAG AA (4.5:1) on every surface it can land on,
    bands included. Check new pairings before adding them.                     */
 
 :root {
-  --paper: #f8f4ec;
-  --raised: #fffcf6;
-  --sunken: #efe9dd;
-  --ink: #14201f;
-  --ink-soft: #3e4b49;
-  --ink-muted: #5a6664;
-  --ink-faint: #5e6967;
-  --line-subtle: #ece5d8;
-  --line: #e1d9ca;
-  --line-strong: #cbc1b0;
-  --primary: #0f4c47;
-  --primary-hover: #0b3e3a;
-  --primary-ink: #0f4c47;
-  --primary-soft: #dcebe6;
-  --on-primary: #f8f4ec;
-  --accent: #ff6b35;
-  --accent-hover: #ff5a1f;
-  --accent-ink: #b03d0c;
-  --on-accent: #14201f;
-  --good: #0e6e5f;
-  --warn: #9a4a06;
-  --glow: rgba(15, 76, 71, 0.09);
-  --glow-warm: rgba(255, 107, 53, 0.035);
-  --shadow-sm: 0 1px 2px rgba(20, 32, 31, 0.05), 0 1px 1px rgba(20, 32, 31, 0.03);
-  --shadow-md: 0 10px 30px -12px rgba(20, 32, 31, 0.16);
-  --shadow-lg: 0 40px 90px -50px rgba(20, 32, 31, 0.4);
-  --shadow-accent: 0 10px 26px -10px rgba(255, 107, 53, 0.6);
-  --grain-opacity: 0.022;
+  --paper: #f5f6f8;
+  --raised: #fbfbfc;
+  --sunken: #eceef2;
+  --ink: #121a2b;
+  --ink-soft: #3b4558;
+  --ink-muted: #535d70;
+  --ink-faint: #596376;
+  --line-subtle: #e8ebf0;
+  --line: #dde1e8;
+  --line-strong: #c5cbd5;
+  --primary: #14264a;
+  --primary-hover: #0f1d3a;
+  --primary-ink: #1b3263;
+  --primary-soft: #e3e9f4;
+  --on-primary: #f5f6f8;
+  --accent: #c8323b;
+  --accent-hover: #b02a33;
+  --accent-ink: #b02a33;
+  --on-accent: #ffffff;
+  --good: #1d6b47;
+  --warn: #94540a;
+  --glow: rgba(20, 38, 74, 0.07);
+  --glow-warm: rgba(27, 50, 99, 0.04);
+  --shadow-sm: 0 1px 2px rgba(18, 26, 43, 0.05), 0 1px 1px rgba(18, 26, 43, 0.03);
+  --shadow-md: 0 10px 30px -12px rgba(18, 26, 43, 0.16);
+  --shadow-lg: 0 40px 90px -50px rgba(18, 26, 43, 0.4);
+  --shadow-accent: 0 8px 22px -10px rgba(200, 50, 59, 0.5);
+  --grain-opacity: 0.018;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --paper: #0b1716;
-    --raised: #10201f;
-    --sunken: #081110;
-    --ink: #eef3f0;
-    --ink-soft: #bccac6;
-    --ink-muted: #95a5a1;
-    --ink-faint: #879793;
-    --line-subtle: #142524;
-    --line: #1c3230;
-    --line-strong: #2e4947;
-    --primary: #1e6b63;
-    --primary-hover: #247a71;
-    --primary-ink: #86d6c6;
-    --primary-soft: rgba(134, 214, 198, 0.12);
-    --on-primary: #eef3f0;
-    --accent: #ff7a45;
-    --accent-hover: #ff8b5c;
-    --accent-ink: #ff9466;
-    --on-accent: #14201f;
-    --good: #86d6c6;
-    --warn: #ffc46b;
-    --glow: rgba(134, 214, 198, 0.08);
-    --glow-warm: rgba(255, 122, 69, 0.06);
+    --paper: #0c111c;
+    --raised: #121a28;
+    --sunken: #080c14;
+    --ink: #edf0f5;
+    --ink-soft: #bac3d2;
+    --ink-muted: #939db0;
+    --ink-faint: #8792a6;
+    --line-subtle: #151d2b;
+    --line: #1e2a3d;
+    --line-strong: #2f3d55;
+    --primary: #2a4a85;
+    --primary-hover: #325698;
+    --primary-ink: #9db8ea;
+    --primary-soft: rgba(157, 184, 234, 0.12);
+    --on-primary: #edf0f5;
+    --accent: #f0595f;
+    --accent-hover: #f46b71;
+    --accent-ink: #ff8a8e;
+    --on-accent: #0c111c;
+    --good: #8fd6b0;
+    --warn: #f5c26b;
+    --glow: rgba(157, 184, 234, 0.07);
+    --glow-warm: rgba(157, 184, 234, 0.04);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
     --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
     --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-    --shadow-accent: 0 10px 28px -10px rgba(255, 122, 69, 0.5);
-    --grain-opacity: 0.03;
+    --shadow-accent: 0 8px 24px -10px rgba(240, 89, 95, 0.45);
+    --grain-opacity: 0.028;
   }
 }
 
 :root.dark {
-  --paper: #0b1716;
-  --raised: #10201f;
-  --sunken: #081110;
-  --ink: #eef3f0;
-  --ink-soft: #bccac6;
-  --ink-muted: #95a5a1;
-  --ink-faint: #879793;
-  --line-subtle: #142524;
-  --line: #1c3230;
-  --line-strong: #2e4947;
-  --primary: #1e6b63;
-  --primary-hover: #247a71;
-  --primary-ink: #86d6c6;
-  --primary-soft: rgba(134, 214, 198, 0.12);
-  --on-primary: #eef3f0;
-  --accent: #ff7a45;
-  --accent-hover: #ff8b5c;
-  --accent-ink: #ff9466;
-  --on-accent: #14201f;
-  --good: #86d6c6;
-  --warn: #ffc46b;
-  --glow: rgba(134, 214, 198, 0.08);
-  --glow-warm: rgba(255, 122, 69, 0.06);
+  --paper: #0c111c;
+  --raised: #121a28;
+  --sunken: #080c14;
+  --ink: #edf0f5;
+  --ink-soft: #bac3d2;
+  --ink-muted: #939db0;
+  --ink-faint: #8792a6;
+  --line-subtle: #151d2b;
+  --line: #1e2a3d;
+  --line-strong: #2f3d55;
+  --primary: #2a4a85;
+  --primary-hover: #325698;
+  --primary-ink: #9db8ea;
+  --primary-soft: rgba(157, 184, 234, 0.12);
+  --on-primary: #edf0f5;
+  --accent: #f0595f;
+  --accent-hover: #f46b71;
+  --accent-ink: #ff8a8e;
+  --on-accent: #0c111c;
+  --good: #8fd6b0;
+  --warn: #f5c26b;
+  --glow: rgba(157, 184, 234, 0.07);
+  --glow-warm: rgba(157, 184, 234, 0.04);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
   --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
   --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-  --shadow-accent: 0 10px 28px -10px rgba(255, 122, 69, 0.5);
-  --grain-opacity: 0.03;
+  --shadow-accent: 0 8px 24px -10px rgba(240, 89, 95, 0.45);
+  --grain-opacity: 0.028;
 }
 
-/* The pine band: a whole section on the 30% colour. It re-points the surface
+/* The navy band: a whole section on the 30% colour. It re-points the surface
    and ink tokens instead of restyling children, so everything inside — cards,
    lists, the skill panel — adapts on its own. */
 .band-primary {
-  --paper: #0f4c47;
-  --raised: #145851;
-  --sunken: #0c403c;
-  --ink: #f8f4ec;
-  --ink-soft: #d2e4df;
-  --ink-muted: #afcbc4;
-  --ink-faint: #a9c7c0;
-  --line-subtle: rgba(248, 244, 236, 0.08);
-  --line: rgba(248, 244, 236, 0.13);
-  --line-strong: rgba(248, 244, 236, 0.24);
-  --primary-ink: #a6e3d5;
-  --primary-soft: rgba(166, 227, 213, 0.13);
-  --good: #a6e3d5;
-  --warn: #ffc46b;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18);
-  --shadow-md: 0 12px 30px -14px rgba(0, 0, 0, 0.35);
+  --paper: #14264a;
+  --raised: #1a3058;
+  --sunken: #10203f;
+  --ink: #f5f6f8;
+  --ink-soft: #d3dae7;
+  --ink-muted: #b0bcd2;
+  --ink-faint: #a5b2ca;
+  --line-subtle: rgba(245, 246, 248, 0.08);
+  --line: rgba(245, 246, 248, 0.13);
+  --line-strong: rgba(245, 246, 248, 0.24);
+  --primary-ink: #a9c1ec;
+  --primary-soft: rgba(169, 193, 236, 0.13);
+  --good: #8fd6b0;
+  --warn: #f5c26b;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 12px 30px -14px rgba(0, 0, 0, 0.4);
   background: var(--paper);
   color: var(--ink);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) .band-primary {
-    --paper: #123a36;
-    --raised: #164541;
-    --sunken: #0f312e;
-    --ink: #eef3f0;
-    --ink-soft: #c5d8d3;
-    --ink-muted: #a3bdb7;
-    --ink-faint: #94b0aa;
-    --primary-ink: #9adfd0;
-    --good: #9adfd0;
+    --paper: #13213a;
+    --raised: #182946;
+    --sunken: #0f1b30;
+    --ink: #edf0f5;
+    --ink-soft: #c3cddc;
+    --ink-muted: #a0aec4;
+    --ink-faint: #93a2ba;
+    --primary-ink: #a9c1ec;
   }
 }
 
 :root.dark .band-primary {
-  --paper: #123a36;
-  --raised: #164541;
-  --sunken: #0f312e;
-  --ink: #eef3f0;
-  --ink-soft: #c5d8d3;
-  --ink-muted: #a3bdb7;
-  --ink-faint: #94b0aa;
-  --primary-ink: #9adfd0;
-  --good: #9adfd0;
+  --paper: #13213a;
+  --raised: #182946;
+  --sunken: #0f1b30;
+  --ink: #edf0f5;
+  --ink-soft: #c3cddc;
+  --ink-muted: #a0aec4;
+  --ink-faint: #93a2ba;
+  --primary-ink: #a9c1ec;
 }
 
 @theme inline {
