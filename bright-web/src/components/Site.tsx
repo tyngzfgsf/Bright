@@ -83,11 +83,6 @@ function Shell() {
   const title = t(TITLE_KEYS[page]);
   useDocumentTitle(page === "home" || page === "app" ? title : `${title} · Bright`);
 
-  // The film grain is part of the site's paper; the app is a working surface without it.
-  useEffect(() => {
-    document.body.classList.toggle("grain", page !== "app");
-  }, [page]);
-
   const main = useRef<HTMLElement>(null);
 
   if (page === "app") {

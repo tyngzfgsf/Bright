@@ -26,7 +26,7 @@ export default function DownloadPage() {
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
         {/* Latest build, read live from the same feed the app checks. */}
         <Reveal>
-          <div className="sheen rounded-[1.6rem] border border-line bg-raised p-8 shadow-soft sm:p-10">
+          <div className="sheen rounded-[1.6rem] border border-line bg-raised p-8 sm:p-10">
             <p className="eyebrow-sm text-ink-faint">{t("latestLabel")}</p>
             {releases === undefined ? (
               <div aria-busy="true" className="mt-4 space-y-3">
@@ -146,7 +146,7 @@ export default function DownloadPage() {
             { title: t("iosTitle"), body: t("iosBody") },
           ].map((card, i) => (
             <Reveal key={card.title} delay={i * 0.08}>
-              <div className="sheen h-full rounded-[1.35rem] border border-line bg-raised p-7 transition-colors duration-300 hover:border-line-strong sm:p-8">
+              <div className="sheen h-full rounded-[1.35rem] border border-line bg-raised p-7 transition-colors duration-200 hover:border-line-strong sm:p-8">
                 <h2 className="text-[17px] font-semibold tracking-[-0.02em]">
                   {card.title}
                 </h2>

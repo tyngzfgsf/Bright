@@ -120,7 +120,7 @@ export default function Cursor() {
             initial={{ opacity: 0.5, scale: 0 }}
             animate={{ opacity: 0, scale: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
             style={{ left: ripple.x, top: ripple.y }}
             className="absolute -ml-[40px] -mt-[40px] size-20 rounded-full border border-white"
           />

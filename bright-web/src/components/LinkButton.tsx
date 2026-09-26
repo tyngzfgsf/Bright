@@ -16,7 +16,7 @@ type Props = {
 };
 
 const variants = {
-  solid: "bg-accent text-on-accent shadow-accent hover:bg-accent-hover",
+  solid: "bg-accent text-on-accent hover:bg-accent-hover",
   outline: "border border-line-strong text-ink hover:border-primary hover:bg-primary-soft",
 } as const;
 
@@ -47,7 +47,7 @@ export default function LinkButton({
       {...press}
       transition={PRESS}
       className={[
-        "group inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-[-0.011em] transition-colors duration-300 will-change-transform",
+        "group inline-flex items-center justify-center gap-2 rounded-full font-semibold tracking-[-0.006em] transition-colors duration-200 will-change-transform",
         variants[variant],
         sizes[size],
         className,
@@ -56,7 +56,7 @@ export default function LinkButton({
       <span>{children}</span>
       <svg
         viewBox="0 0 24 24"
-        className="size-[15px] opacity-50 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[2px] group-hover:opacity-80"
+        className="size-[15px] opacity-50 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-[2px] group-hover:opacity-80"
         fill="none"
         stroke="currentColor"
         strokeWidth="1.8"

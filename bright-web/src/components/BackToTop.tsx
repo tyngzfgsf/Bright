@@ -33,7 +33,7 @@ export default function BackToTop() {
           whileHover={reduceMotion ? undefined : { y: -2 }}
           whileTap={reduceMotion ? undefined : { scale: 0.94 }}
           transition={PRESS}
-          className="fixed bottom-6 right-5 z-40 grid size-11 place-items-center rounded-full border border-line bg-paper/80 text-ink-soft shadow-raise backdrop-blur-xl transition-colors duration-300 hover:border-line-strong hover:text-ink sm:bottom-8 sm:right-8"
+          className="fixed bottom-6 right-5 z-40 grid size-11 place-items-center rounded-full border border-line bg-paper/80 text-ink-soft backdrop-blur-xl transition-colors duration-200 hover:border-line-strong hover:text-ink sm:bottom-8 sm:right-8"
         >
           <svg
             viewBox="0 0 24 24"

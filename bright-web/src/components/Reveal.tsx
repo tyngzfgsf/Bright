@@ -11,8 +11,6 @@ type Props = {
   delay?: number;
   /** Travel distance in px; set to 0 for elements that shouldn't move. */
   y?: number;
-  /** Adds a slight defocus to the entrance — used sparingly. */
-  blur?: boolean;
   /**
    * Animate only the first time. Long-form documents pass this: re-animating
    * paragraphs every time you scroll back over them is distracting to read.
@@ -29,8 +27,7 @@ export default function Reveal({
   children,
   className,
   delay = 0,
-  y = 18,
-  blur = false,
+  y = 40,
   once = false,
 }: Props) {
   const reduceMotion = useReducedMotion();
@@ -45,14 +42,10 @@ export default function Reveal({
         hidden: {
           opacity: 0,
           y: from,
-          scale: 0.994,
-          filter: blur ? "blur(6px)" : "blur(0px)",
         },
         shown: {
           opacity: 1,
           y: 0,
-          scale: 1,
-          filter: "blur(0px)",
           transition: { ...REVEAL, delay },
         },
       };

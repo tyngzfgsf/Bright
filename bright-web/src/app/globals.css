@@ -4,153 +4,129 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------- palette --
-   60 · 30 · 10, built from a five-colour template:
+   Monochrome, with one blue. The page stays colourless until there's
+   something to press; depth comes from 1px lines, not shadows.
 
-     #141619 charcoal   #2C2E3A slate   #050A44 deep navy
-     #0A21C0 royal blue #B3B4BD silver
+   Light  white page, #F5F5F7 sunken areas, #1D1D1F text. Secondary text
+          stops at #6E6E73: the usual #86868B is only 3.6:1 on white.
+   Dark   true black (OLED) page, #1C1C1E cards, #F5F5F7 text.
+   Both   #0071E3 for calls to action (white text 4.7:1), darkening on hover.
 
-   60%  Neutrals   light: a silver-tinted off-white page, charcoal / slate text,
-                   silver lines · dark: charcoal page, slate lines, silver text.
-   30%  Deep navy  the structure: headings (light), section labels, chat
-                   bubbles, and two full-bleed bands (Progress and the footer).
-   10%  Royal blue calls to action only: primary buttons, "Open app", the send /
-                   "Drill it" buttons, and the sun in the logo. Exact #0A21C0 on
-                   light surfaces; on charcoal and inside the navy bands it lifts
-                   to #3A54F2 (same hue) so the button still stands out (≥3:1)
-                   with white text on it (5.6:1).
-
-   The template's navy and blue are too dark to read as *text* on dark
-   surfaces, so there --primary-ink / --accent-ink use lighter tints of them.
-
-   --primary       navy fill (bands, bubbles, badges)
-   --primary-ink   navy as text — headings, labels (periwinkle on dark surfaces)
-   --primary-soft  navy tint
-   --on-primary    text on a navy fill
-   --accent        blue fill · --on-accent text on it · --accent-ink rare text
+   --primary       structure fill (bands, bubbles, badges) — near-black
+   --primary-ink   headings and labels — same as ink, no tint
+   --primary-soft  neutral tint
+   --on-primary    text on a primary fill
+   --accent        CTA fill · --on-accent text on it · --accent-ink links
    --good / --warn skill-panel trends; always next to an arrow and a word
 
    Every text colour clears WCAG AA (4.5:1) on every surface it can land on,
-   bands included. Check new pairings before adding them.                     */
+   bands included, and the accent fill clears 3:1 against every surface.
+   Check new pairings before adding them.                                     */
 
 :root {
-  --paper: #f3f3f6;
-  --raised: #fafafb;
-  --sunken: #e8e8ec;
-  --ink: #141619;
-  --ink-soft: #2c2e3a;
-  --ink-muted: #4a4c58;
-  --ink-faint: #555764;
-  --line-subtle: #e6e6eb;
-  --line: #d6d7dd;
-  --line-strong: #b3b4bd;
-  --primary: #050a44;
-  --primary-hover: #0a1160;
-  --primary-ink: #050a44;
-  --primary-soft: #e4e6f6;
-  --on-primary: #f3f3f6;
-  --accent: #0a21c0;
-  --accent-hover: #0819a0;
-  --accent-ink: #0a21c0;
+  --paper: #ffffff;
+  --raised: #fbfbfd;
+  --sunken: #f5f5f7;
+  --ink: #1d1d1f;
+  --ink-soft: #424245;
+  --ink-muted: #515154;
+  --ink-faint: #6e6e73;
+  --line-subtle: #f0f0f2;
+  --line: #e3e3e8;
+  --line-strong: #d2d2d7;
+  --primary: #1d1d1f;
+  --primary-hover: #333336;
+  --primary-ink: #1d1d1f;
+  --primary-soft: #f0f0f2;
+  --on-primary: #f5f5f7;
+  --accent: #0071e3;
+  --accent-hover: #0062c4;
+  --accent-ink: #0066cc;
   --on-accent: #ffffff;
   --good: #1d6b47;
   --warn: #8f5308;
-  --glow: rgba(10, 33, 192, 0.06);
-  --glow-warm: rgba(5, 10, 68, 0.04);
-  --shadow-sm: 0 1px 2px rgba(20, 22, 25, 0.05), 0 1px 1px rgba(20, 22, 25, 0.03);
-  --shadow-md: 0 10px 30px -12px rgba(20, 22, 25, 0.16);
-  --shadow-lg: 0 40px 90px -50px rgba(20, 22, 25, 0.42);
-  --shadow-accent: 0 8px 22px -10px rgba(10, 33, 192, 0.55);
-  --grain-opacity: 0.018;
+  --glow: rgba(0, 0, 0, 0.025);
+  --glow-warm: rgba(0, 0, 0, 0.015);
+  --shadow-lg: 0 16px 40px -20px rgba(0, 0, 0, 0.22);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --paper: #141619;
-    --raised: #1c1e24;
-    --sunken: #0f1113;
-    --ink: #eeeff3;
-    --ink-soft: #b3b4bd;
-    --ink-muted: #9c9da8;
-    --ink-faint: #8e909b;
-    --line-subtle: #1f2128;
-    --line: #2c2e3a;
-    --line-strong: #3c3f4d;
-    --primary: #1b2477;
-    --primary-hover: #232d8c;
-    --primary-ink: #a9b3ff;
-    --primary-soft: rgba(169, 179, 255, 0.1);
-    --on-primary: #eeeff3;
-    --accent: #3a54f2;
-    --accent-hover: #4a63f7;
-    --accent-ink: #8c9bff;
+    --paper: #000000;
+    --raised: #1c1c1e;
+    --sunken: #0a0a0a;
+    --ink: #f5f5f7;
+    --ink-soft: #d2d2d7;
+    --ink-muted: #a1a1a6;
+    --ink-faint: #86868b;
+    --line-subtle: #161618;
+    --line: #2c2c2e;
+    --line-strong: #424245;
+    --primary: #2c2c2e;
+    --primary-hover: #3a3a3c;
+    --primary-ink: #f5f5f7;
+    --primary-soft: rgba(245, 245, 247, 0.08);
+    --on-primary: #f5f5f7;
+    --accent: #0071e3;
+    --accent-hover: #0062c4;
+    --accent-ink: #2997ff;
     --on-accent: #ffffff;
     --good: #8fd6b0;
     --warn: #f5c26b;
-    --glow: rgba(58, 84, 242, 0.08);
-    --glow-warm: rgba(5, 10, 68, 0.3);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-    --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
-    --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-    --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.55);
-    --grain-opacity: 0.028;
+    --glow: rgba(255, 255, 255, 0.035);
+    --glow-warm: rgba(255, 255, 255, 0.02);
+    --shadow-lg: 0 16px 40px -18px rgba(0, 0, 0, 0.9);
   }
 }
 
 :root.dark {
-  --paper: #141619;
-  --raised: #1c1e24;
-  --sunken: #0f1113;
-  --ink: #eeeff3;
-  --ink-soft: #b3b4bd;
-  --ink-muted: #9c9da8;
-  --ink-faint: #8e909b;
-  --line-subtle: #1f2128;
-  --line: #2c2e3a;
-  --line-strong: #3c3f4d;
-  --primary: #1b2477;
-  --primary-hover: #232d8c;
-  --primary-ink: #a9b3ff;
-  --primary-soft: rgba(169, 179, 255, 0.1);
-  --on-primary: #eeeff3;
-  --accent: #3a54f2;
-  --accent-hover: #4a63f7;
-  --accent-ink: #8c9bff;
+  --paper: #000000;
+  --raised: #1c1c1e;
+  --sunken: #0a0a0a;
+  --ink: #f5f5f7;
+  --ink-soft: #d2d2d7;
+  --ink-muted: #a1a1a6;
+  --ink-faint: #86868b;
+  --line-subtle: #161618;
+  --line: #2c2c2e;
+  --line-strong: #424245;
+  --primary: #2c2c2e;
+  --primary-hover: #3a3a3c;
+  --primary-ink: #f5f5f7;
+  --primary-soft: rgba(245, 245, 247, 0.08);
+  --on-primary: #f5f5f7;
+  --accent: #0071e3;
+  --accent-hover: #0062c4;
+  --accent-ink: #2997ff;
   --on-accent: #ffffff;
   --good: #8fd6b0;
   --warn: #f5c26b;
-  --glow: rgba(58, 84, 242, 0.08);
-  --glow-warm: rgba(5, 10, 68, 0.3);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-  --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.55);
-  --grain-opacity: 0.028;
+  --glow: rgba(255, 255, 255, 0.035);
+  --glow-warm: rgba(255, 255, 255, 0.02);
+  --shadow-lg: 0 16px 40px -18px rgba(0, 0, 0, 0.9);
 }
 
-/* The navy band: a whole section on the template's #050A44. It re-points the
-   surface and ink tokens instead of restyling children, so everything inside —
-   cards, lists, the skill panel — adapts on its own. Same in both themes. */
+/* The black band: a whole section on true black, in both themes. It re-points
+   the surface and ink tokens instead of restyling children, so everything
+   inside — cards, lists, the skill panel — adapts on its own. */
 .band-primary {
-  --paper: #050a44;
-  --raised: #0c1257;
-  --sunken: #03072f;
-  --ink: #f3f3f6;
-  --ink-soft: #d4d5de;
-  --ink-muted: #b3b4bd;
-  --ink-faint: #a9aab6;
-  --line-subtle: rgba(243, 243, 246, 0.08);
-  --line: rgba(243, 243, 246, 0.13);
-  --line-strong: rgba(243, 243, 246, 0.24);
-  --primary-ink: #a9b3ff;
-  --primary-soft: rgba(169, 179, 255, 0.12);
-  --accent: #3a54f2;
-  --accent-hover: #4a63f7;
-  --on-accent: #ffffff;
+  --paper: #000000;
+  --raised: #1c1c1e;
+  --sunken: #0a0a0a;
+  --ink: #f5f5f7;
+  --ink-soft: #d2d2d7;
+  --ink-muted: #a1a1a6;
+  --ink-faint: #86868b;
+  --line-subtle: #161618;
+  --line: #2c2c2e;
+  --line-strong: #424245;
+  --primary: #2c2c2e;
+  --primary-ink: #f5f5f7;
+  --primary-soft: rgba(245, 245, 247, 0.08);
+  --on-primary: #f5f5f7;
+  --accent-ink: #2997ff;
   --good: #8fd6b0;
   --warn: #f5c26b;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 12px 30px -14px rgba(0, 0, 0, 0.45);
-  --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.6);
   background: var(--paper);
   color: var(--ink);
 }
@@ -178,10 +154,10 @@
   --color-good: var(--good);
   --color-warn: var(--warn);
 
-  --shadow-soft: var(--shadow-sm);
-  --shadow-raise: var(--shadow-md);
+  /* Overlays only (dialogs, menus, drawers) — everything else is flat. */
   --shadow-float: var(--shadow-lg);
-  --shadow-accent: var(--shadow-accent);
+
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
 
   --font-sans:
     var(--font-sans-latin), "Pretendard Variable", Pretendard, -apple-system,
@@ -276,8 +252,8 @@ p {
 
 /* -------------------------------------------------------------- surfaces -- */
 
-/* Sunrise behind hero and page headers: a coral bloom over the top edge and a
-   warmer amber one off to the side, both fading well before the text. */
+/* A faint wash behind hero and page headers: one neutral bloom over the
+   top edge and two neutral ones off to the sides, gone well before the text. */
 .hero-wash {
   position: relative;
   background:
@@ -286,25 +262,10 @@ p {
     radial-gradient(26rem 22rem at 6% 30%, var(--glow-warm), transparent 72%);
 }
 
-/* The one highlighted phrase in the hero headline: pine, with a highlighter
-   stroke under the lower part of the letters. Structure colour, not the CTA one. */
+/* The one highlighted phrase in the hero headline: set back in the secondary
+   grey rather than coloured, so the headline stays monochrome. */
 .headline-mark {
-  color: var(--primary-ink);
-  background-image: linear-gradient(transparent 64%, var(--primary-soft) 64%, var(--primary-soft) 92%, transparent 92%);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-}
-
-/* Fine film grain over the whole page: the detail that stops large flat areas
-   from banding, and reads as texture rather than noise at this opacity. */
-.grain::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  pointer-events: none;
-  opacity: var(--grain-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: var(--ink-muted);
 }
 
 /* A hairline that reads as one device pixel on retina rather than a grey bar. */
@@ -364,7 +325,7 @@ html[lang="ko"] .display {
   background-repeat: no-repeat;
   background-position: 0 100%;
   background-size: 0% 1px;
-  transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-size 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .link-sweep:hover {
@@ -455,11 +416,11 @@ html[lang="ko"] .display {
 .theme-anim *::before,
 .theme-anim *::after {
   transition:
-    background-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    fill 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+    background-color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    fill 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1) !important;
   transition-delay: 0ms !important;
 }
 
@@ -501,7 +462,7 @@ html[lang="ko"] .display {
   inset: 0;
   border-radius: inherit;
   opacity: 0;
-  transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: none;
   background: radial-gradient(
     16rem 16rem at var(--mx, 50%) var(--my, 0%),
@@ -517,6 +478,18 @@ html[lang="ko"] .display {
 @media (prefers-reduced-motion: reduce) {
   .spotlight::after {
     display: none;
+  }
+}
+
+/* A "live" dot that breathes between half and full strength — present, not
+   distracting. Used in place of Tailwind's ping, which fades to nothing. */
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
 
@@ -613,8 +586,8 @@ html[data-booting] body {
   opacity: 0;
   scale: 0.5;
   transition:
-    opacity 180ms cubic-bezier(0.22, 1, 0.36, 1),
-    scale 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    scale 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .rail::-moz-range-thumb {
@@ -626,8 +599,8 @@ html[data-booting] body {
   opacity: 0;
   scale: 0.5;
   transition:
-    opacity 180ms cubic-bezier(0.22, 1, 0.36, 1),
-    scale 180ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    scale 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .rail:hover::-webkit-slider-thumb,

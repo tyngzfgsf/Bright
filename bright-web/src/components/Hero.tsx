@@ -33,11 +33,11 @@ export default function Hero() {
     reduceMotion
       ? { hidden: { opacity: 1 }, shown: { opacity: 1 } }
       : {
-          hidden: { opacity: 0, y: 14 },
+          hidden: { opacity: 0, y: 24 },
           shown: {
             opacity: 1,
             y: 0,
-            transition: { duration: 0.75, ease: EASE, delay },
+            transition: { duration: 0.8, ease: EASE, delay },
           },
         };
 
@@ -53,16 +53,16 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-5 pb-24 pt-14 sm:px-8 sm:pb-32 sm:pt-20 lg:grid-cols-[1.06fr_0.94fr] lg:items-center lg:gap-10">
+      <div className="relative mx-auto grid w-full max-w-6xl gap-14 px-5 pb-28 pt-16 sm:px-8 sm:pb-44 sm:pt-24 lg:grid-cols-[1.06fr_0.94fr] lg:items-center lg:gap-10">
         <motion.div initial="hidden" animate="shown" variants={container}>
           <motion.div data-reveal="" variants={fadeUp(0)}>
             <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-primary-soft py-1.5 pl-3 pr-3.5">
               {/* CSS pulse rather than a motion branch, so the prerendered HTML never
                   depends on the visitor's motion setting. */}
-              <span aria-hidden="true" className="relative flex size-2">
-                <span className="absolute inset-0 rounded-full bg-primary-ink opacity-50 motion-safe:animate-ping" />
-                <span className="relative block size-2 rounded-full bg-primary-ink" />
-              </span>
+              <span
+                aria-hidden="true"
+                className="block size-2 rounded-full bg-primary-ink motion-safe:animate-pulse-soft"
+              />
               <span className="eyebrow-sm text-primary-ink">{t("eyebrow")}</span>
             </span>
           </motion.div>
@@ -71,7 +71,7 @@ export default function Hero() {
           <motion.h1
             data-reveal=""
             variants={fadeUp(0.12)}
-            className="display mt-6 max-w-[14ch] text-[clamp(2.6rem,7vw,4.6rem)]"
+            className="display mt-6 max-w-[14ch] text-[clamp(2.8rem,7.4vw,5.4rem)]"
           >
             {t.rich("title", {
               hl: (chunks) => <span className="headline-mark">{chunks}</span>,

@@ -67,11 +67,11 @@ export default function Composer({
       onPointerMove={trackPointer}
       animate={{
         boxShadow: focused
-          ? "0 0 0 3px var(--glow), var(--shadow-md)"
-          : "0 0 0 0px var(--glow), var(--shadow-sm)",
+          ? "0 0 0 3px var(--glow)"
+          : "0 0 0 0px var(--glow)",
       }}
-      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="spotlight relative rounded-[1.65rem] border border-line bg-raised px-3 pb-2.5 pt-3 transition-colors duration-300 focus-within:border-line-strong"
+      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+      className="spotlight relative rounded-[1.65rem] border border-line bg-raised px-3 pb-2.5 pt-3 transition-colors duration-200 focus-within:border-line-strong"
     >
       <textarea
         ref={field}

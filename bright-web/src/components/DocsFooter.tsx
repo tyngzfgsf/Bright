@@ -31,7 +31,7 @@ export default function DocsFooter({
               <span className="eyebrow-sm">{t("related")}</span>
               <PageLink
                 to={related}
-                className="link-sweep text-ink-soft transition-colors duration-300 hover:text-ink"
+                className="link-sweep text-ink-soft transition-colors duration-200 hover:text-ink"
               >
                 {links(related)}
               </PageLink>

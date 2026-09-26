@@ -17,7 +17,7 @@ export default function LocaleToggle() {
     <div
       role="group"
       aria-label={t("label")}
-      className="flex items-center rounded-full border border-line p-0.5 text-[11px] font-medium tracking-[0.02em] transition-colors duration-300"
+      className="flex items-center rounded-full border border-line p-0.5 text-[11px] font-medium tracking-[0.02em] transition-colors duration-200"
     >
       {locales.map((locale) => {
         const selected = locale === active;
@@ -29,7 +29,7 @@ export default function LocaleToggle() {
             aria-pressed={selected}
             aria-label={t(locale === "en" ? "enFull" : "koFull")}
             className={[
-              "relative rounded-full px-2.5 py-1 transition-colors duration-300",
+              "relative rounded-full px-2.5 py-1 transition-colors duration-200",
               selected ? "text-paper" : "text-ink-faint hover:text-ink",
             ].join(" ")}
           >

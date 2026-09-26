@@ -1,7 +1,7 @@
 import type { Transition } from "framer-motion";
 
-/** One easing curve across the whole site: quick out, long settle. */
-export const EASE = [0.22, 1, 0.36, 1] as const;
+/** One easing curve across the whole site: fast start, long frictionless settle. */
+export const EASE = [0.16, 1, 0.3, 1] as const;
 
 /** For anything that follows a pointer or a press — snappy, no overshoot. */
 export const PRESS: Transition = {
@@ -19,6 +19,6 @@ export const GLIDE: Transition = {
   mass: 0.7,
 };
 
-export const REVEAL: Transition = { duration: 0.72, ease: EASE };
+export const REVEAL: Transition = { duration: 0.8, ease: EASE };
 
 export const REVEAL_FAST: Transition = { duration: 0.5, ease: EASE };

@@ -10,7 +10,7 @@ type Props = {
   className?: string;
   /** Renders the section as a soft tonal swell instead of a flat block. */
   band?: boolean;
-  /** "primary" puts the whole section on the pine band — the palette's 30%. */
+  /** "primary" puts the whole section on the true-black band. */
   tone?: "primary";
 };
 
@@ -28,7 +28,7 @@ export default function Section({
     <section
       id={id}
       className={[
-        "scroll-mt-24 py-24 sm:py-32",
+        "scroll-mt-24 py-28 sm:py-44 lg:py-48",
         // A band separates itself by tone, so it doesn't also need a rule.
         tone === "primary" ? "band-primary" : band ? "band" : "rule-soft",
         className,
@@ -40,7 +40,7 @@ export default function Section({
             <span aria-hidden="true" className="block h-[2px] w-6 rounded-full bg-primary-ink" />
             {eyebrow}
           </p>
-          <h2 className="display mt-6 max-w-3xl text-[clamp(2rem,4.6vw,3.15rem)] text-primary-ink">
+          <h2 className="display mt-6 max-w-3xl text-[clamp(2.25rem,5.2vw,3.75rem)] text-primary-ink">
             {title}
           </h2>
           {lede && (
@@ -49,7 +49,7 @@ export default function Section({
             </p>
           )}
         </Reveal>
-        <div className="mt-14 sm:mt-18">{children}</div>
+        <div className="mt-16 sm:mt-24">{children}</div>
       </div>
     </section>
   );

@@ -57,15 +57,9 @@ export default function ChatDemo() {
 
   return (
     <figure className="relative m-0">
-      {/* Floor shadow, so the device sits on the page instead of floating. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-10 bottom-6 h-24 rounded-[50%] bg-ink/10 blur-2xl dark:bg-black/60"
-      />
-
       <div className="relative mx-auto w-full max-w-[19.5rem]">
         {/* Outer shell: two rings read as machined metal at any size. */}
-        <div className="rounded-[2.6rem] bg-gradient-to-b from-line-strong to-line p-[1.5px] shadow-float">
+        <div className="rounded-[2.6rem] bg-gradient-to-b from-line-strong to-line p-[1.5px]">
           <div className="sheen rounded-[2.55rem] bg-paper p-[9px]">
             <div className="relative flex h-[31rem] flex-col overflow-hidden rounded-[2.05rem] bg-paper ring-1 ring-line">
               {/* Status bar + camera pill */}
@@ -280,7 +274,7 @@ function Bubble({
       className={[
         "max-w-[86%] rounded-[1.15rem] px-3.5 py-2.5 text-[12.5px] leading-[1.55]",
         isUser
-          ? "rounded-br-[0.45rem] bg-primary text-on-primary shadow-soft"
+          ? "rounded-br-[0.45rem] bg-primary text-on-primary"
           : "rounded-bl-[0.45rem] bg-sunken text-ink ring-1 ring-line-subtle",
       ].join(" ")}
     >

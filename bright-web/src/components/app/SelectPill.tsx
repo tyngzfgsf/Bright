@@ -84,7 +84,7 @@ export default function SelectPill({
                 transition: { duration: 0.18, ease: EASE, staggerChildren: 0.03 },
               },
             }}
-            className="absolute bottom-full left-0 z-40 mb-2 min-w-[12rem] origin-bottom-left overflow-hidden rounded-[1rem] border border-line bg-paper p-1.5 shadow-raise"
+            className="absolute bottom-full left-0 z-40 mb-2 min-w-[12rem] origin-bottom-left overflow-hidden rounded-[1rem] border border-line bg-paper p-1.5 shadow-float"
           >
             {options.map((option) => (
               <motion.li

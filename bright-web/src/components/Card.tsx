@@ -36,7 +36,7 @@ export default function Card({
       whileHover={reduceMotion ? undefined : { y: -3 }}
       transition={PRESS}
       className={[
-        "sheen spotlight relative h-full overflow-hidden rounded-[1.35rem] border border-line bg-raised transition-[border-color,box-shadow] duration-300 hover:border-line-strong hover:shadow-raise",
+        "sheen spotlight relative h-full overflow-hidden rounded-[1.35rem] border border-line bg-raised transition-colors duration-200 hover:border-line-strong",
         className,
       ].join(" ")}
     >

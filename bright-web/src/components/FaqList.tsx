@@ -28,7 +28,7 @@ export default function FaqList() {
               >
                 <span
                   className={[
-                    "text-[16.5px] font-medium tracking-[-0.018em] transition-colors duration-300",
+                    "text-[16.5px] font-medium tracking-[-0.018em] transition-colors duration-200",
                     isOpen ? "text-ink" : "text-ink-soft group-hover:text-ink",
                   ].join(" ")}
                 >
@@ -39,7 +39,7 @@ export default function FaqList() {
                   animate={{ rotate: isOpen ? 45 : 0 }}
                   transition={{ duration: reduceMotion ? 0 : 0.3, ease: EASE }}
                   className={[
-                    "mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border transition-colors duration-300",
+                    "mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border transition-colors duration-200",
                     isOpen
                       ? "border-ink bg-ink text-paper"
                       : "border-line text-ink-faint group-hover:border-line-strong group-hover:text-ink-soft",

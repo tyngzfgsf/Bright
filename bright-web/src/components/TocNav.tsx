@@ -66,7 +66,7 @@ export default function TocNav({
                 }}
                 aria-current={isActive ? "true" : undefined}
                 className={[
-                  "block py-2 pl-5 leading-snug transition-colors duration-300",
+                  "block py-2 pl-5 leading-snug transition-colors duration-200",
                   isActive ? "text-ink" : "text-ink-faint hover:text-ink-soft",
                 ].join(" ")}
               >

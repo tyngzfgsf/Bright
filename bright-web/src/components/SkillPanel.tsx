@@ -28,7 +28,7 @@ export default function SkillPanel() {
   const weakest = rows[0];
 
   return (
-    <figure className="sheen rounded-[1.35rem] border border-line bg-paper p-6 shadow-soft sm:p-7">
+    <figure className="sheen rounded-[1.35rem] border border-line bg-paper p-6 sm:p-7">
       <p className="eyebrow-sm text-ink-faint">{t("label")}</p>
 
       <div className="mt-5 flex items-end justify-between gap-4 rounded-2xl bg-primary-soft px-5 py-4 ring-1 ring-line">
@@ -39,7 +39,7 @@ export default function SkillPanel() {
         {/* Looks like the app's button; here it's only part of the picture. */}
         <span
           aria-hidden="true"
-          className="shrink-0 rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-on-accent shadow-accent"
+          className="shrink-0 rounded-full bg-accent px-4 py-2 text-[13px] font-semibold text-on-accent"
         >
           {t("drill")} →
         </span>
