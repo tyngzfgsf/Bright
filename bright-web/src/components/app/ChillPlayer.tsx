@@ -35,9 +35,9 @@ const TICK_MS = 250;
 
 /** Direction-aware: a skip forwards throws the old piece out to the left. */
 const SLIDE = {
-  enter: (dir: number) => ({ opacity: 0, x: dir * 26, filter: "blur(5px)" }),
-  center: { opacity: 1, x: 0, filter: "blur(0px)" },
-  exit: (dir: number) => ({ opacity: 0, x: dir * -26, filter: "blur(5px)" }),
+  enter: (dir: number) => ({ opacity: 0, x: dir * 10 }),
+  center: { opacity: 1, x: 0 },
+  exit: (dir: number) => ({ opacity: 0, x: dir * -10 }),
 };
 
 export default function ChillPlayer({

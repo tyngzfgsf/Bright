@@ -75,7 +75,7 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? t("toLight") : t("toDark")}
       title={t("label")}
-      className="grid size-9 place-items-center overflow-hidden rounded-full border border-line text-ink-soft transition-colors duration-300 hover:border-line-strong hover:text-ink"
+      className="grid size-9 place-items-center overflow-hidden rounded-full border border-line text-ink-soft transition-colors duration-200 hover:border-line-strong hover:text-ink"
     >
       {/* Swapped in place rather than through AnimatePresence: an exit
           animation would leave the button empty while the icon changes. */}

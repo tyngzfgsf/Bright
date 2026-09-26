@@ -10,7 +10,7 @@ export default function Wordmark({ className = "" }: { className?: string }) {
     <span className={`group/mark flex items-center gap-2 ${className}`}>
       <BrightMark
         className="size-[22px]"
-        sunClassName="text-accent transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/mark:-translate-y-[2px]"
+        sunClassName="text-accent transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/mark:-translate-y-[2px]"
       />
       <span className="text-[15px] font-semibold tracking-[-0.02em]">
         {site.name}

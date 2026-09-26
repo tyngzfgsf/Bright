@@ -4,153 +4,130 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------- palette --
-   60 · 30 · 10, built from a five-colour template:
+   Clinical and flat: cool neutrals, one navy for structure, one accent for
+   calls to action. Depth comes from 1px lines, not shadows.
 
-     #141619 charcoal   #2C2E3A slate   #050A44 deep navy
-     #0A21C0 royal blue #B3B4BD silver
+   Light  near-white slate page (#F8FAFC), white cards, Slate 900 (#0F172A)
+          text and structure, clinical cyan (#0E7490) for calls to action.
+   Dark   neutral greys (#1E1E1E page, #2D2D2D cards), an electric blue
+          (#2563EB) for calls to action.
 
-   60%  Neutrals   light: a silver-tinted off-white page, charcoal / slate text,
-                   silver lines · dark: charcoal page, slate lines, silver text.
-   30%  Deep navy  the structure: headings (light), section labels, chat
-                   bubbles, and two full-bleed bands (Progress and the footer).
-   10%  Royal blue calls to action only: primary buttons, "Open app", the send /
-                   "Drill it" buttons, and the sun in the logo. Exact #0A21C0 on
-                   light surfaces; on charcoal and inside the navy bands it lifts
-                   to #3A54F2 (same hue) so the button still stands out (≥3:1)
-                   with white text on it (5.6:1).
-
-   The template's navy and blue are too dark to read as *text* on dark
-   surfaces, so there --primary-ink / --accent-ink use lighter tints of them.
+   The accent is the darkest shade of its hue that still reads as that hue:
+   brighter cyans (#06B6D4) can't carry white button text at 4.5:1.
 
    --primary       navy fill (bands, bubbles, badges)
-   --primary-ink   navy as text — headings, labels (periwinkle on dark surfaces)
+   --primary-ink   navy as text — headings, labels (light blue on dark surfaces)
    --primary-soft  navy tint
    --on-primary    text on a navy fill
-   --accent        blue fill · --on-accent text on it · --accent-ink rare text
+   --accent        CTA fill · --on-accent text on it · --accent-ink rare text
    --good / --warn skill-panel trends; always next to an arrow and a word
 
    Every text colour clears WCAG AA (4.5:1) on every surface it can land on,
-   bands included. Check new pairings before adding them.                     */
+   bands included, and every accent fill clears 3:1 against its surface.
+   Check new pairings before adding them.                                     */
 
 :root {
-  --paper: #f3f3f6;
-  --raised: #fafafb;
-  --sunken: #e8e8ec;
-  --ink: #141619;
-  --ink-soft: #2c2e3a;
-  --ink-muted: #4a4c58;
-  --ink-faint: #555764;
-  --line-subtle: #e6e6eb;
-  --line: #d6d7dd;
-  --line-strong: #b3b4bd;
-  --primary: #050a44;
-  --primary-hover: #0a1160;
-  --primary-ink: #050a44;
-  --primary-soft: #e4e6f6;
-  --on-primary: #f3f3f6;
-  --accent: #0a21c0;
-  --accent-hover: #0819a0;
-  --accent-ink: #0a21c0;
+  --paper: #f8fafc;
+  --raised: #ffffff;
+  --sunken: #f1f5f9;
+  --ink: #0f172a;
+  --ink-soft: #334155;
+  --ink-muted: #475569;
+  --ink-faint: #5b6474;
+  --line-subtle: #eef2f6;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --primary: #0f172a;
+  --primary-hover: #1e293b;
+  --primary-ink: #0f172a;
+  --primary-soft: #e8eef5;
+  --on-primary: #f8fafc;
+  --accent: #0e7490;
+  --accent-hover: #155e75;
+  --accent-ink: #0e7490;
   --on-accent: #ffffff;
   --good: #1d6b47;
   --warn: #8f5308;
-  --glow: rgba(10, 33, 192, 0.06);
-  --glow-warm: rgba(5, 10, 68, 0.04);
-  --shadow-sm: 0 1px 2px rgba(20, 22, 25, 0.05), 0 1px 1px rgba(20, 22, 25, 0.03);
-  --shadow-md: 0 10px 30px -12px rgba(20, 22, 25, 0.16);
-  --shadow-lg: 0 40px 90px -50px rgba(20, 22, 25, 0.42);
-  --shadow-accent: 0 8px 22px -10px rgba(10, 33, 192, 0.55);
-  --grain-opacity: 0.018;
+  --glow: rgba(6, 182, 212, 0.07);
+  --glow-warm: rgba(15, 23, 42, 0.03);
+  --shadow-lg: 0 16px 40px -20px rgba(15, 23, 42, 0.28);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --paper: #141619;
-    --raised: #1c1e24;
-    --sunken: #0f1113;
-    --ink: #eeeff3;
-    --ink-soft: #b3b4bd;
-    --ink-muted: #9c9da8;
-    --ink-faint: #8e909b;
-    --line-subtle: #1f2128;
-    --line: #2c2e3a;
-    --line-strong: #3c3f4d;
-    --primary: #1b2477;
-    --primary-hover: #232d8c;
-    --primary-ink: #a9b3ff;
-    --primary-soft: rgba(169, 179, 255, 0.1);
-    --on-primary: #eeeff3;
-    --accent: #3a54f2;
-    --accent-hover: #4a63f7;
-    --accent-ink: #8c9bff;
+    --paper: #1e1e1e;
+    --raised: #2d2d2d;
+    --sunken: #171717;
+    --ink: #f5f5f5;
+    --ink-soft: #d4d4d4;
+    --ink-muted: #a3a3a3;
+    --ink-faint: #9e9e9e;
+    --line-subtle: #262626;
+    --line: #383838;
+    --line-strong: #4a4a4a;
+    --primary: #1e293b;
+    --primary-hover: #273449;
+    --primary-ink: #93c5fd;
+    --primary-soft: rgba(147, 197, 253, 0.1);
+    --on-primary: #f5f5f5;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-ink: #60a5fa;
     --on-accent: #ffffff;
     --good: #8fd6b0;
     --warn: #f5c26b;
-    --glow: rgba(58, 84, 242, 0.08);
-    --glow-warm: rgba(5, 10, 68, 0.3);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-    --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
-    --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-    --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.55);
-    --grain-opacity: 0.028;
+    --glow: rgba(37, 99, 235, 0.08);
+    --glow-warm: rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 16px 40px -18px rgba(0, 0, 0, 0.7);
   }
 }
 
 :root.dark {
-  --paper: #141619;
-  --raised: #1c1e24;
-  --sunken: #0f1113;
-  --ink: #eeeff3;
-  --ink-soft: #b3b4bd;
-  --ink-muted: #9c9da8;
-  --ink-faint: #8e909b;
-  --line-subtle: #1f2128;
-  --line: #2c2e3a;
-  --line-strong: #3c3f4d;
-  --primary: #1b2477;
-  --primary-hover: #232d8c;
-  --primary-ink: #a9b3ff;
-  --primary-soft: rgba(169, 179, 255, 0.1);
-  --on-primary: #eeeff3;
-  --accent: #3a54f2;
-  --accent-hover: #4a63f7;
-  --accent-ink: #8c9bff;
+  --paper: #1e1e1e;
+  --raised: #2d2d2d;
+  --sunken: #171717;
+  --ink: #f5f5f5;
+  --ink-soft: #d4d4d4;
+  --ink-muted: #a3a3a3;
+  --ink-faint: #9e9e9e;
+  --line-subtle: #262626;
+  --line: #383838;
+  --line-strong: #4a4a4a;
+  --primary: #1e293b;
+  --primary-hover: #273449;
+  --primary-ink: #93c5fd;
+  --primary-soft: rgba(147, 197, 253, 0.1);
+  --on-primary: #f5f5f5;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-ink: #60a5fa;
   --on-accent: #ffffff;
   --good: #8fd6b0;
   --warn: #f5c26b;
-  --glow: rgba(58, 84, 242, 0.08);
-  --glow-warm: rgba(5, 10, 68, 0.3);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
-  --shadow-md: 0 12px 34px -14px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 44px 100px -55px rgba(0, 0, 0, 0.9);
-  --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.55);
-  --grain-opacity: 0.028;
+  --glow: rgba(37, 99, 235, 0.08);
+  --glow-warm: rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 16px 40px -18px rgba(0, 0, 0, 0.7);
 }
 
-/* The navy band: a whole section on the template's #050A44. It re-points the
-   surface and ink tokens instead of restyling children, so everything inside —
-   cards, lists, the skill panel — adapts on its own. Same in both themes. */
+/* The navy band: a whole section on Slate 900. It re-points the surface and
+   ink tokens instead of restyling children, so everything inside — cards,
+   lists, the skill panel — adapts on its own. The theme's own accent carries
+   over (≥3:1 against the navy in both). */
 .band-primary {
-  --paper: #050a44;
-  --raised: #0c1257;
-  --sunken: #03072f;
-  --ink: #f3f3f6;
-  --ink-soft: #d4d5de;
-  --ink-muted: #b3b4bd;
-  --ink-faint: #a9aab6;
-  --line-subtle: rgba(243, 243, 246, 0.08);
-  --line: rgba(243, 243, 246, 0.13);
-  --line-strong: rgba(243, 243, 246, 0.24);
-  --primary-ink: #a9b3ff;
-  --primary-soft: rgba(169, 179, 255, 0.12);
-  --accent: #3a54f2;
-  --accent-hover: #4a63f7;
-  --on-accent: #ffffff;
+  --paper: #0f172a;
+  --raised: #1e293b;
+  --sunken: #0b1120;
+  --ink: #f8fafc;
+  --ink-soft: #cbd5e1;
+  --ink-muted: #a5b1c2;
+  --ink-faint: #94a3b8;
+  --line-subtle: rgba(248, 250, 252, 0.08);
+  --line: rgba(248, 250, 252, 0.13);
+  --line-strong: rgba(248, 250, 252, 0.24);
+  --primary-ink: #93c5fd;
+  --primary-soft: rgba(147, 197, 253, 0.12);
   --good: #8fd6b0;
   --warn: #f5c26b;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 12px 30px -14px rgba(0, 0, 0, 0.45);
-  --shadow-accent: 0 8px 26px -10px rgba(58, 84, 242, 0.6);
   background: var(--paper);
   color: var(--ink);
 }
@@ -178,10 +155,10 @@
   --color-good: var(--good);
   --color-warn: var(--warn);
 
-  --shadow-soft: var(--shadow-sm);
-  --shadow-raise: var(--shadow-md);
+  /* Overlays only (dialogs, menus, drawers) — everything else is flat. */
   --shadow-float: var(--shadow-lg);
-  --shadow-accent: var(--shadow-accent);
+
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
 
   --font-sans:
     var(--font-sans-latin), "Pretendard Variable", Pretendard, -apple-system,
@@ -276,8 +253,8 @@ p {
 
 /* -------------------------------------------------------------- surfaces -- */
 
-/* Sunrise behind hero and page headers: a coral bloom over the top edge and a
-   warmer amber one off to the side, both fading well before the text. */
+/* A faint wash behind hero and page headers: one accent-tinted bloom over the
+   top edge and two neutral ones off to the sides, gone well before the text. */
 .hero-wash {
   position: relative;
   background:
@@ -286,25 +263,13 @@ p {
     radial-gradient(26rem 22rem at 6% 30%, var(--glow-warm), transparent 72%);
 }
 
-/* The one highlighted phrase in the hero headline: pine, with a highlighter
+/* The one highlighted phrase in the hero headline: navy, with a highlighter
    stroke under the lower part of the letters. Structure colour, not the CTA one. */
 .headline-mark {
   color: var(--primary-ink);
   background-image: linear-gradient(transparent 64%, var(--primary-soft) 64%, var(--primary-soft) 92%, transparent 92%);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
-}
-
-/* Fine film grain over the whole page: the detail that stops large flat areas
-   from banding, and reads as texture rather than noise at this opacity. */
-.grain::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  pointer-events: none;
-  opacity: var(--grain-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* A hairline that reads as one device pixel on retina rather than a grey bar. */
@@ -364,7 +329,7 @@ html[lang="ko"] .display {
   background-repeat: no-repeat;
   background-position: 0 100%;
   background-size: 0% 1px;
-  transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: background-size 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .link-sweep:hover {
@@ -455,11 +420,11 @@ html[lang="ko"] .display {
 .theme-anim *::before,
 .theme-anim *::after {
   transition:
-    background-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    color 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    fill 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+    background-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    fill 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1) !important;
   transition-delay: 0ms !important;
 }
 
@@ -501,7 +466,7 @@ html[lang="ko"] .display {
   inset: 0;
   border-radius: inherit;
   opacity: 0;
-  transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 200ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
   background: radial-gradient(
     16rem 16rem at var(--mx, 50%) var(--my, 0%),
@@ -517,6 +482,18 @@ html[lang="ko"] .display {
 @media (prefers-reduced-motion: reduce) {
   .spotlight::after {
     display: none;
+  }
+}
+
+/* A "live" dot that breathes between half and full strength — present, not
+   distracting. Used in place of Tailwind's ping, which fades to nothing. */
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }
 

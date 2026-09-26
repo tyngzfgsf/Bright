@@ -41,7 +41,7 @@ export default function Drill() {
             {SCENARIOS.map((scenario) => (
               <li
                 key={scenario.id}
-                className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13.5px] text-ink-soft transition-colors duration-300 hover:border-primary/40 hover:bg-primary-soft hover:text-ink"
+                className="rounded-full border border-line bg-paper px-3.5 py-1.5 text-[13.5px] text-ink-soft transition-colors duration-200 hover:border-primary/40 hover:bg-primary-soft hover:text-ink"
               >
                 {scenario[locale]}
               </li>

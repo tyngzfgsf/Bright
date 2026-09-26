@@ -49,7 +49,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
       animate={reduceMotion ? undefined : { y: hidden ? "-100%" : "0%" }}
       transition={GLIDE}
       className={[
-        "sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500",
+        "sticky top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-200",
         scrolled || open
           ? "border-b border-line-subtle bg-paper/72 backdrop-blur-xl backdrop-saturate-150"
           : "border-b border-transparent bg-paper/0",
@@ -59,7 +59,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
         <button
           type="button"
           onClick={() => go("home")}
-          className="-m-2 rounded-full p-2 transition-opacity duration-300 hover:opacity-70"
+          className="-m-2 rounded-full p-2 transition-opacity duration-200 hover:opacity-70"
           aria-label={site.name}
         >
           <Wordmark />
@@ -80,7 +80,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
                 aria-current={active ? "page" : undefined}
                 onMouseEnter={() => setHovered(link.key)}
                 className={[
-                  "relative rounded-full px-3.5 py-2 text-[13.5px] transition-colors duration-300",
+                  "relative rounded-full px-3.5 py-2 text-[13.5px] transition-colors duration-200",
                   active || hovered === link.key ? "text-ink" : "text-ink-muted",
                 ].join(" ")}
               >
@@ -105,7 +105,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
             <button
               type="button"
               onClick={onSignIn}
-              className="hidden rounded-full px-3.5 py-2 text-[13.5px] text-ink-muted transition-colors duration-300 hover:text-ink sm:inline-flex"
+              className="hidden rounded-full px-3.5 py-2 text-[13.5px] text-ink-muted transition-colors duration-200 hover:text-ink sm:inline-flex"
             >
               {t("signIn")}
             </button>
@@ -113,7 +113,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
           <button
             type="button"
             onClick={() => go("app")}
-            className="hidden items-center gap-2 rounded-full bg-accent px-4 py-2 text-[13.5px] font-medium text-on-accent shadow-accent transition-colors duration-300 hover:bg-accent-hover sm:inline-flex"
+            className="hidden items-center gap-2 rounded-full bg-accent px-4 py-2 text-[13.5px] font-semibold text-on-accent transition-colors duration-200 hover:bg-accent-hover sm:inline-flex"
           >
             {user && <Avatar name={user.name} photoURL={user.photoURL} />}
             {t("openApp")}
@@ -125,7 +125,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? t("close") : t("menu")}
-            className="grid size-9 place-items-center rounded-full border border-line text-ink-soft transition-colors duration-300 hover:border-line-strong hover:text-ink lg:hidden"
+            className="grid size-9 place-items-center rounded-full border border-line text-ink-soft transition-colors duration-200 hover:border-line-strong hover:text-ink lg:hidden"
           >
             <svg
               viewBox="0 0 24 24"

@@ -59,7 +59,7 @@ export default function Footer() {
                     <PageLink
                       to={link.to}
                       section={link.section}
-                      className="link-sweep text-ink-soft transition-colors duration-300 hover:text-ink"
+                      className="link-sweep text-ink-soft transition-colors duration-200 hover:text-ink"
                     >
                       {link.label}
                     </PageLink>
@@ -71,7 +71,7 @@ export default function Footer() {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="link-sweep text-ink-soft transition-colors duration-300 hover:text-ink"
+                      className="link-sweep text-ink-soft transition-colors duration-200 hover:text-ink"
                     >
                       {link.label}
                     </a>

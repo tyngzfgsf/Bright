@@ -20,8 +20,8 @@ export default function PageHeader({ eyebrow, title, lede, meta, children }: Pro
     reduceMotion
       ? { hidden: { opacity: 1 }, shown: { opacity: 1 } }
       : {
-          hidden: { opacity: 0, y: 16 },
-          shown: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE, delay } },
+          hidden: { opacity: 0, y: 10 },
+          shown: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE, delay } },
         };
 
   return (

@@ -19,6 +19,6 @@ export const GLIDE: Transition = {
   mass: 0.7,
 };
 
-export const REVEAL: Transition = { duration: 0.72, ease: EASE };
+export const REVEAL: Transition = { duration: 0.45, ease: EASE };
 
-export const REVEAL_FAST: Transition = { duration: 0.5, ease: EASE };
+export const REVEAL_FAST: Transition = { duration: 0.3, ease: EASE };

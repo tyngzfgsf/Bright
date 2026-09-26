@@ -15,7 +15,7 @@ type Props = {
 
 const variants = {
   solid:
-    "bg-accent text-on-accent shadow-accent hover:bg-accent-hover",
+    "bg-accent text-on-accent hover:bg-accent-hover",
   outline:
     "border border-line-strong text-ink hover:border-primary hover:bg-primary-soft",
   ghost: "text-ink-soft hover:text-ink hover:bg-raised",
@@ -46,7 +46,7 @@ export default function ButtonLink({
       {...press}
       transition={PRESS}
       className={[
-        "group relative inline-flex items-center justify-center gap-2 rounded-full font-medium tracking-[-0.011em] transition-colors duration-300 will-change-transform",
+        "group relative inline-flex items-center justify-center gap-2 rounded-full font-semibold tracking-[-0.006em] transition-colors duration-200 will-change-transform",
         variants[variant],
         sizes[size],
         className,
@@ -56,7 +56,7 @@ export default function ButtonLink({
       {external && (
         <svg
           viewBox="0 0 24 24"
-          className="size-[15px] opacity-60 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[1.5px] group-hover:-translate-y-[1.5px] group-hover:opacity-90"
+          className="size-[15px] opacity-60 transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[1.5px] group-hover:-translate-y-[1.5px] group-hover:opacity-90"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"

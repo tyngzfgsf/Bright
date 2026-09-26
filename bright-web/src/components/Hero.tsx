@@ -33,11 +33,11 @@ export default function Hero() {
     reduceMotion
       ? { hidden: { opacity: 1 }, shown: { opacity: 1 } }
       : {
-          hidden: { opacity: 0, y: 14 },
+          hidden: { opacity: 0, y: 10 },
           shown: {
             opacity: 1,
             y: 0,
-            transition: { duration: 0.75, ease: EASE, delay },
+            transition: { duration: 0.45, ease: EASE, delay },
           },
         };
 
@@ -59,10 +59,10 @@ export default function Hero() {
             <span className="inline-flex items-center gap-2.5 rounded-full border border-primary/20 bg-primary-soft py-1.5 pl-3 pr-3.5">
               {/* CSS pulse rather than a motion branch, so the prerendered HTML never
                   depends on the visitor's motion setting. */}
-              <span aria-hidden="true" className="relative flex size-2">
-                <span className="absolute inset-0 rounded-full bg-primary-ink opacity-50 motion-safe:animate-ping" />
-                <span className="relative block size-2 rounded-full bg-primary-ink" />
-              </span>
+              <span
+                aria-hidden="true"
+                className="block size-2 rounded-full bg-primary-ink motion-safe:animate-pulse-soft"
+              />
               <span className="eyebrow-sm text-primary-ink">{t("eyebrow")}</span>
             </span>
           </motion.div>
