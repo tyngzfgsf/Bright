@@ -191,8 +191,8 @@ shadow.
   the secondary grey, not a colour.
 - **Accent `#0071E3`** in both themes (darkening to `#0062C4` on hover) — calls to action
   only: `accent` / `on-accent` on primary buttons, "Open app", the demo's send and "Drill it"
-  buttons, and the logo's sun. `accent-ink` (`#0066CC`, `#2997FF` on black) is for links. If
-  it isn't something to press, don't make it blue.
+  buttons. `accent-ink` (`#0066CC`, `#2997FF` on black) is for links. If it isn't something
+  to press, don't make it blue — the logo included: it takes the text colour.
 
 `good` / `warn` are the skill panel's improving / slipping trends, always next to an arrow
 and a word. Every text colour clears WCAG AA on every surface in both themes, bands
