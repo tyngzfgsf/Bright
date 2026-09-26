@@ -56,7 +56,7 @@ export default function ButtonLink({
       {external && (
         <svg
           viewBox="0 0 24 24"
-          className="size-[15px] opacity-60 transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-[1.5px] group-hover:-translate-y-[1.5px] group-hover:opacity-90"
+          className="size-[15px] opacity-60 transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-[1.5px] group-hover:-translate-y-[1.5px] group-hover:opacity-90"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"

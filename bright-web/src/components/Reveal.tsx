@@ -27,7 +27,7 @@ export default function Reveal({
   children,
   className,
   delay = 0,
-  y = 10,
+  y = 40,
   once = false,
 }: Props) {
   const reduceMotion = useReducedMotion();

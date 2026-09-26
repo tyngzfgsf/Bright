@@ -152,7 +152,7 @@ export default function Header({ onSignIn }: { onSignIn: () => void }) {
             initial={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
             animate={reduceMotion ? { opacity: 1 } : { height: "auto", opacity: 1 }}
             exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden border-t border-line-subtle bg-paper/95 lg:hidden"
           >
             <div className="mx-auto flex max-w-6xl flex-col px-5 py-1 sm:px-8">

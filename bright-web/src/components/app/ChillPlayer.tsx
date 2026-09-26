@@ -486,15 +486,16 @@ function PlayingBars() {
       {heights.map((peak, i) => (
         <motion.span
           key={i}
-          animate={reduced ? { height: "40%" } : { height: [`${peak * 30}%`, `${peak * 100}%`, `${peak * 45}%`] }}
+          animate={reduced ? { scaleY: 0.4 } : { scaleY: [peak * 0.3, peak, peak * 0.45] }}
           transition={{
             duration: 1.1 + i * 0.23,
             repeat: Infinity,
             repeatType: "mirror",
             ease: "easeInOut",
           }}
-          className="w-[2.5px] rounded-full bg-current"
-          style={{ height: "40%" }}
+          // Scaled rather than resized, so the loop stays on the compositor.
+          className="h-full w-[2.5px] origin-bottom rounded-full bg-current"
+          style={{ scaleY: 0.4 }}
         />
       ))}
     </span>

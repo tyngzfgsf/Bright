@@ -3,7 +3,7 @@
 The website for **Bright**, the AI emergency-scenario training app, and the app itself in the
 browser: landing page, download and install guide, a live releases list, FAQ, privacy policy
 and terms, and the training app with Google sign-in — Korean and English throughout, on a
-clinical palette — cool slate neutrals, navy structure, one cyan / electric-blue accent.
+monochrome palette — white / true black, near-black type, one blue (`#0071E3`) for calls to action.
 
 **It is all one page at one URL.** Home, the other pages, signing in and training all swap in
 place; the address bar always says `/`. The web app used to be a separate deployment
@@ -177,29 +177,35 @@ and cards carry a highlight that follows the pointer across them (`.spotlight`, 
 
 Three surfaces (`paper`, `raised`, `sunken`), four text weights and three line strengths
 are defined as CSS variables and exposed to Tailwind via `@theme inline`. The look is
-clinical and flat: cool neutrals, 1px lines for separation, and no drop shadows except on
-overlays (dialogs, menus, the app drawer — `shadow-float`).
+monochrome and flat: the page stays colourless until there's something to press, 1px lines
+separate surfaces, and only overlays (dialogs, menus, the app drawer — `shadow-float`) cast a
+shadow.
 
-- **Neutrals** — light: a near-white slate page `#F8FAFC`, white cards, Slate 900 `#0F172A`
-  text. Dark: neutral greys, `#1E1E1E` page and `#2D2D2D` cards.
-- **Navy `#0F172A`** — structure. `primary` (fill), `primary-ink` (headings, section labels;
-  light blue on dark surfaces), `primary-soft` (tint), `on-primary`. Two sections sit fully on
-  it via `.band-primary` — Progress (`<Section tone="primary">`) and the footer. That class
-  re-points the surface/ink tokens, so anything inside adapts without its own dark styles.
-- **Accent** — clinical cyan `#0E7490` in light, electric blue `#2563EB` in dark — calls to
-  action only: `accent` / `on-accent` on primary buttons, "Open app", the demo's send and
-  "Drill it" buttons, and the logo's sun. If it isn't something to press, don't make it the
-  accent. (Brighter cyans like `#06B6D4` can't carry white button text at 4.5:1.)
+- **Neutrals** — light: white page, `#F5F5F7` sunken areas, `#1D1D1F` text, secondary text
+  down to `#6E6E73` (the usual `#86868B` is only 3.6:1 on white). Dark: true-black (OLED)
+  `#000000` page, `#1C1C1E` cards, `#F5F5F7` text.
+- **Structure** — `primary` / `primary-ink` / `primary-soft` / `on-primary` are near-black and
+  neutral, not a hue. Two sections sit fully on true black via `.band-primary` — Progress
+  (`<Section tone="primary">`) and the footer. That class re-points the surface/ink tokens, so
+  anything inside adapts without its own dark styles. The hero's highlighted phrase is set in
+  the secondary grey, not a colour.
+- **Accent `#0071E3`** in both themes (darkening to `#0062C4` on hover) — calls to action
+  only: `accent` / `on-accent` on primary buttons, "Open app", the demo's send and "Drill it"
+  buttons, and the logo's sun. `accent-ink` (`#0066CC`, `#2997FF` on black) is for links. If
+  it isn't something to press, don't make it blue.
 
 `good` / `warn` are the skill panel's improving / slipping trends, always next to an arrow
 and a word. Every text colour clears WCAG AA on every surface in both themes, bands
 included — check new pairings before adding them. The result/share card stays black because
 the app's real one is.
 
-Motion is quick: hover and colour transitions are 150–200ms, scroll entrances are a plain
-fade with a 10px rise (no blur), and the hero's "live" dot breathes between 50% and 100%
-opacity (`animate-pulse-soft`) instead of pinging. `.sheen` adds a one-pixel top highlight
-to cards, and `.hero-wash` is the faint radial wash behind the hero and page headers.
+Motion uses one curve, `cubic-bezier(0.16, 1, 0.3, 1)` (`EASE` in `src/lib/motion.ts`): fast
+start, long settle. Hover and colour changes stay quick (150–200ms); scroll entrances are
+slower and larger — 0.8s, fading in while rising 40px, no blur. Loops animate only
+`transform` and `opacity`. The hero's "live" dot breathes between 50% and 100% opacity
+(`animate-pulse-soft`). Sections get generous vertical space (up to 192px). `.sheen` adds a
+one-pixel top highlight to cards, and `.hero-wash` is the faint radial wash behind the hero
+and page headers.
 
 ## The mark
 

@@ -83,7 +83,7 @@ export default function ThemeToggle() {
         key={theme ?? "unset"}
         initial={reduceMotion ? false : { rotate: -30, scale: 0.7, opacity: 0 }}
         animate={{ rotate: 0, scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         className="grid place-items-center"
       >
         {isDark ? <MoonIcon /> : <SunIcon />}
