@@ -95,7 +95,16 @@ Cloudflare Workers static assets — no Worker script, nothing beyond the free p
 NEXT_PUBLIC_PROXY_URL=https://bright-proxy.jchang2032.workers.dev npm run deploy
 ```
 
-Three things outside this folder have to agree with the deployed origin:
+It is also on Firebase Hosting at `bright-34c23.web.app` (`firebase.json`: every unknown path
+rewrites to the one page, and the generated icons get their content type). Same build, hosting
+only — Firestore rules are still deployed from `bright-site/`:
+
+```bash
+NEXT_PUBLIC_PROXY_URL=https://bright-proxy.jchang2032.workers.dev npm run build
+firebase deploy --only hosting
+```
+
+Three things outside this folder have to agree with every deployed origin:
 
 - **bright-proxy**'s `ALLOWED_ORIGINS` (`../bright-proxy/wrangler.jsonc`) must list it, or
   live turns are refused. Redeploy the proxy after changing it.
