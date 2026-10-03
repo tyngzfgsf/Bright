@@ -16,8 +16,8 @@ import { auth } from "./firebase";
  *
  * The sidebar account row, the sign-in sheet and the Account section of Settings only read
  * `user` and call these functions. Signing in is what lets a trainee use Bright's hosted AI
- * without a key of their own: `getIdToken()` is sent to bright-proxy, which verifies it and
- * meters the trainee's daily turns.
+ * without a key of their own: `getIdToken()` is sent to bright-proxy, which verifies it, meters
+ * the trainee's monthly drills, and reads their plan (see lib/billing/account.ts).
  */
 
 export type BrightUser = {

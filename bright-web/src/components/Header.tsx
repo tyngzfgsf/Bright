@@ -13,9 +13,10 @@ import { useScrollDirection } from "@/lib/useScrollDirection";
 import { site } from "@/lib/site";
 
 /** Every item is a page of this one-URL site; the first two are sections of the home page. */
-const links: { to: Page; section?: string; key: "what" | "how" | "download" | "releases" | "faq" }[] = [
+const links: { to: Page; section?: string; key: "what" | "how" | "pricing" | "download" | "releases" | "faq" }[] = [
   { to: "home", section: "what", key: "what" },
   { to: "home", section: "how", key: "how" },
+  { to: "pricing", key: "pricing" },
   { to: "download", key: "download" },
   { to: "releases", key: "releases" },
   { to: "faq", key: "faq" },

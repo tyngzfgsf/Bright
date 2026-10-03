@@ -18,7 +18,9 @@
     "home": "Home",
     "backToTop": "Back to top",
     "openApp": "Open app",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "pricing": "Pricing",
+    "account": "Your plan"
   },
   "theme": {
     "label": "Theme",
@@ -316,11 +318,11 @@
     "items": [
       {
         "q": "What does it cost?",
-        "a": "Nothing. There's no paid version, no subscription, no ads and no in-app purchases. The AI runs on Groq's free tier with a key you provide."
+        "a": "You can start free: sign in and you get 10 AI drills a month, or bring your own Groq key and practise as much as you like. Plus (unlimited drills and your own scenarios) and Pro (an expert debrief after every case) are optional subscriptions — see Pricing. One account covers Android, iPhone and the web."
       },
       {
         "q": "Do I really need a Groq key?",
-        "a": "Yes, otherwise the AI can't answer. Getting one takes about a minute on Groq's site and the free tier is plenty for normal practice. You can skip it during setup, and the app only asks again when a session needs it."
+        "a": "No. Signing in with Google gives you Bright's own AI, with 10 free drills a month. A Groq key of your own is still supported if you'd rather use that — drills on your own key aren't counted."
       },
       {
         "q": "Is it on the Play Store?",
@@ -408,6 +410,19 @@
         "bullets": [
           "api.groq.com — while you're in a session, your messages and the case context go to Groq under your own API key so the AI can respond. What Groq does with that is covered by their privacy policy and the terms of the account your key belongs to.",
           "api.github.com — the app reads the latest release of the public tyngzfgsf/Bright-app repository to tell you when an update is out. It's an ordinary anonymous request with no session content and no identifier attached."
+        ]
+      },
+      {
+        "id": "payments",
+        "heading": "Paying for a plan",
+        "paragraphs": [
+          "Free use needs no payment. If you buy Plus, Pro or an add-on, the payment is handled by whoever sold it to you, never by me directly — I never see your card."
+        ],
+        "bullets": [
+          "On the website: Paddle (paddle.com), as the merchant of record, processes the payment and handles tax and receipts.",
+          "In the Android app: Google Play. On iPhone: the App Store. Purchases are confirmed through RevenueCat (revenuecat.com).",
+          "Bright's server keeps, per signed-in account: your plan, its renewal date and status, how many drills you've used this month, add-on credits, and your email address — to send billing notices such as a reminder before a free trial ends or a failed-payment warning.",
+          "Your practice sessions are still not stored on any server."
         ]
       },
       {
@@ -582,5 +597,114 @@
     "body": "These pages describe a project that keeps moving. If anything here doesn't match what the app does, that's a bug — tell me and I'll fix the page.",
     "cta": "Open an issue",
     "related": "Also read"
+  },
+  "pricing": {
+    "meta": {
+      "title": "Bright — pricing"
+    },
+    "eyebrow": "Pricing",
+    "title": "Walk into your next emergency already knowing what to do",
+    "lede": "One account across Android, iPhone and the web. Start free; go unlimited when you're ready.",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "annualBadge": "Get {months} months free",
+    "recommended": "Most popular",
+    "current": "Your current plan",
+    "perMonth": "{price}/month",
+    "billedAnnually": "billed annually ({price})",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "outcome": "Build the daily habit",
+        "bullets": [
+          "{drills} AI drills a month",
+          "Missed cases come back for review automatically",
+          "Daily streak and skill profile"
+        ]
+      },
+      "plus": {
+        "name": "Plus",
+        "outcome": "Train every day, on any case, with no limits",
+        "bullets": [
+          "Unlimited AI drills, so you can run a case before every shift",
+          "Write your own scenario and rehearse the case you're dreading",
+          "Everything in Free"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "outcome": "Know exactly what to fix after every case",
+        "bullets": [
+          "An expert debrief after every case: what you missed, and why it matters",
+          "3 streak freezes every month, so a night shift never breaks your streak",
+          "Everything in Plus"
+        ]
+      }
+    },
+    "ctaFree": "Start training free",
+    "ctaSignIn": "Sign in to subscribe",
+    "ctaManage": "Manage your plan",
+    "ctaTrial": "Start {days}-day free trial",
+    "ctaSubscribe": "Continue with {plan}",
+    "trialNote": "Free for {days} days, then {price}. Cancel before then and you won't be charged. We'll email you 3 days before your trial ends.",
+    "addOnsTitle": "Add to your order",
+    "addOns": {
+      "addon_drill_pack": {
+        "title": "+{n} drills",
+        "body": "Never expire. Perfect for exam week."
+      },
+      "addon_streak_freezes": {
+        "title": "{n} streak freezes",
+        "body": "Miss a day without losing your streak."
+      }
+    },
+    "footer": "Cancel anytime. Checkout is handled by Paddle, our reseller, in your local currency, with tax included where it applies.",
+    "notConfigured": "Checkout on the website isn't switched on yet.",
+    "storeManaged": "Your plan was bought through {store}. Change or cancel it there.",
+    "processing": "Payment received. Your plan will show up in a moment.",
+    "success": "You're all set. Open the app and run a case."
+  },
+  "account": {
+    "meta": {
+      "title": "Bright — your plan"
+    },
+    "eyebrow": "Account",
+    "title": "Your plan",
+    "signedOut": "Sign in to see and manage your plan.",
+    "signIn": "Sign in with Google",
+    "close": "Close",
+    "plans": {
+      "free": "Free",
+      "plus": "Plus",
+      "pro": "Pro"
+    },
+    "trialUntil": "Free trial until {date}",
+    "renews": "Renews on {date}",
+    "ends": "Ends on {date}",
+    "pastDue": "Your last payment didn't go through. We'll retry automatically, and you keep full access in the meantime.",
+    "updatePayment": "Update payment",
+    "openStore": "Open {store}",
+    "drillsUsed": "{used} of {limit} free drills used this month",
+    "bonus": "+{n} bonus drills",
+    "freezes": "{n} streak freezes received",
+    "storeNote": "This plan is billed by {store}. Cancelling and payment details are handled there.",
+    "seePlans": "See plans",
+    "changePlan": "Change plan",
+    "discount": "Discount applied",
+    "buyDrills": "Buy +{n} drills · {price}",
+    "buyFreezes": "Buy {n} streak freezes · {price}",
+    "cancel": "Cancel subscription",
+    "resume": "Keep my subscription",
+    "exitTitle": "Wait, before you go",
+    "exitBody": "Stay and get {percent}% off your next {months} months. Your streak, skill profile and review queue stay exactly as they are.",
+    "exitAccept": "Keep Bright at {percent}% off",
+    "exitDecline": "Cancel anyway",
+    "confirmTitle": "Cancel your plan?",
+    "confirmBody": "You'll keep {plan} until {date}, then move to Free with {limit} drills a month.",
+    "confirmYes": "Cancel plan",
+    "confirmNo": "Keep plan",
+    "offerApplied": "Done. {percent}% off for your next {months} months.",
+    "purchaseDone": "Added to your account.",
+    "error": "That didn't go through. Try again."
   }
 }

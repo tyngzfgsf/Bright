@@ -9,10 +9,12 @@ import Header from "./Header";
 import PageFade from "./PageFade";
 import App from "./app/App";
 import SignInDialog from "./app/SignInDialog";
+import AccountPage from "./pages/AccountPage";
 import DownloadPage from "./pages/DownloadPage";
 import FaqPage from "./pages/FaqPage";
 import HomePage from "./pages/HomePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import PricingPage from "./pages/PricingPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import ReleasesPage from "./pages/ReleasesPage";
 import TermsPage from "./pages/TermsPage";
@@ -63,6 +65,8 @@ const TITLE_KEYS: Record<Page, string> = {
   privacy: "privacy.meta.title",
   terms: "terms.meta.title",
   app: "meta.title",
+  pricing: "pricing.meta.title",
+  account: "account.meta.title",
   notFound: "notFound.title",
 };
 
@@ -138,6 +142,10 @@ function PageContent({ page }: { page: Page }) {
       return <PrivacyPage />;
     case "terms":
       return <TermsPage />;
+    case "pricing":
+      return <PricingPage />;
+    case "account":
+      return <AccountPage />;
     default:
       return <NotFoundPage />;
   }

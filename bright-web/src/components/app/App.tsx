@@ -129,12 +129,13 @@ export default function App({ onHome }: { onHome: () => void }) {
       const response = await fetch(`${PROXY_URL}/v1/turn`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ messages: sent }),
+        // The session id doubles as the drill id: bright-proxy counts one drill per new id.
+        body: JSON.stringify({ messages: sent, drill_id: session.id }),
       });
 
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        if (payload?.code === "quota_exceeded") throw new Error(t.quotaExceeded);
+        if (payload?.code === "drill_limit") throw new Error(t.quotaExceeded);
         if (payload?.code === "unauthenticated") throw new Error(t.signInRequired);
         throw new Error(payload?.error ?? t.error);
       }

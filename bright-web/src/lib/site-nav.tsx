@@ -28,7 +28,7 @@ import {
  * paint, rewrites the address bar to `/`, and hands the page, section and locale over here.
  */
 
-export const pages = ["home", "download", "releases", "faq", "privacy", "terms", "app"] as const;
+export const pages = ["home", "download", "releases", "faq", "privacy", "terms", "app", "pricing", "account"] as const;
 export type Page = (typeof pages)[number] | "notFound";
 
 export function isPage(value: unknown): value is Page {

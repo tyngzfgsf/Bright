@@ -18,7 +18,9 @@
     "home": "홈",
     "backToTop": "맨 위로",
     "openApp": "앱 열기",
-    "signIn": "로그인"
+    "signIn": "로그인",
+    "pricing": "요금제",
+    "account": "내 요금제"
   },
   "theme": {
     "label": "테마",
@@ -316,11 +318,11 @@
     "items": [
       {
         "q": "돈이 드나요?",
-        "a": "안 듭니다. 유료 버전도 구독도 광고도 인앱 결제도 없습니다. AI는 본인이 넣은 키로 Groq 무료 티어에서 돌아갑니다."
+        "a": "무료로 시작할 수 있습니다. 로그인하면 매월 AI 연습 10회가 제공되고, 본인 Groq 키를 쓰면 원하는 만큼 연습할 수 있습니다. Plus(무제한 연습, 직접 시나리오 작성)와 Pro(케이스마다 전문가 디브리핑)는 선택 구독입니다. 요금제 페이지를 참고하세요. 하나의 계정으로 Android, iPhone, 웹을 모두 이용합니다."
       },
       {
         "q": "Groq 키가 꼭 있어야 하나요?",
-        "a": "네, 없으면 AI가 답을 못 합니다. Groq 사이트에서 1분이면 받을 수 있고 무료 티어로도 연습하기엔 넉넉합니다. 초기 설정에서는 건너뛸 수 있고, 세션에서 필요해질 때 다시 물어봅니다."
+        "a": "아니요. Google로 로그인하면 Bright의 AI를 매월 10회 무료로 쓸 수 있습니다. 본인 Groq 키를 쓰는 것도 여전히 지원하며, 본인 키로 한 연습은 횟수에서 차감되지 않습니다."
       },
       {
         "q": "플레이스토어에 있나요?",
@@ -408,6 +410,19 @@
         "bullets": [
           "api.groq.com — 세션 중에 입력한 메시지와 상황 맥락이 본인의 API 키로 Groq에 전송되어 AI 응답이 만들어집니다. 전송된 내용의 처리는 Groq의 개인정보 처리방침과 그 키가 속한 계정의 약관을 따릅니다.",
           "api.github.com — 공개 저장소 tyngzfgsf/Bright-app의 최신 릴리스를 읽어서 업데이트가 있는지 알려줍니다. 세션 내용도, 앱의 식별자도 붙지 않는 익명 요청입니다."
+        ]
+      },
+      {
+        "id": "payments",
+        "heading": "요금제 결제",
+        "paragraphs": [
+          "무료 사용에는 결제가 필요 없습니다. Plus, Pro 또는 추가 상품을 구매하면 결제는 판매처가 처리하며, 저는 카드 정보를 전혀 볼 수 없습니다."
+        ],
+        "bullets": [
+          "웹사이트: 판매 대행사(merchant of record)인 Paddle(paddle.com)이 결제와 세금, 영수증을 처리합니다.",
+          "Android 앱은 Google Play, iPhone은 App Store에서 결제됩니다. 구매 확인은 RevenueCat(revenuecat.com)을 통해 이루어집니다.",
+          "Bright 서버는 로그인한 계정별로 요금제, 갱신일과 상태, 이번 달 사용한 연습 횟수, 추가 상품 크레딧, 그리고 이메일 주소를 보관합니다. 이메일은 무료 체험 종료 전 알림이나 결제 실패 안내 같은 결제 관련 알림에만 사용됩니다.",
+          "연습 세션 내용은 여전히 어떤 서버에도 저장되지 않습니다."
         ]
       },
       {
@@ -582,5 +597,114 @@
     "body": "이 페이지들은 계속 바뀌는 프로젝트를 설명합니다. 앱의 실제 동작과 다른 내용이 있다면 그건 버그이니 알려 주시면 페이지를 고치겠습니다.",
     "cta": "이슈 남기기",
     "related": "함께 보기"
+  },
+  "pricing": {
+    "meta": {
+      "title": "Bright — 요금제"
+    },
+    "eyebrow": "요금제",
+    "title": "다음 응급 상황, 이미 알고 들어가세요",
+    "lede": "Android, iPhone, 웹에서 하나의 계정으로. 무료로 시작하고, 준비되면 무제한으로.",
+    "monthly": "월간",
+    "annual": "연간",
+    "annualBadge": "{months}개월 무료",
+    "recommended": "가장 인기",
+    "current": "현재 요금제",
+    "perMonth": "월 {price}",
+    "billedAnnually": "연 {price} 일괄 결제",
+    "plans": {
+      "free": {
+        "name": "무료",
+        "outcome": "매일 연습하는 습관 만들기",
+        "bullets": [
+          "매월 AI 연습 {drills}회",
+          "틀린 케이스는 자동으로 복습",
+          "연속 기록과 실력 프로필"
+        ]
+      },
+      "plus": {
+        "name": "Plus",
+        "outcome": "어떤 케이스든, 매일, 제한 없이",
+        "bullets": [
+          "무제한 AI 연습, 근무 전마다 한 케이스씩",
+          "직접 시나리오를 작성해 걱정되는 케이스를 연습",
+          "무료 요금제의 모든 기능"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "outcome": "케이스마다 고칠 점을 정확히",
+        "bullets": [
+          "케이스마다 전문가 디브리핑: 놓친 점과 그 이유",
+          "매달 연속 기록 보호권 3개, 야간 근무에도 기록 유지",
+          "Plus의 모든 기능"
+        ]
+      }
+    },
+    "ctaFree": "무료로 연습 시작",
+    "ctaSignIn": "로그인하고 구독하기",
+    "ctaManage": "내 요금제 관리",
+    "ctaTrial": "{days}일 무료 체험 시작",
+    "ctaSubscribe": "{plan} 계속하기",
+    "trialNote": "{days}일 무료, 이후 {price}. 그 전에 해지하면 요금이 청구되지 않습니다. 체험 종료 3일 전에 이메일로 알려드려요.",
+    "addOnsTitle": "함께 구매하기",
+    "addOns": {
+      "addon_drill_pack": {
+        "title": "연습 +{n}회",
+        "body": "기한 없음. 시험 주간에 딱 좋아요."
+      },
+      "addon_streak_freezes": {
+        "title": "연속 기록 보호권 {n}개",
+        "body": "하루 쉬어도 연속 기록이 유지돼요."
+      }
+    },
+    "footer": "언제든 해지할 수 있습니다. 결제는 판매 대행사 Paddle이 현지 통화로 처리하며, 해당되는 경우 세금이 포함됩니다.",
+    "notConfigured": "웹사이트 결제는 아직 준비 중입니다.",
+    "storeManaged": "{store}에서 구매한 요금제입니다. 변경이나 해지는 {store}에서 할 수 있습니다.",
+    "processing": "결제가 완료되었습니다. 잠시 후 요금제가 반영됩니다.",
+    "success": "준비 완료! 앱을 열고 케이스를 시작해 보세요."
+  },
+  "account": {
+    "meta": {
+      "title": "Bright — 내 요금제"
+    },
+    "eyebrow": "계정",
+    "title": "내 요금제",
+    "signedOut": "로그인하면 요금제를 확인하고 관리할 수 있습니다.",
+    "signIn": "Google로 로그인",
+    "close": "닫기",
+    "plans": {
+      "free": "무료",
+      "plus": "Plus",
+      "pro": "Pro"
+    },
+    "trialUntil": "{date}까지 무료 체험",
+    "renews": "{date}에 갱신",
+    "ends": "{date}에 종료",
+    "pastDue": "최근 결제가 처리되지 않았습니다. 자동으로 다시 시도하며, 그동안에도 모든 기능을 이용할 수 있습니다.",
+    "updatePayment": "결제 수단 업데이트",
+    "openStore": "{store} 열기",
+    "drillsUsed": "이번 달 무료 연습 {limit}회 중 {used}회 사용",
+    "bonus": "보너스 연습 +{n}회",
+    "freezes": "연속 기록 보호권 {n}개 받음",
+    "storeNote": "{store}에서 결제되는 요금제입니다. 해지와 결제 정보는 {store}에서 관리됩니다.",
+    "seePlans": "요금제 보기",
+    "changePlan": "요금제 변경",
+    "discount": "할인 적용 중",
+    "buyDrills": "연습 +{n}회 구매 · {price}",
+    "buyFreezes": "연속 기록 보호권 {n}개 구매 · {price}",
+    "cancel": "구독 해지",
+    "resume": "구독 유지하기",
+    "exitTitle": "잠깐만요, 떠나기 전에",
+    "exitBody": "남아 주시면 다음 {months}개월간 {percent}% 할인해 드려요. 연속 기록, 실력 프로필, 복습 목록도 그대로 유지됩니다.",
+    "exitAccept": "{percent}% 할인받고 계속하기",
+    "exitDecline": "그래도 해지하기",
+    "confirmTitle": "요금제를 해지할까요?",
+    "confirmBody": "{date}까지 {plan} 혜택이 유지되고, 이후 매월 {limit}회 연습이 가능한 무료 요금제로 전환됩니다.",
+    "confirmYes": "해지하기",
+    "confirmNo": "유지하기",
+    "offerApplied": "완료! 다음 {months}개월간 {percent}% 할인이 적용됩니다.",
+    "purchaseDone": "계정에 추가되었습니다.",
+    "error": "처리되지 않았습니다. 다시 시도해 주세요."
   }
 }
