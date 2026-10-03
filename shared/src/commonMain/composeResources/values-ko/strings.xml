@@ -12,12 +12,13 @@
     <string name="onboarding_next">다음</string>
     <string name="onboarding_skip">건너뛰기</string>
     <string name="onboarding_api_key_title">AI 연결하기</string>
-    <string name="onboarding_api_key_subtitle">Bright는 Groq으로 시나리오를 생성해요. 무료 Groq API 키를 입력하거나, 건너뛰고 나중에 설정에서 추가할 수 있어요.</string>
+    <string name="onboarding_api_key_subtitle">모든 점수에는 판단 근거가 된 중증도 단계나 프로토콜이 함께 표시돼요. 무료 Groq API 키를 입력해 훈련을 시작하거나, 건너뛰고 나중에 설정에서 추가할 수 있어요.</string>
     <string name="onboarding_skip_key">나중에 하기</string>
     <string name="onboarding_api_key_hint">Groq API 키</string>
     <string name="onboarding_api_key_get_one">console.groq.com에서 무료로 발급받으세요</string>
     <string name="onboarding_api_key_continue">계속</string>
     <string name="onboarding_api_key_error">키가 올바르지 않은 것 같아요. 다시 확인해 주세요.</string>
+    <string name="onboarding_positioning">AI의 의견이 아니라, 실제 KTAS/ESI 기준으로 채점해요.</string>
 
     <!-- 홈 둘러보기 -->
     <string name="tour_scenario_title">시나리오 고르기</string>
@@ -121,6 +122,20 @@
     <string name="chat_retry">다시 시도</string>
     <string name="chat_score_label">점수: %1$d/10</string>
     <string name="chat_average_score">평균 점수: %1$s/10</string>
+    <string name="chat_scored_against">%1$s 기준 채점</string>
+    <string name="chat_triage_level_source">%1$s %2$d단계</string>
+    <string name="chat_score_uncited">인용된 기준 없음 — 이 점수는 AI의 판단으로만 참고하세요</string>
+    <string name="chat_check_vitals">활력징후 확인</string>
+    <string name="chat_vitals_checked">활력징후 확인함</string>
+    <string name="chat_vitals_label">활력징후</string>
+    <string name="chat_vitals_trend_baseline">기준값</string>
+    <string name="chat_vitals_trend_improving">호전</string>
+    <string name="chat_vitals_trend_unchanged">변화 없음</string>
+    <string name="chat_vitals_trend_worsening">악화</string>
+    <string name="chat_decision_timer">현재 판단 경과 시간: %1$s</string>
+    <string name="chat_decision_timer_late">%1$s — 환자 상태가 악화되고 있습니다</string>
+    <string name="home_decompensation_title">시간 압박</string>
+    <string name="home_decompensation_body">대응이 늦거나 핵심 처치를 놓치면 환자 상태가 악화됩니다.</string>
     <string name="chat_share_result">결과 공유하기</string>
 
     <!-- 기록 -->
@@ -172,4 +187,44 @@
     <string name="common_delete">삭제</string>
     <string name="common_done">완료</string>
     <string name="common_back">뒤로</string>
+
+    <!-- 채점 기준: 공개된 중증도 분류 체계와 가이드라인을 요약한 것으로, 아직 임상 검토 전입니다. ID는 ScoringCriteria.kt에 있습니다. -->
+    <string name="criterion_esi_1_lifesaving">즉각적인 생명 구조 처치가 필요함: 기도·호흡 보조, 응급 약물, 혈역학적 처치 (예: 무맥, 무호흡, 무반응).</string>
+    <string name="criterion_esi_2_high_risk">고위험 상황, 새로 생긴 혼돈·기면·지남력 저하, 또는 심한 통증이나 고통: 기다리게 해서는 안 됨.</string>
+    <string name="criterion_esi_2_danger_vitals">성인의 위험 구간 활력징후 (심박수 100 초과, 호흡수 20 초과, SpO2 92% 미만): 2단계로 상향 분류를 고려.</string>
+    <string name="criterion_esi_3_resources">안정적이지만 두 가지 이상의 자원이 필요할 것으로 예상됨 (예: 검사와 영상, 수액).</string>
+    <string name="criterion_esi_4_one_resource">안정적이며 한 가지 자원이 필요할 것으로 예상됨.</string>
+    <string name="criterion_esi_5_no_resources">안정적이며 진찰 외에는 자원이 필요하지 않을 것으로 예상됨.</string>
+    <string name="criterion_ktas_1_resuscitation">소생: 즉각적인 처치가 필요한 심정지 또는 심정지 임박 상태 (예: 심정지·호흡정지, 무반응, 중증 쇼크, 중증 호흡곤란).</string>
+    <string name="criterion_ktas_2_emergent">긴급: 생명·사지·기능을 위협할 수 있어 신속한 처치가 필요함 (예: 의식 변화, 중등도 호흡곤란, 혈역학적 불안정, 심한 통증).</string>
+    <string name="criterion_ktas_3_urgent">응급: 응급 처치가 필요한 심각한 문제로 진행할 수 있음 (예: 경증 호흡곤란, 중등도 통증).</string>
+    <string name="criterion_ktas_4_less_urgent">준응급: 나이, 고통, 악화 가능성과 관련되어 1-2시간 이내 처치가 도움이 됨.</string>
+    <string name="criterion_ktas_5_non_urgent">비응급: 급성이지만 긴급하지 않거나 만성 문제의 일부로, 지연되거나 의뢰될 수 있음.</string>
+    <string name="criterion_abcde_approach">기도, 호흡, 순환, 신경학적 상태, 노출 순서로 평가하고 처치: 각 문제를 해결한 뒤 다음으로 넘어가고, 변화가 있으면 재평가.</string>
+    <string name="criterion_cpr_quality">고품질 CPR: 분당 100-120회, 성인 기준 최소 5cm 깊이, 완전한 이완, 중단은 10초 미만, 맥박 확인은 10초 이내.</string>
+    <string name="criterion_cpr_ratio">전문기도 확보 전: 가슴압박 30회에 인공호흡 2회.</string>
+    <string name="criterion_cpr_defib">제세동 필요 리듬 (심실세동 또는 무맥성 심실빈맥): 가능한 한 빨리 제세동하고 즉시 CPR 재개.</string>
+    <string name="criterion_cpr_epinephrine">심정지 중 에피네프린 1mg IV/IO를 3-5분마다 투여.</string>
+    <string name="criterion_anaph_epi_im">에피네프린 근주 0.01mg/kg (1mg/mL, 성인 최대 0.5mg)를 대퇴 전외측에 투여하고, 필요하면 5-15분 후 반복.</string>
+    <string name="criterion_anaph_epi_first">에피네프린이 1차 약물: 항히스타민제와 스테로이드는 이를 대신하지 못하며 투여를 늦춰서도 안 됨.</string>
+    <string name="criterion_anaph_position">다리를 올린 채 눕히고 (호흡이 힘들면 앉힘), 갑자기 서거나 앉지 않게 함.</string>
+    <string name="criterion_stroke_recognition">BE-FAST로 뇌졸중을 인지하고 마지막 정상 확인 시각을 파악.</string>
+    <string name="criterion_stroke_thrombolysis">정맥 혈전용해 전 혈당을 확인하고 뇌영상으로 출혈을 배제: 대상 환자는 마지막 정상 확인 후 4.5시간 이내 투여 가능.</string>
+    <string name="criterion_trauma_hemorrhage">먼저 직접 압박: 압박으로 조절되지 않는 생명을 위협하는 사지 출혈에는 상처 5-8cm 위, 관절이 아닌 곳에 지혈대를 감고 시각을 기록.</string>
+    <string name="criterion_trauma_primary_survey">일차 평가: 치명적 외부 출혈을 조절한 뒤 경추 보호와 함께 기도, 호흡, 순환, 신경학적 상태, 노출.</string>
+    <string name="criterion_choking_adult">기침이 효과적이면 계속 기침하게 하고, 효과가 없어지면 이물이 나올 때까지 등 두드리기 및/또는 복부 밀어내기.</string>
+    <string name="criterion_choking_infant">1세 미만 영아: 등 두드리기 5회 후 가슴 밀어내기 5회. 복부 밀어내기는 절대 하지 않음.</string>
+    <string name="criterion_choking_unresponsive">반응이 없어지면 CPR을 시작하고, 인공호흡 전 입안을 확인해 보이는 이물만 제거.</string>
+    <string name="criterion_seizure_first_aid">부상을 막고, 붙잡거나 입에 아무것도 넣지 않으며, 발작 시간을 재고 멈추면 회복 자세: 혈당도 확인.</string>
+    <string name="criterion_seizure_status">5분 이상 지속되는 발작은 뇌전증 지속상태: 1차로 벤조디아제핀 투여 (미다졸람 근주, 로라제팜 IV 또는 디아제팜 IV).</string>
+    <string name="criterion_diabetic_hypo">저혈당 (70mg/dL, 3.9mmol/L 미만): 삼킬 수 있으면 속효성 포도당 15-20g 후 15분 뒤 재측정, 삼킬 수 없으면 글루카곤 또는 포도당 IV.</string>
+    <string name="criterion_diabetic_dka">DKA: 수액을 먼저, 그다음 인슐린. 인슐린 전 칼륨을 확인하고 3.3mmol/L 미만이면 인슐린을 보류.</string>
+    <string name="criterion_asthma_saba_oxygen">속효성 베타2 작용제 (예: 살부타몰) 반복 흡입, 성인은 SpO2 93-95%를 목표로 산소를 조절해 투여.</string>
+    <string name="criterion_asthma_escalation">전신 스테로이드를 조기에 투여하고, 중증 발작에는 이프라트로피움 추가, 반응이 없으면 황산마그네슘 IV 고려.</string>
+    <string name="criterion_asthma_danger_signs">졸림, 혼돈, 호흡음 소실(silent chest)은 생명을 위협하는 징후: 즉시 중환자 치료로 연계.</string>
+    <string name="criterion_sepsis_hour_one">첫 1시간 이내: 젖산 측정, 항생제 투여 전 혈액배양, 광범위 항생제 투여.</string>
+    <string name="criterion_sepsis_fluids_pressors">저혈압 또는 젖산 4mmol/L 이상이면 조기에 결정질 수액 30mL/kg IV: 평균동맥압 65mmHg 이상을 목표로 승압제 (1차 노르에피네프린).</string>
+    <string name="criterion_burns_cooling">시원한 흐르는 물로 20분간 식힘 (수상 후 3시간까지 효과 있음): 얼음은 쓰지 않고, 달라붙지 않은 장신구와 옷은 제거.</string>
+    <string name="criterion_burns_fluids">화상 면적(%TBSA) 추정 (9의 법칙, 환자 손바닥이 약 1%): 광범위 화상은 공식에 따라 24시간 동안 2-4mL x kg x %TBSA, 첫 8시간에 절반, 소변량에 맞춰 조절.</string>
+    <string name="criterion_burns_airway">흡입 손상 징후 (얼굴 화상, 그을린 코털, 그을음, 쉰 목소리, 협착음): 기도를 조기에 평가하고 조기 삽관 고려.</string>
 </resources>

@@ -40,6 +40,8 @@ data class HomeUiState(
     val selectedAiRole: AiCharacterRole = AiCharacterRole.RANDOM,
     val customAiRole: String = "",
     val difficultyIndex: Int = 1,
+    /** Off by default: it changes the drill's character, so trainees opt in per session. */
+    val decompensationEnabled: Boolean = false,
     val isStarting: Boolean = false,
     val updateAvailable: Boolean = false
 )
@@ -133,6 +135,10 @@ class HomeViewModel(
         _uiState.value = _uiState.value.copy(difficultyIndex = index)
     }
 
+    fun setDecompensationEnabled(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(decompensationEnabled = enabled)
+    }
+
     fun pickRandomScenario() {
         _uiState.value = _uiState.value.copy(
             selectedScenario = ScenarioType.entries.random(),
@@ -182,7 +188,8 @@ class HomeViewModel(
                 languageCode = languageCode,
                 startedAtMillis = now,
                 lastUpdatedAtMillis = now,
-                isCompleted = false
+                isCompleted = false,
+                decompensationEnabled = state.decompensationEnabled
             )
         )
         analytics.log(

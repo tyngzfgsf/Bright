@@ -90,7 +90,8 @@ private fun CinematicIntro(onFinished: () -> Unit) {
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(500)
         sloganAlpha.animateTo(1f, animationSpec = tween(500))
-        kotlinx.coroutines.delay(1300)
+        // Long enough to actually read the positioning line under the slogan; a tap still skips.
+        kotlinx.coroutines.delay(2300)
         onFinished()
     }
 
@@ -121,6 +122,16 @@ private fun CinematicIntro(onFinished: () -> Unit) {
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.graphicsLayer { alpha = sloganAlpha.value }
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = stringResource(Res.string.onboarding_positioning),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(horizontal = 40.dp)
+                    .graphicsLayer { alpha = sloganAlpha.value }
             )
         }
     }

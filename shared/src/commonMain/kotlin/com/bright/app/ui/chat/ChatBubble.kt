@@ -9,11 +9,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,14 +31,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bright.app.resources.Res
 import com.bright.app.resources.*
+import com.bright.app.domain.VitalsTrend
 import com.bright.app.domain.model.ChatMessage
 import com.bright.app.domain.model.MessageRole
+import com.bright.app.domain.model.ScoringCriterion
+import com.bright.app.domain.model.textRes
 import com.bright.app.ui.theme.BrightMotion
 import kotlin.math.roundToInt
 
@@ -47,13 +54,16 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
     val isFeedback = message.role == MessageRole.AI_FEEDBACK
     val isSummary = message.role == MessageRole.SYSTEM_SUMMARY
     val isAiAnswer = message.role == MessageRole.AI_ANSWER
-    val isRightAligned = isUser || isUserAsk
+    val isVitalsCheck = message.role == MessageRole.USER_VITALS_CHECK
+    val isVitals = message.role == MessageRole.AI_VITALS
+    val isRightAligned = isUser || isUserAsk || isVitalsCheck
 
     val bubbleColor = when {
         isRightAligned -> colors.primary
         isFeedback -> colors.surfaceVariant
         isSummary -> colors.surfaceVariant
         isAiAnswer -> colors.surfaceVariant
+        isVitals -> colors.surfaceVariant
         else -> colors.surface // AI_QUESTION
     }
     val textColor = if (isRightAligned) colors.onPrimary else colors.onBackground
@@ -85,6 +95,14 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                         var feedbackVisible by remember { mutableStateOf(false) }
                         ScoreBadge(score = message.score, onCountUpFinished = { feedbackVisible = true })
                         Spacer(Modifier.height(6.dp))
+                        // Straight under the number, and not behind the feedback's fade-in: what a
+                        // score was judged against is part of the score, not commentary on it.
+                        ScoringBasis(
+                            criterion = message.criterion,
+                            uncited = message.scoreUncited,
+                            textColor = textColor,
+                            captionColor = captionColor
+                        )
                         AnimatedVisibility(
                             visible = feedbackVisible,
                             enter = fadeIn(animationSpec = tween(BrightMotion.MEDIUM))
@@ -118,6 +136,27 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
                         fontStyle = FontStyle.Italic
                     )
                 }
+                // The stored text is only the marker sent to the model; show the action instead.
+                isVitalsCheck -> Text(
+                    text = stringResource(Res.string.chat_vitals_checked),
+                    color = textColor,
+                    style = MaterialTheme.typography.labelLarge
+                )
+                isVitals -> Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(Res.string.chat_vitals_label),
+                            color = captionColor,
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        message.vitalsTrend?.let { trend ->
+                            Spacer(Modifier.width(8.dp))
+                            VitalsTrendLabel(trend)
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                    Text(text = message.text, color = textColor, style = MaterialTheme.typography.bodyMedium)
+                }
                 else -> Text(
                     text = message.text,
                     color = textColor,
@@ -127,6 +166,24 @@ fun ChatBubble(message: ChatMessage, modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+/** Arrow plus word, so the trend never depends on color alone. Worsening takes the error color. */
+@Composable
+private fun VitalsTrendLabel(trend: VitalsTrend) {
+    val colors = MaterialTheme.colorScheme
+    val (arrow, label) = when (trend) {
+        VitalsTrend.BASELINE -> "•" to Res.string.chat_vitals_trend_baseline
+        VitalsTrend.IMPROVING -> "↑" to Res.string.chat_vitals_trend_improving
+        VitalsTrend.UNCHANGED -> "→" to Res.string.chat_vitals_trend_unchanged
+        VitalsTrend.WORSENING -> "↓" to Res.string.chat_vitals_trend_worsening
+    }
+    Text(
+        text = "$arrow ${stringResource(label)}",
+        color = if (trend == VitalsTrend.WORSENING) colors.error else colors.onBackground,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.SemiBold
+    )
 }
 
 @Composable
@@ -148,6 +205,60 @@ private fun ScoreBadge(score: Int, onCountUpFinished: () -> Unit = {}) {
             color = colors.background,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+/**
+ * "Scored against KTAS Level 2" over the criterion's own text, set off by a thin rule so it reads
+ * as a citation rather than more feedback. The text always comes from the app's reference table,
+ * never from the model. A score with nothing usable to cite says so instead of staying quiet —
+ * that's what makes the cited ones mean something. Scores from before citations existed show
+ * neither.
+ */
+@Composable
+private fun ScoringBasis(
+    criterion: ScoringCriterion?,
+    uncited: Boolean,
+    textColor: Color,
+    captionColor: Color
+) {
+    when {
+        criterion != null -> Row(
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+                .height(IntrinsicSize.Min)
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(2.dp)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(1.dp))
+                    .background(textColor.copy(alpha = 0.35f))
+            )
+            Spacer(Modifier.width(8.dp))
+            Column {
+                val standard = criterion.triageSystem?.let { system ->
+                    stringResource(Res.string.chat_triage_level_source, system.name, criterion.level ?: 0)
+                } ?: criterion.source.orEmpty()
+                Text(
+                    text = stringResource(Res.string.chat_scored_against, standard),
+                    color = textColor,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = criterion.textRes?.let { stringResource(it) } ?: criterion.promptText,
+                    color = captionColor,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+        uncited -> Text(
+            text = stringResource(Res.string.chat_score_uncited),
+            color = captionColor,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
     }
 }

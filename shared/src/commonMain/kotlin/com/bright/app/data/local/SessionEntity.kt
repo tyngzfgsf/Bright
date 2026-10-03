@@ -1,5 +1,6 @@
 package com.bright.app.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -19,5 +20,8 @@ data class SessionEntity(
     val summary: String? = null,
     val totalScore: Int = 0,        // running sum of all graded answers this session
     val answeredCount: Int = 0,     // number of graded answers, for computing the average
-    val reviewOfRecordId: String? = null  // set when this session was started from the review queue
+    val reviewOfRecordId: String? = null,  // set when this session was started from the review queue
+    // Opt-in per session (v6): the patient worsens when the trainee is slow or misses the key
+    // intervention. The SQL default keeps every pre-v6 session on the original static behavior.
+    @ColumnInfo(defaultValue = "0") val decompensationEnabled: Boolean = false
 )

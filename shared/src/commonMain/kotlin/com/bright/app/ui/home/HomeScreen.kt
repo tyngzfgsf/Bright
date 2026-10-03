@@ -37,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -315,7 +316,8 @@ fun HomeScreen(
 
     val currentAiRoleLabel = if (uiState.customAiRole.isBlank()) aiRoleLabel(uiState.selectedAiRole) else uiState.customAiRole
     val optionsSummary = "${roleLabel(uiState.selectedRole)} · $currentAiRoleLabel · " +
-        difficultyDisplayLabels.getOrElse(uiState.difficultyIndex) { "" }
+        difficultyDisplayLabels.getOrElse(uiState.difficultyIndex) { "" } +
+        (if (uiState.decompensationEnabled) " · ${stringResource(Res.string.home_decompensation_title)}" else "")
     val chevronRotation by animateFloatAsState(
         targetValue = if (optionsExpanded) 180f else 0f,
         animationSpec = tween(BrightMotion.FAST),
@@ -603,6 +605,31 @@ fun HomeScreen(
                                     selectedIndex = uiState.difficultyIndex,
                                     onIndexChange = { viewModel.setDifficultyIndex(it) }
                                 )
+
+                                Spacer(Modifier.height(20.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.setDecompensationEnabled(!uiState.decompensationEnabled) },
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                                        Text(
+                                            text = stringResource(Res.string.home_decompensation_title),
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            text = stringResource(Res.string.home_decompensation_body),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    Switch(
+                                        checked = uiState.decompensationEnabled,
+                                        onCheckedChange = { viewModel.setDecompensationEnabled(it) }
+                                    )
+                                }
                             }
                         }
                     }

@@ -11,6 +11,13 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.MonitorHeart
+import androidx.compose.ui.text.style.TextAlign
+import com.bright.app.domain.ScenarioClock
+import com.bright.app.util.currentTimeMillis
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -182,6 +189,16 @@ fun ChatScreen(
                 }
             }
 
+            if (!uiState.isCompleted && uiState.messages.isNotEmpty()) {
+                ScenarioActionsRow(
+                    decompensationEnabled = uiState.decompensationEnabled,
+                    openQuestionAtMillis = uiState.openQuestionAtMillis.takeUnless { uiState.isSending },
+                    lateAfterSeconds = uiState.lateAfterSeconds,
+                    checkEnabled = !uiState.isSending,
+                    onCheckVitals = { viewModel.checkVitals() }
+                )
+            }
+
             if (!uiState.isCompleted) {
                 Row(
                     modifier = Modifier
@@ -253,19 +270,74 @@ fun ChatScreen(
         }
     }
 
-    if (showEndDialog) {
+    ChatEndDialog(
+        visible = showEndDialog,
+        onDismiss = { showEndDialog = false },
+        onConfirm = {
+            showEndDialog = false
+            viewModel.endSession()
+        }
+    )
+}
+
+/**
+ * "Check vitals" plus, when time pressure is on, how long the open question has been waiting.
+ * The timer is display only — the scenario clock itself is recomputed from message timestamps
+ * on every AI call, so it's correct even after the app was closed mid-question.
+ */
+@Composable
+private fun ScenarioActionsRow(
+    decompensationEnabled: Boolean,
+    openQuestionAtMillis: Long?,
+    lateAfterSeconds: Long,
+    checkEnabled: Boolean,
+    onCheckVitals: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextButton(onClick = onCheckVitals, enabled = checkEnabled) {
+            Icon(Icons.Filled.MonitorHeart, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(Res.string.chat_check_vitals))
+        }
+        if (decompensationEnabled && openQuestionAtMillis != null) {
+            var nowMillis by remember { mutableStateOf(currentTimeMillis()) }
+            LaunchedEffect(openQuestionAtMillis) {
+                while (true) {
+                    nowMillis = currentTimeMillis()
+                    delay(1000)
+                }
+            }
+            val seconds = ((nowMillis - openQuestionAtMillis) / 1000).coerceAtLeast(0)
+            val shown = seconds.coerceAtMost(ScenarioClock.MAX_ROUND_SECONDS)
+            val clock = "${shown / 60}:${(shown % 60).toString().padStart(2, '0')}" +
+                if (seconds > ScenarioClock.MAX_ROUND_SECONDS) "+" else ""
+            val late = seconds > lateAfterSeconds
+            Text(
+                text = stringResource(if (late) Res.string.chat_decision_timer_late else Res.string.chat_decision_timer, clock),
+                style = MaterialTheme.typography.labelMedium,
+                color = if (late) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f).padding(start = 4.dp),
+                textAlign = TextAlign.End
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChatEndDialog(visible: Boolean, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    if (visible) {
         AlertDialog(
-            onDismissRequest = { showEndDialog = false },
+            onDismissRequest = onDismiss,
             title = { Text(stringResource(Res.string.chat_end_session_confirm_title)) },
             text = { Text(stringResource(Res.string.chat_end_session_confirm_body)) },
             confirmButton = {
-                TextButton(onClick = {
-                    showEndDialog = false
-                    viewModel.endSession()
-                }) { Text(stringResource(Res.string.chat_end_session_confirm_yes)) }
+                TextButton(onClick = onConfirm) { Text(stringResource(Res.string.chat_end_session_confirm_yes)) }
             },
             dismissButton = {
-                TextButton(onClick = { showEndDialog = false }) {
+                TextButton(onClick = onDismiss) {
                     Text(stringResource(Res.string.chat_end_session_confirm_cancel))
                 }
             }

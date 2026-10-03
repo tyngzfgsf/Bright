@@ -12,12 +12,13 @@
     <string name="onboarding_next">Next</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_api_key_title">Connect your AI</string>
-    <string name="onboarding_api_key_subtitle">Bright uses Groq to power its scenarios. Paste your free Groq API key, or skip and add it later in Settings.</string>
+    <string name="onboarding_api_key_subtitle">Every score names the triage level or protocol it was judged against. Paste your free Groq API key to start drilling, or skip and add it later in Settings.</string>
     <string name="onboarding_skip_key">Skip for now</string>
     <string name="onboarding_api_key_hint">Groq API key</string>
     <string name="onboarding_api_key_get_one">Get a free key at console.groq.com</string>
     <string name="onboarding_api_key_continue">Continue</string>
     <string name="onboarding_api_key_error">That key doesn't look right. Double-check and try again.</string>
+    <string name="onboarding_positioning">Scored against real KTAS/ESI standards — not just an AI's opinion.</string>
 
     <!-- Home tour -->
     <string name="tour_scenario_title">Pick a scenario</string>
@@ -121,6 +122,20 @@
     <string name="chat_retry">Retry</string>
     <string name="chat_score_label">Score: %1$d/10</string>
     <string name="chat_average_score">Average score: %1$s/10</string>
+    <string name="chat_scored_against">Scored against %1$s</string>
+    <string name="chat_triage_level_source">%1$s Level %2$d</string>
+    <string name="chat_score_uncited">No standard cited — treat this score as the AI's judgment only</string>
+    <string name="chat_check_vitals">Check vitals</string>
+    <string name="chat_vitals_checked">Checked vitals</string>
+    <string name="chat_vitals_label">Vitals</string>
+    <string name="chat_vitals_trend_baseline">Baseline</string>
+    <string name="chat_vitals_trend_improving">Improving</string>
+    <string name="chat_vitals_trend_unchanged">No change</string>
+    <string name="chat_vitals_trend_worsening">Worsening</string>
+    <string name="chat_decision_timer">On this decision: %1$s</string>
+    <string name="chat_decision_timer_late">%1$s — the patient is deteriorating</string>
+    <string name="home_decompensation_title">Time pressure</string>
+    <string name="home_decompensation_body">The patient deteriorates if you're slow or miss the key intervention.</string>
     <string name="chat_share_result">Share result</string>
 
     <!-- History -->
@@ -172,4 +187,44 @@
     <string name="common_delete">Delete</string>
     <string name="common_done">Done</string>
     <string name="common_back">Back</string>
+
+    <!-- Scoring criteria: paraphrased from published triage scales and guidelines, not yet clinically reviewed. IDs live in ScoringCriteria.kt. -->
+    <string name="criterion_esi_1_lifesaving">Needs an immediate life-saving intervention: airway or breathing support, emergency medication, or hemodynamic intervention (e.g. pulseless, apneic, unresponsive).</string>
+    <string name="criterion_esi_2_high_risk">High-risk situation, new confusion, lethargy or disorientation, or severe pain or distress: should not wait.</string>
+    <string name="criterion_esi_2_danger_vitals">Danger-zone vital signs in an adult (HR over 100, RR over 20, or SpO2 under 92%): consider up-triaging to Level 2.</string>
+    <string name="criterion_esi_3_resources">Stable, but expected to need two or more resources (e.g. labs plus imaging, IV fluids).</string>
+    <string name="criterion_esi_4_one_resource">Stable, expected to need one resource.</string>
+    <string name="criterion_esi_5_no_resources">Stable, expected to need no resources beyond examination.</string>
+    <string name="criterion_ktas_1_resuscitation">Resuscitation: arrest or imminent arrest needing immediate intervention (e.g. cardiac or respiratory arrest, unresponsiveness, severe shock, severe respiratory distress).</string>
+    <string name="criterion_ktas_2_emergent">Emergent: potential threat to life, limb or function needing rapid intervention (e.g. altered mental status, moderate respiratory distress, hemodynamic compromise, severe pain).</string>
+    <string name="criterion_ktas_3_urgent">Urgent: could progress to a serious problem needing emergency intervention (e.g. mild respiratory distress, moderate pain).</string>
+    <string name="criterion_ktas_4_less_urgent">Less urgent: related to age, distress or potential to deteriorate; benefits from treatment within 1-2 hours.</string>
+    <string name="criterion_ktas_5_non_urgent">Non-urgent: acute but non-urgent, or part of a chronic problem; can be delayed or referred.</string>
+    <string name="criterion_abcde_approach">Assess and treat in order: airway, breathing, circulation, disability, exposure; fix each problem before moving on and reassess after any change.</string>
+    <string name="criterion_cpr_quality">High-quality CPR: compressions 100-120/min, at least 5 cm (2 in) deep in adults, full recoil, interruptions under 10 seconds; check pulse for no more than 10 seconds.</string>
+    <string name="criterion_cpr_ratio">Without an advanced airway: 30 compressions to 2 breaths.</string>
+    <string name="criterion_cpr_defib">Shockable rhythm (VF or pulseless VT): defibrillate as soon as possible, then resume CPR immediately.</string>
+    <string name="criterion_cpr_epinephrine">Epinephrine 1 mg IV/IO every 3-5 minutes during cardiac arrest.</string>
+    <string name="criterion_anaph_epi_im">IM epinephrine 0.01 mg/kg of 1 mg/mL (max 0.5 mg in adults) into the anterolateral thigh; repeat after 5-15 minutes if needed.</string>
+    <string name="criterion_anaph_epi_first">Epinephrine is first-line; antihistamines and corticosteroids do not replace it and must not delay it.</string>
+    <string name="criterion_anaph_position">Lie the patient flat with legs raised (sitting up if breathing is difficult); avoid sudden standing or sitting.</string>
+    <string name="criterion_stroke_recognition">Recognise stroke with BE-FAST and establish the last-known-well time.</string>
+    <string name="criterion_stroke_thrombolysis">Check blood glucose and get brain imaging to exclude hemorrhage before IV thrombolysis, which eligible patients can receive within 4.5 hours of last known well.</string>
+    <string name="criterion_trauma_hemorrhage">Direct pressure first; for life-threatening limb bleeding pressure can't control, a tourniquet 5-8 cm (2-3 in) above the wound, not over a joint, with the time recorded.</string>
+    <string name="criterion_trauma_primary_survey">Primary survey: control catastrophic external bleeding, then airway with cervical-spine protection, breathing, circulation, disability, exposure.</string>
+    <string name="criterion_choking_adult">Encourage coughing while it's effective; if the cough becomes ineffective, back blows and/or abdominal thrusts until the object clears.</string>
+    <string name="criterion_choking_infant">Infants under 1 year: 5 back blows then 5 chest thrusts; never abdominal thrusts.</string>
+    <string name="criterion_choking_unresponsive">If the person becomes unresponsive, start CPR; look in the mouth before breaths and remove only a visible object.</string>
+    <string name="criterion_seizure_first_aid">Protect from injury, don't restrain or put anything in the mouth, time the seizure, recovery position once it stops; check blood glucose.</string>
+    <string name="criterion_seizure_status">A seizure lasting 5 minutes or more is status epilepticus: first-line benzodiazepine (IM midazolam, IV lorazepam or IV diazepam).</string>
+    <string name="criterion_diabetic_hypo">Hypoglycemia (under 70 mg/dL / 3.9 mmol/L): if able to swallow, 15-20 g fast-acting glucose and recheck in 15 minutes; if not, glucagon or IV dextrose.</string>
+    <string name="criterion_diabetic_dka">DKA: IV fluids first, then insulin; check potassium before insulin and hold insulin if K is under 3.3 mmol/L.</string>
+    <string name="criterion_asthma_saba_oxygen">Repeated inhaled short-acting beta2-agonist (e.g. salbutamol); controlled oxygen to SpO2 93-95% in adults.</string>
+    <string name="criterion_asthma_escalation">Systemic corticosteroids early; add ipratropium for severe attacks; consider IV magnesium sulfate if not responding.</string>
+    <string name="criterion_asthma_danger_signs">Drowsiness, confusion or a silent chest are life-threatening signs: escalate to critical care urgently.</string>
+    <string name="criterion_sepsis_hour_one">Within the first hour: measure lactate, take blood cultures before antibiotics, give broad-spectrum antibiotics.</string>
+    <string name="criterion_sepsis_fluids_pressors">For hypotension or lactate of 4 mmol/L or more, 30 mL/kg IV crystalloid early; vasopressors (norepinephrine first-line) to a MAP of 65 mmHg or more.</string>
+    <string name="criterion_burns_cooling">Cool the burn under cool running water for 20 minutes (worthwhile up to 3 hours after injury); no ice; remove jewellery and clothing that isn't stuck.</string>
+    <string name="criterion_burns_fluids">Estimate %TBSA (rule of nines; the patient's palm is about 1%); large burns need formula-guided IV fluids, 2-4 mL x kg x %TBSA over 24 hours with half in the first 8, titrated to urine output.</string>
+    <string name="criterion_burns_airway">Signs of inhalation injury (facial burns, singed nasal hair, soot, hoarseness, stridor): assess the airway early and consider early intubation.</string>
 </resources>

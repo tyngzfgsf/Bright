@@ -18,7 +18,13 @@ import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.domain.AiTurn
 import com.bright.app.domain.AiTurnParser
 import com.bright.app.domain.DailyStreak
+import com.bright.app.domain.ScenarioClock
 import com.bright.app.domain.ScenarioPromptBuilder
+import com.bright.app.domain.ScenarioState
+import com.bright.app.domain.TimelineEvent
+import com.bright.app.domain.VitalsConsistency
+import com.bright.app.domain.VitalsReadingParser
+import com.bright.app.domain.VitalsTrend
 import com.bright.app.domain.SpacedRepetitionScheduler
 import com.bright.app.domain.syncLocalNotifications
 import com.bright.app.domain.model.AiCharacterRole
@@ -27,6 +33,9 @@ import com.bright.app.domain.model.Difficulty
 import com.bright.app.domain.model.Language
 import com.bright.app.domain.model.MessageRole
 import com.bright.app.domain.model.ScenarioType
+import com.bright.app.domain.model.ScoringCriteria
+import com.bright.app.domain.model.ScoringCriterion
+import com.bright.app.domain.model.TriageSystem
 import com.bright.app.domain.model.TraineeRole
 import com.bright.app.util.ApiResult
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -50,7 +59,11 @@ data class ChatUiState(
     val scenarioType: String? = null,
     val customScenario: String? = null,
     val streakDays: Int = 0,
-    val showNotificationPermissionPrompt: Boolean = false
+    val showNotificationPermissionPrompt: Boolean = false,
+    val decompensationEnabled: Boolean = false,
+    /** When the question still awaiting an answer was asked — drives the on-screen decision timer. */
+    val openQuestionAtMillis: Long? = null,
+    val lateAfterSeconds: Long = ScenarioClock.lateAfterSeconds(Difficulty.INTERMEDIATE)
 )
 
 class ChatViewModel(
@@ -91,7 +104,10 @@ class ChatViewModel(
             scenarioType = currentSession?.scenarioType,
             customScenario = currentSession?.customScenario,
             streakDays = DailyStreak.displayedCount(streakState, currentLocalEpochDay()),
-            showNotificationPermissionPrompt = (currentSession?.isCompleted ?: false) && !permissionAsked
+            showNotificationPermissionPrompt = (currentSession?.isCompleted ?: false) && !permissionAsked,
+            decompensationEnabled = currentSession?.decompensationEnabled ?: false,
+            openQuestionAtMillis = ScenarioClock.openQuestionAt(entities.map { it.toEvent() }),
+            lateAfterSeconds = ScenarioClock.lateAfterSeconds(currentDifficulty())
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatUiState())
 
@@ -125,37 +141,76 @@ class ChatViewModel(
         return AiCharacterRole.valueOf(s.aiRole).promptLabel
     }
 
-    private fun systemPrompt(): String = ScenarioPromptBuilder.buildSystemPrompt(
-        scenarioDescription = resolvedScenarioDescription(),
-        aiRoleDescription = resolvedAiRoleDescription(),
-        traineeRole = currentTraineeRole(),
+    /** The preset scenario — or null when a custom description is what the AI is actually running. */
+    private fun resolvedScenarioType(): ScenarioType? {
+        val s = session ?: return null
+        if (!s.customScenario.isNullOrBlank()) return null
+        return s.scenarioType?.let { runCatching { ScenarioType.valueOf(it) }.getOrNull() }
+    }
+
+    private fun systemPrompt(triageSystem: TriageSystem, criteria: List<ScoringCriterion>, state: ScenarioState): String =
+        ScenarioPromptBuilder.buildSystemPrompt(
+            scenarioDescription = resolvedScenarioDescription(),
+            aiRoleDescription = resolvedAiRoleDescription(),
+            traineeRole = currentTraineeRole(),
+            difficulty = currentDifficulty(),
+            language = currentLanguage(),
+            triageSystem = triageSystem,
+            criteria = criteria,
+            state = state
+        )
+
+    private suspend fun scenarioState(): ScenarioState = ScenarioClock.stateAt(
+        events = messagesFlow.first().map { it.toEvent() },
+        nowMillis = currentTimeMillis(),
         difficulty = currentDifficulty(),
-        language = currentLanguage()
+        decompensationEnabled = session?.decompensationEnabled ?: false
     )
 
     private suspend fun historyAsGroqMessages(): List<GroqMessage> {
         val current = messagesFlow.first()
         return current.map {
-            val isUserTurn = it.role == MessageRole.USER.name || it.role == MessageRole.USER_ASK.name
+            val isUserTurn = it.role == MessageRole.USER.name ||
+                it.role == MessageRole.USER_ASK.name ||
+                it.role == MessageRole.USER_VITALS_CHECK.name
             GroqMessage(
                 role = if (isUserTurn) "user" else "assistant",
-                content = it.text
+                content = if (it.role == MessageRole.USER_VITALS_CHECK.name) ScenarioPromptBuilder.VITALS_CHECK_MARKER else it.text
             )
         }
     }
 
+    /**
+     * The returned turn's `basis` has already been checked: it's the canonical ID of a criterion
+     * this very prompt offered, or null. Whatever the model actually wrote there is never stored
+     * or shown — see [ScoringCriteria.resolve].
+     */
     private suspend fun callAi(extraTrailingUserMessage: String? = null): ApiResult<AiTurn> {
+        val triageSystem = preferences.triageSystem.first()
+        val criteria = ScoringCriteria.offeredFor(triageSystem, resolvedScenarioType())
+        return when (val result = callAiRaw(triageSystem, criteria, scenarioState(), extraTrailingUserMessage)) {
+            is ApiResult.Success -> {
+                val turn = AiTurnParser.parse(result.data)
+                ApiResult.Success(turn.copy(basis = ScoringCriteria.resolve(turn.basis, criteria)?.id))
+            }
+            is ApiResult.Error -> ApiResult.Error(result.message)
+        }
+    }
+
+    private suspend fun callAiRaw(
+        triageSystem: TriageSystem,
+        criteria: List<ScoringCriterion>,
+        state: ScenarioState,
+        extraTrailingUserMessage: String?
+    ): ApiResult<String> {
         val apiKey = preferences.groqApiKey.first().orEmpty()
         val model = preferences.groqModel.first()
         val messages = buildList {
-            add(GroqMessage(role = "system", content = systemPrompt()))
+            add(GroqMessage(role = "system", content = systemPrompt(triageSystem, criteria, state)))
             addAll(historyAsGroqMessages())
             extraTrailingUserMessage?.let { add(GroqMessage(role = "user", content = it)) }
         }
-        return when (val result = groqRepository.sendConversation(apiKey, model, messages, jsonMode = false)) {
-            is ApiResult.Success -> ApiResult.Success(AiTurnParser.parse(result.data))
-            is ApiResult.Error -> ApiResult.Error(result.message)
-        }
+        return groqRepository.sendConversation(apiKey, model, messages, jsonMode = false)
     }
 
     /**
@@ -234,6 +289,9 @@ class ChatViewModel(
                     role = MessageRole.AI_FEEDBACK.name,
                     text = turn.feedback.orEmpty(),
                     score = turn.score,
+                    // A score always records what it cited, even when that's nothing usable:
+                    // UNCITED rather than null, so it isn't mistaken for a pre-citation answer.
+                    criterionId = turn.score?.let { turn.basis ?: ScoringCriteria.UNCITED },
                     timestampMillis = now
                 )
             )
@@ -394,13 +452,84 @@ class ChatViewModel(
     fun retry() {
         if (_isSending.value) return
         viewModelScope.launch {
-            if (messagesFlow.first().isEmpty()) {
-                hasTriggeredOpening = true
-                triggerOpening()
-            } else {
-                requestAiReply()
+            val messages = messagesFlow.first()
+            when {
+                messages.isEmpty() -> {
+                    hasTriggeredOpening = true
+                    triggerOpening()
+                }
+                // A failed vitals check must be retried as a vitals check: sent as an ordinary
+                // reply it would come back as a graded turn and advance the question.
+                messages.last().role == MessageRole.USER_VITALS_CHECK.name -> requestVitalsReading()
+                else -> requestAiReply()
             }
         }
+    }
+
+    /**
+     * Mid-scenario "check vitals". Never graded and never advances the question: it doesn't go
+     * through [applyTurn], so it can't touch the session's score, answer count or review queue.
+     * Which way the numbers move is decided here, on-device, from the trainee's graded answers
+     * (and, with decompensation on, from how long the open question has been waiting).
+     */
+    fun checkVitals() {
+        if (_isSending.value || session?.isCompleted != false) return
+        viewModelScope.launch {
+            _errorMessage.value = null
+            dao.insertMessage(
+                MessageEntity(
+                    id = randomId(),
+                    sessionId = sessionId,
+                    role = MessageRole.USER_VITALS_CHECK.name,
+                    text = ScenarioPromptBuilder.VITALS_CHECK_MARKER,
+                    timestampMillis = currentTimeMillis()
+                )
+            )
+            requestVitalsReading()
+        }
+    }
+
+    private suspend fun requestVitalsReading() {
+        _isSending.value = true
+        _errorMessage.value = null
+        val events = messagesFlow.first().map { it.toEvent() }
+        val now = currentTimeMillis()
+        val decompensation = session?.decompensationEnabled ?: false
+        val trend = ScenarioClock.vitalsTrend(events, now, currentDifficulty(), decompensation)
+        val state = scenarioState()
+        val previousReading = messagesFlow.first().lastOrNull { it.role == MessageRole.AI_VITALS.name }?.text
+        val triageSystem = preferences.triageSystem.first()
+        val criteria = ScoringCriteria.offeredFor(triageSystem, resolvedScenarioType())
+        val prompt = ScenarioPromptBuilder.vitalsCheckPrompt(trend, state, previousReading, currentLanguage())
+
+        when (val result = callAiRaw(triageSystem, criteria, state, prompt)) {
+            is ApiResult.Success -> {
+                var reading = VitalsReadingParser.parse(result.data)
+                // The trend chip is the app's verdict on the trainee's intervention, so the numbers
+                // under it must agree. One corrective retry; a failed retry keeps the first reading
+                // rather than turning a vitals check into an error.
+                if (VitalsConsistency.contradicts(trend, previousReading, reading.vitals)) {
+                    val retry = callAiRaw(
+                        triageSystem, criteria, state,
+                        prompt + ScenarioPromptBuilder.vitalsCorrection(reading.vitals)
+                    )
+                    if (retry is ApiResult.Success) reading = VitalsReadingParser.parse(retry.data)
+                }
+                dao.insertMessage(
+                    MessageEntity(
+                        id = randomId(),
+                        sessionId = sessionId,
+                        role = MessageRole.AI_VITALS.name,
+                        text = reading.displayText,
+                        vitalsTrend = trend.name,
+                        timestampMillis = currentTimeMillis()
+                    )
+                )
+                touchSession()
+            }
+            is ApiResult.Error -> _errorMessage.value = result.message
+        }
+        _isSending.value = false
     }
 
     private suspend fun requestAiReply() {
@@ -459,7 +588,7 @@ class ChatViewModel(
             when (val result = callAi(extraTrailingUserMessage = ScenarioPromptBuilder.endSessionPrompt(currentLanguage()))) {
                 is ApiResult.Success -> applyTurn(
                     if (hasUngradedAnswer) result.data.copy(sessionComplete = true)
-                    else result.data.copy(score = null, feedback = null, sessionComplete = true)
+                    else result.data.copy(score = null, feedback = null, basis = null, sessionComplete = true)
                 )
                 is ApiResult.Error -> _errorMessage.value = result.message
             }
@@ -500,6 +629,15 @@ class ChatViewModel(
         role = MessageRole.valueOf(role),
         text = text,
         score = score,
+        criterion = ScoringCriteria.byId(criterionId),
+        scoreUncited = criterionId == ScoringCriteria.UNCITED,
+        vitalsTrend = vitalsTrend?.let { runCatching { VitalsTrend.valueOf(it) }.getOrNull() },
         timestampMillis = timestampMillis
+    )
+
+    private fun MessageEntity.toEvent() = TimelineEvent(
+        role = runCatching { MessageRole.valueOf(role) }.getOrElse { MessageRole.AI_ANSWER },
+        timestampMillis = timestampMillis,
+        score = score
     )
 }
