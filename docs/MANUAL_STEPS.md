@@ -47,6 +47,34 @@ supabase functions deploy grade
 ```
 Both have `verify_jwt = false` in `supabase/config.toml` on purpose: each function verifies the user's access token itself against `SUPABASE_JWKS` (ES256/RS256/EdDSA only) before doing anything else, so there is one tested verification path. Do not add `--no-verify-jwt` flags or change this without re-running the Deno tests.
 
+## 4b. Smoke test (create a test user, then run the script)
+
+**Create the test user** (a throwaway email/password account; the app itself uses Google sign-in):
+1. Dashboard -> Authentication -> Providers -> **Email**: make sure it is enabled (you can turn it off again after testing).
+2. Dashboard -> Authentication -> Users -> **Add user -> Create new user**. Enter an email such as `smoke-test@yourdomain.com`, a long random password, and tick **Auto Confirm User** (otherwise sign-in fails with "email not confirmed"). Save the password in your password manager, not in the repo.
+3. A `profiles` row is created automatically for the new user (database trigger), with tier `free` and `age_confirmed = false`, so the first chat call would return `age_required`. Dashboard -> **SQL Editor**, run (change the email):
+```sql
+update public.profiles
+   set age_confirmed = true, age_confirmed_at = now()
+ where id = (select id from auth.users where email = 'smoke-test@yourdomain.com');
+
+select p.id, p.tier, p.age_confirmed from public.profiles p
+  join auth.users u on u.id = p.id where u.email = 'smoke-test@yourdomain.com';   -- expect: free | true
+```
+
+**Run it** from the repo root, with the values typed into your own terminal (nothing is saved to a file; prefix the `export` lines with a space, or use `read -s`, to keep the password out of shell history):
+```bash
+export SUPABASE_URL="https://<PROJECT_REF>.supabase.co"
+export SUPABASE_PUBLISHABLE_KEY="sb_publishable_..."      # publishable key only; the script refuses sb_secret_ keys
+export SMOKE_EMAIL="smoke-test@yourdomain.com"
+read -rs SMOKE_PASSWORD && export SMOKE_PASSWORD            # type the password, press Enter
+scripts/smoke-test.sh
+```
+It signs in, picks the first `en` scenario (set `SMOKE_LANGUAGE=ko` or `SMOKE_SCENARIO_ID=<uuid>` to override), sends one short message, and prints the HTTP status, whether the reply streamed (SSE chunks and timing), and the remaining daily messages. It also calls `chat` with no token, a junk token and the publishable key used as a token, and requires 401 for all three. Exit code 0 means everything passed. Each run spends 1 of the test user's 15 daily messages.
+
+Typical failures: `age_required` (run the SQL above), `upstream_error` (check `LLM_API_KEY`, `LLM_BASE_URL`, model secrets and the function logs in the dashboard), `unauthenticated` for the valid token (check that asymmetric JWT signing keys are enabled and `SUPABASE_URL` is right), `budget_reached` / `daily_limit` (expected when the limits are hit).
+When you are done testing you can delete the user (Authentication -> Users) and turn the Email provider off.
+
 ## 5. Google sign-in (Supabase Auth)
 1. Google Cloud Console -> APIs & Services -> Credentials -> Create **OAuth client ID**:
    - **Web application** (used by Supabase and the website). Authorized redirect URI:
