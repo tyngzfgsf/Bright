@@ -27,3 +27,16 @@ xcuserdata/
 DerivedData/
 .DS_Store
 
+
+# Secrets — never commit (see "Security rules" in CLAUDE.md)
+.env
+.env.*
+!.env.example
+supabase/.env
+supabase/.env.*
+supabase/.temp/
+supabase/.branches/
+*.jks
+*.keystore
+*.p12
+*.pem

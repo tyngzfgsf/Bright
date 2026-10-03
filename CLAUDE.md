@@ -63,8 +63,8 @@ a moat. The moat is what accumulates on top of it:
   and a "weakest area" pick, surfaced on Home as a one-tap drill card and in full on the
   Stats screen. This is the actual differentiator — session 50 is more useful than
   session 1 because of this, which a plain chatbot can't replicate.
-- The Groq API key is **optional at onboarding** (skippable) and only gated at the moment
-  a session actually needs it — a dialog offers to jump to Settings, not a wall up front.
+- AI calls go through Supabase Edge Functions (`supabase/functions/`); users sign in and
+  chat, and never see or enter an API key (the BYOK flow is being removed).
 - Not charging yet; priority is adoption. Possible future pivot to AI job-interview
   practice using the same scenario→answer→score engine, currently deprioritized in favor
   of a narrower, underserved niche (Korean 국가고시 / KTAS-aligned emergency training).
@@ -76,3 +76,23 @@ a moat. The moat is what accumulates on top of it:
   pasted directly into the terminal.
 - `strings.xml` always gets replaced as a complete file for both `values/` and `values-ko/`
   together, never partial edits — easy to lose sync between languages otherwise.
+
+## Security rules (backend: Supabase + Groq) — do not weaken
+
+1. The Groq key exists ONLY as a Supabase Edge Function secret (`supabase secrets set`).
+   Never in the repo, git history, `BuildConfig`, Compose resources, shipped
+   `local.properties`, website JS, logs, error messages, or chat. Never ask for a key in chat.
+2. Clients hold only the Supabase **anon** key and the user's session. The **service role**
+   key is used only inside Edge Functions and never leaves the server.
+3. Every Edge Function requires a valid user JWT, verified server-side; `user_id` comes from
+   the token, never from the request body.
+4. RLS is ON for every table. Clients read only their own rows. All writes to usage/quota
+   tables happen in Edge Functions with the service role. No client can change `tier`.
+5. The client never chooses model, `max_tokens`, temperature or system prompt. Prompts and
+   rubrics live server-side; the client sends only `scenario_id`, `language`, `messages`
+   (plus allow-listed enums).
+6. Never return raw upstream (Groq) error bodies; map to small generic error codes.
+7. Never log message content — only user id, token counts, cost, status, latency.
+8. Store the Supabase session in secure platform storage (Android Keystore-backed, iOS
+   Keychain) — never plain SharedPreferences/UserDefaults/DataStore.
+9. Never print environment variables or secrets in command output or summaries.
