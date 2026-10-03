@@ -3,7 +3,7 @@
 // See docs/MANUAL_STEPS.md.
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/+esm';
 
-export const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+export const SUPABASE_URL = 'https://iitthgvhxavuwbzcjoqq.supabase.co';
 export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_YOUR-KEY';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
