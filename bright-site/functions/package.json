@@ -1,6 +1,6 @@
 {
   "name": "bright-functions",
-  "description": "Bright backend — Groq proxy, drill metering and Stripe billing (BACKEND_PLAN.md Phases 2–5)",
+  "description": "Bright backend — authenticated Groq proxy (BACKEND_PLAN.md Phase 2)",
   "type": "module",
   "engines": {
     "node": "22"
@@ -9,15 +9,11 @@
   "scripts": {
     "serve": "firebase emulators:start --only functions",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log",
-    "setup-stripe": "node scripts/setup-stripe.js",
-    "check": "node --check index.js && node --check billing/catalog.js && node --check billing/entitlements.js && node --check billing/stripe.js && node --check billing/emails.js && node --check scripts/setup-stripe.js",
-    "test": "firebase emulators:exec --only firestore --project demo-bright 'node --test test/*.test.js'"
+    "logs": "firebase functions:log"
   },
   "dependencies": {
     "firebase-admin": "^13.0.2",
-    "firebase-functions": "^6.3.0",
-    "stripe": "^23.0.0"
+    "firebase-functions": "^6.3.0"
   },
   "private": true
 }

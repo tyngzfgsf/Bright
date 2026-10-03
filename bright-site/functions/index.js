@@ -5,28 +5,17 @@
  * never returned to the client in any response or error path. Nothing in this file writes it
  * into a response body, a header, or a log line.
  *
- * Metering (Phase 3): every request must carry a `drill_id` issued by `startHostedDrill`, which
- * is where the free-tier cap is enforced. The proxy itself only checks that the drill is the
- * caller's, still fresh, and under its turn ceiling — see billing/entitlements.js.
- * Billing (Phase 5) lives in billing/stripe.js.
+ * Phase 2 deliberately has NO usage limits — the goal is only to prove the plumbing
+ * (authenticated request in, Groq response out, key never exposed). Metering is Phase 3, and
+ * until it lands this endpoint bills Jason's Groq account for every signed-in caller. That is
+ * the reason `maxInstances` is set low below, and the reason this should not be handed to real
+ * users before Phase 3.
  */
 
 import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { consumeDrillTurn } from "./billing/entitlements.js";
-
-export {
-  getBillingStatus,
-  startHostedDrill,
-  createSubscriptionCheckout,
-  createAddOnPayment,
-  cancelSubscription,
-  resumeSubscription,
-  retryFailedPayment,
-  stripeWebhook,
-} from "./billing/stripe.js";
 
 initializeApp();
 
@@ -52,20 +41,6 @@ const MAX_COMPLETION_TOKENS_CEILING = 2000;
 const MAX_MESSAGES_BYTES = 200_000;
 
 const ALLOWED_ROLES = new Set(["system", "user", "assistant"]);
-
-/**
- * Hosted drills always run on this model, whatever the client asks for. The model picker in
- * Settings is a BYOK feature (the trainee's own key, their own bill); letting it reach this
- * endpoint would let any client choose how expensive each call on Jason's key is.
- */
-const HOSTED_MODEL = "openai/gpt-oss-120b";
-
-/** Client-facing reasons a drill id was refused. The app maps these to "start a new drill". */
-const DRILL_ERRORS = {
-  drill_required: "Start a drill first.",
-  drill_expired: "This drill has expired. Start a new one.",
-  drill_turn_limit: "This drill has reached its length limit. Start a new one.",
-};
 
 export const proxyChatCompletion = onRequest(
   {
@@ -117,7 +92,11 @@ export const proxyChatCompletion = onRequest(
       return;
     }
 
-    const { messages } = body;
+    const { model, messages } = body;
+    if (typeof model !== "string" || model.length === 0 || model.length > 200) {
+      res.status(400).json({ error: { message: "`model` must be a non-empty string.", type: "invalid_request" } });
+      return;
+    }
     if (!Array.isArray(messages) || messages.length === 0) {
       res.status(400).json({ error: { message: "`messages` must be a non-empty array.", type: "invalid_request" } });
       return;
@@ -135,19 +114,11 @@ export const proxyChatCompletion = onRequest(
       return;
     }
 
-    // --- 3. Meter --------------------------------------------------------------------------
-    // After validation, so a malformed request doesn't use up a turn.
-    const drillError = await consumeDrillTurn(uid, body.drill_id);
-    if (drillError) {
-      res.status(402).json({ error: { message: DRILL_ERRORS[drillError], type: drillError } });
-      return;
-    }
-
-    // --- 4. Forward, with an allowlist ----------------------------------------------------
+    // --- 3. Forward, with an allowlist ----------------------------------------------------
     // Rebuilt field by field rather than spreading `body`, so a client cannot smuggle through
     // parameters this proxy hasn't considered the cost or safety of.
     const upstreamRequest = {
-      model: HOSTED_MODEL,
+      model,
       messages,
       temperature: clampNumber(body.temperature, 0, 2, 0.85),
       max_completion_tokens: clampNumber(body.max_completion_tokens, 1, MAX_COMPLETION_TOKENS_CEILING, 700),
