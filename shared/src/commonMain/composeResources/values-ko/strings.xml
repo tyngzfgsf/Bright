@@ -153,7 +153,7 @@
     <string name="settings_usage_tokens">이번 분 남은 토큰 수: %1$d/%2$d</string>
     <!-- Settings: account (BACKEND_PLAN.md Phase 1) -->
     <string name="settings_section_account">계정</string>
-    <string name="settings_account_signed_out_note">로그인은 아직 선택 사항이에요. 직접 입력한 Groq API 키도 그대로 사용할 수 있어요.</string>
+    <string name="settings_account_signed_out_note">로그인하면 API 키 없이 매월 무료 연습 10회를 이용할 수 있어요. 개인 Groq 키도 그대로 사용할 수 있으며, 횟수가 차감되지 않습니다.</string>
     <string name="settings_sign_in">Google로 로그인</string>
     <string name="settings_sign_out">로그아웃</string>
     <string name="settings_account_signed_in_as">%1$s(으)로 로그인됨</string>
@@ -209,6 +209,7 @@
     <string name="paywall_pro_bullet_3">Plus의 모든 기능</string>
     <string name="paywall_price_per_month">월 %1$s</string>
     <string name="paywall_billed_annually">월 %1$s, 연 %2$s 일괄 결제</string>
+    <string name="paywall_billed_annually_short">연 %1$s 일괄 결제</string>
     <string name="paywall_cta_trial">%1$d일 무료 체험 시작</string>
     <string name="paywall_cta_subscribe">%1$s 계속하기</string>
     <string name="paywall_cta_switch">%1$s(으)로 변경</string>

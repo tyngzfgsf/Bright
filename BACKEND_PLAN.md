@@ -49,6 +49,13 @@ treat mistakes here as more expensive than a broken Compose screen, not less.
   and inspecting the app's network traffic / APK confirms the Groq key never appears
   client-side.
 
+> **Status (2026-10):** Phases 3–5 are implemented in code on the `monetization` branch, not yet
+> deployed. Deviations from the plan below: hosted calls are metered per *drill* (a ticket
+> issued by `startHostedDrill`, required by the proxy) rather than per raw request; the free cap
+> is 10/month; and payments use Stripe **PaymentSheet in-app** (Google Pay + card) instead of
+> hosted Stripe Checkout, so pricing and payment never leave the app. Setup steps and open
+> decisions are in MONETIZATION.md.
+
 ## Phase 3 — Usage metering (free tier)
 
 - A Firestore document per user tracking session count within a reset window (e.g.

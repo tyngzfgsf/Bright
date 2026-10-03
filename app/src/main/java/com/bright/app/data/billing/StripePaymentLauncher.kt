@@ -33,7 +33,9 @@ class StripePaymentLauncher(private val application: Application) : PaymentLaunc
     private var sheet: PaymentSheet? = null
     private var pending: CompletableDeferred<PaymentOutcome>? = null
 
-    val isConfigured: Boolean get() = BuildConfig.STRIPE_PUBLISHABLE_KEY.isNotBlank()
+    private val isConfigured: Boolean get() = BuildConfig.STRIPE_PUBLISHABLE_KEY.isNotBlank()
+
+    override val isAvailable: Boolean get() = isConfigured
 
     init {
         if (isConfigured) {

@@ -69,7 +69,7 @@ class BillingRepository(
         (e.streakFreezesGranted - used).coerceAtLeast(0)
     }
 
-    val isPurchasingAvailable: Boolean get() = service != null && paymentLauncher != null
+    val isPurchasingAvailable: Boolean get() = service != null && paymentLauncher?.isAvailable == true
 
     /** Shown and charged in the currency of where the device is, not its language. */
     val currency: Currency get() = Currency.forCountry(regionCountryCode())

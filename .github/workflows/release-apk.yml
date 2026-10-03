@@ -26,7 +26,14 @@ jobs:
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug -PversionNameOverride=${{ steps.tag.outputs.tag }}
+        # Stripe values are repository *variables* (Settings → Secrets and variables → Actions →
+        # Variables), not secrets: a publishable key ships inside every APK anyway. Unset, the
+        # build still succeeds and the paywall reports purchases as unavailable.
+        run: >-
+          ./gradlew assembleDebug
+          -PversionNameOverride=${{ steps.tag.outputs.tag }}
+          -PstripePublishableKey=${{ vars.STRIPE_PUBLISHABLE_KEY }}
+          -PstripeMerchantCountry=${{ vars.STRIPE_MERCHANT_COUNTRY || 'US' }}
 
       - name: Create GitHub Release with APK
         env:

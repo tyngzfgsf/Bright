@@ -74,5 +74,8 @@ sealed interface PaymentOutcome {
  * client secret from [BillingService]. Payment UI stays inside the app.
  */
 interface PaymentLauncher {
+    /** False when this build has no payment configuration (e.g. no Stripe publishable key). */
+    val isAvailable: Boolean
+
     suspend fun present(request: PaymentRequest, currency: Currency): PaymentOutcome
 }

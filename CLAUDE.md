@@ -63,9 +63,14 @@ a moat. The moat is what accumulates on top of it:
   and a "weakest area" pick, surfaced on Home as a one-tap drill card and in full on the
   Stats screen. This is the actual differentiator — session 50 is more useful than
   session 1 because of this, which a plain chatbot can't replicate.
-- The Groq API key is **optional at onboarding** (skippable) and only gated at the moment
-  a session actually needs it — a dialog offers to jump to Settings, not a wall up front.
-- Not charging yet; priority is adoption. Possible future pivot to AI job-interview
+- **Sign-in is the primary path, BYOK is the fallback.** Signed-in trainees without a key run
+  drills through the backend proxy on a metered "drill ticket"; an own Groq key still goes
+  straight to Groq, unmetered. All model calls go through `data/remote/AiGateway.kt`.
+- **Monetization exists but is off until deployed** — Free (10 hosted drills/month) / Plus /
+  Pro, Stripe PaymentSheet with Google Pay, all in-app. See `MONETIZATION.md` for the offer,
+  setup steps and open decisions. Two rules are tests, not conventions: entry plan ≤ US$3/month,
+  never more than 3 plans (`PricingTest`). The webhook is the only thing that grants a plan.
+- Possible future pivot to AI job-interview
   practice using the same scenario→answer→score engine, currently deprioritized in favor
   of a narrower, underserved niche (Korean 국가고시 / KTAS-aligned emergency training).
 

@@ -354,11 +354,7 @@ private fun PriceBlock(
     )
     if (plan != PlanId.FREE && period == BillingPeriod.ANNUAL) {
         Text(
-            text = stringResource(
-                Res.string.paywall_billed_annually,
-                perMonth.format(),
-                Pricing.price(plan, period, currency).format()
-            ),
+            text = stringResource(Res.string.paywall_billed_annually_short, Pricing.price(plan, period, currency).format()),
             style = MaterialTheme.typography.labelMedium,
             color = muted
         )
