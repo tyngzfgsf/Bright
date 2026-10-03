@@ -10,9 +10,10 @@ val versionNameOverride = (project.findProperty("versionNameOverride") as String
 
 // Build-time configuration, all public values (none of these are secrets). Set them in
 // ~/.gradle/gradle.properties or pass -P; CI passes them from repository variables.
-//   revenueCatAndroidKey  RevenueCat's public Android SDK key (goog_…). Unset: no in-app purchases.
-//   distribution          "github" (default: the sideloaded APK) or "play". Only GitHub builds may
-//                         send people to the website to subscribe — Google Play forbids that.
+//   distribution          "github" (default: the sideloaded APK, which sells through the website)
+//                         or "play" (Google Play Billing via RevenueCat; no website checkout,
+//                         which Google Play forbids).
+//   revenueCatAndroidKey  RevenueCat's public Android SDK key (goog_…). Used by "play" builds only.
 //   brightProxyUrl        bright-proxy's URL, if not the default deployment.
 val revenueCatAndroidKey = (project.findProperty("revenueCatAndroidKey") as String?).orEmpty()
 val distribution = (project.findProperty("distribution") as String?) ?: "github"

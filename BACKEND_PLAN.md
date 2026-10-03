@@ -49,12 +49,12 @@ treat mistakes here as more expensive than a broken Compose screen, not less.
   and inspecting the app's network traffic / APK confirms the Groq key never appears
   client-side.
 
-> **Status (2026-10):** Phases 3–5 are implemented in code on the `monetization` branch, not yet
-> deployed. Deviations from the plan below: hosted calls are metered per *drill* (a ticket
-> issued by `startHostedDrill`, required by the proxy) rather than per raw request; the free cap
-> is 10/month; and payments use Stripe **PaymentSheet in-app** (Google Pay + card) instead of
-> hosted Stripe Checkout, so pricing and payment never leave the app. Setup steps and open
-> decisions are in MONETIZATION.md.
+> **Status (2026-10):** superseded in practice by `bright-proxy/` (Cloudflare Workers, free
+> plan — no Blaze needed). Phases 2–4 live there: authenticated Groq proxy, metering per *drill*
+> (10/month free), and the apps preferring it when signed in. Phase 5 became multi-store billing —
+> Google Play and the App Store through RevenueCat, the website through Paddle — instead of
+> Stripe, which doesn't support Korea-based businesses. See MONETIZATION.md. The phases below are
+> kept as the original reasoning.
 
 ## Phase 3 — Usage metering (free tier)
 

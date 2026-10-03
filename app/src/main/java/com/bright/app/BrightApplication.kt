@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.bright.app.data.analytics.FirebaseAnalyticsTracker
 import com.bright.app.data.auth.AuthService
 import com.bright.app.data.auth.FirebaseAuthService
+import com.bright.app.data.billing.NoStoreBilling
 import com.bright.app.data.billing.RevenueCatStoreBilling
 import com.bright.app.data.links.AndroidExternalLinks
 import com.bright.app.data.local.AppDatabase
@@ -94,6 +95,8 @@ class BrightApplication : Application() {
      * about building these (Context for the DB path and DataStore file, BuildConfig for the
      * version name) stays here; the screens see only [BrightDependencies].
      */
+    private val isPlayBuild: Boolean get() = BuildConfig.DISTRIBUTION == "play"
+
     val dependencies: BrightDependencies by lazy {
         BrightDependencies(
             database = database,
@@ -106,10 +109,17 @@ class BrightApplication : Application() {
             analytics = FirebaseAnalyticsTracker(this),
             authService = authService,
             proxyUrl = BuildConfig.BRIGHT_PROXY_URL,
-            storeBilling = RevenueCatStoreBilling(BuildConfig.REVENUECAT_API_KEY.ifBlank { null }),
-            // Website checkout only in the sideloaded GitHub build: Google Play's payments policy
-            // forbids pointing Play users at outside payment for a digital subscription.
-            webCheckoutUrl = if (BuildConfig.DISTRIBUTION == "github") "${BrightDependencies.WEBSITE_URL}/pricing" else null,
+            // Google Play Billing only works for an install that came from Google Play — a
+            // sideloaded APK's purchases are rejected — so the GitHub build sells through the
+            // website instead, and only the Play build uses Play Billing. Google's payments policy
+            // in turn forbids the Play build from pointing at outside payment. Either way the
+            // plan lands on the same account.
+            storeBilling = if (isPlayBuild) {
+                RevenueCatStoreBilling(BuildConfig.REVENUECAT_API_KEY.ifBlank { null })
+            } else {
+                NoStoreBilling
+            },
+            webCheckoutUrl = if (isPlayBuild) null else "${BrightDependencies.WEBSITE_URL}/pricing",
             externalLinks = AndroidExternalLinks(this),
             regionCountryCode = { regionCountryCode(this) }
         )

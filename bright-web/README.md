@@ -35,6 +35,8 @@ address bar changes, but the browser still behaves:
 | `faq` | Accordion FAQ |
 | `privacy` | Privacy policy — what's stored on device, what leaves it, what's never collected |
 | `terms` | Terms of use, including the medical disclaimer |
+| `pricing` | The plans, with Paddle checkout (needs `NEXT_PUBLIC_PADDLE_*`; see `../MONETIZATION.md`) |
+| `account` | The signed-in trainee's plan: dates, usage, add-ons, update payment, cancel / exit offer |
 
 Internal links are `LinkButton` / `PageLink` (buttons that call `go(page, section?)`), never
 `href`s — an `href` would change the URL. In-page jumps (the legal table of contents, the
@@ -53,8 +55,8 @@ Sign in from the header (or inside the app) with Google, or open the app without
 
 1. **Own Groq key** saved in the app's Settings → sent to bright-proxy as `X-Groq-Key`, not
    metered.
-2. **Signed in** → the Firebase ID token goes to bright-proxy, which uses Bright's key, 40
-   turns a day.
+2. **Signed in** → the Firebase ID token goes to bright-proxy, which uses Bright's key; each
+   session is one drill (10 a month on Free, unlimited on Plus/Pro).
 3. **Neither** → a scripted preview (`src/lib/app/script.ts`), no network at all.
 
 Signing in from the site's header takes you straight into the app once it succeeds. The app's

@@ -64,12 +64,13 @@ a moat. The moat is what accumulates on top of it:
   Stats screen. This is the actual differentiator — session 50 is more useful than
   session 1 because of this, which a plain chatbot can't replicate.
 - **Sign-in is the primary path, BYOK is the fallback.** Signed-in trainees without a key run
-  drills through the backend proxy on a metered "drill ticket"; an own Groq key still goes
-  straight to Groq, unmetered. All model calls go through `data/remote/AiGateway.kt`.
-- **Monetization exists but is off until deployed** — Free (10 hosted drills/month) / Plus /
-  Pro, Stripe PaymentSheet with Google Pay, all in-app. See `MONETIZATION.md` for the offer,
-  setup steps and open decisions. Two rules are tests, not conventions: entry plan ≤ US$3/month,
-  never more than 3 plans (`PricingTest`). The webhook is the only thing that grants a plan.
+  drills through bright-proxy (the Cloudflare Worker) on a per-session drill id; an own Groq key
+  still goes straight to Groq, unmetered. All model calls go through `data/remote/AiGateway.kt`.
+- **Monetization exists but is off until configured** — Free (10 hosted drills/month) / Plus /
+  Pro, sold through Google Play (RevenueCat, Play builds only), the website (Paddle; also what the
+  sideloaded GitHub APK links to) and later the App Store. bright-proxy merges them into one
+  account per uid and is the only thing that grants a plan. See `MONETIZATION.md`. Two rules are
+  tests, not conventions: entry plan ≤ US$3/month, never more than 3 plans (`PricingTest`).
 - Possible future pivot to AI job-interview
   practice using the same scenario→answer→score engine, currently deprioritized in favor
   of a narrower, underserved niche (Korean 국가고시 / KTAS-aligned emergency training).
