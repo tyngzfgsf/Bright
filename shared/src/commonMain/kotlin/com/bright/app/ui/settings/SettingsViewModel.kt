@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.bright.app.data.analytics.Analytics
 import com.bright.app.data.analytics.AnalyticsEvent
 import com.bright.app.data.analytics.NoOpAnalytics
+import com.bright.app.data.auth.AuthService
+import com.bright.app.data.auth.AuthUser
+import com.bright.app.data.auth.SignInResult
 import com.bright.app.data.local.ChatDao
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqRepository
@@ -20,6 +23,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -38,8 +42,50 @@ class SettingsViewModel(
     private val currentVersionName: String,
     /** Null on platforms without sideloaded updates (iOS); the UI hides the section then. */
     private val appUpdater: AppUpdater? = null,
-    private val analytics: Analytics = NoOpAnalytics
+    private val analytics: Analytics = NoOpAnalytics,
+    /** Null on platforms without an auth implementation (iOS); the UI hides the section then. */
+    private val authService: AuthService? = null
 ) : ViewModel() {
+
+    /**
+     * Null both when signed out and when [authService] is absent — the UI distinguishes the two
+     * by checking `showAccountSection`, not by this value.
+     */
+    val currentUser: StateFlow<AuthUser?> =
+        (authService?.currentUser ?: flowOf(null))
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val showAccountSection: Boolean = authService != null
+
+    private val _isSigningIn = MutableStateFlow(false)
+    private val _authErrorMessage = MutableStateFlow<String?>(null)
+
+    val isSigningIn: StateFlow<Boolean> = _isSigningIn
+    val authErrorMessage: StateFlow<String?> = _authErrorMessage
+
+    fun signIn() {
+        val service = authService ?: return
+        if (_isSigningIn.value) return
+        viewModelScope.launch {
+            _isSigningIn.value = true
+            _authErrorMessage.value = null
+            when (val result = service.signIn()) {
+                // Backing out of the account picker is not an error and gets no message.
+                is SignInResult.Success, is SignInResult.Cancelled -> Unit
+                is SignInResult.Failure -> _authErrorMessage.value = result.message
+            }
+            _isSigningIn.value = false
+        }
+    }
+
+    fun signOut() {
+        val service = authService ?: return
+        viewModelScope.launch {
+            _authErrorMessage.value = null
+            service.signOut()
+        }
+    }
+
 
     private val _updateInfo = MutableStateFlow<AppUpdateInfo?>(null)
     private val _isDownloadingUpdate = MutableStateFlow(false)
