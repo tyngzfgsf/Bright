@@ -2,8 +2,21 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Plan, usage and credits. Read-only to its owner; only Cloud Functions (Admin SDK, which
+    // bypasses these rules) write it. Client writes were allowed before billing existed — they
+    // must not be now, or a modified app could grant itself a paid plan.
     match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+
+      match /{document=**} {
+        allow read, write: if false;
+      }
+    }
+
+    // Drill tickets, webhook bookkeeping, the outgoing mail queue: server-only.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
