@@ -1,14 +1,20 @@
 // deno-lint-ignore-file no-import-prefix
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { makeJwtVerifier, pickSecretKey } from "./jwt.ts";
 import { loadLlmConfig } from "./llm-config.ts";
 import type { AppConfig, Deps, Lang, Price, Profile, Quota, Scenario, Store } from "./types.ts";
 
-/** Production wiring. Uses the service-role client that Supabase injects into Edge Functions. */
+/** Production wiring. Database access uses a secret key (bypasses RLS) and exists only inside Edge Functions. */
 export function productionDeps(): Deps {
   const url = Deno.env.get("SUPABASE_URL")!;
-  const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+  // Current key system: the secret key comes from SUPABASE_SECRET_KEYS (injected into Edge Functions only),
+  // and user JWTs are verified against SUPABASE_JWKS. Legacy anon/service_role variables are not used.
+  const secretKey = pickSecretKey(Deno.env.get("SUPABASE_SECRET_KEYS"));
+  if (!secretKey) throw new Error("SUPABASE_SECRET_KEYS is not available"); // never echo key material
+  const admin = createClient(url, secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  const verifyJwt = makeJwtVerifier(Deno.env.get("SUPABASE_JWKS"), url);
 
   let cfg: { at: number; value: AppConfig } | null = null;
   const store: Store = {
@@ -62,10 +68,7 @@ export function productionDeps(): Deps {
 
   return {
     store,
-    async verifyUser(token) {
-      const { data, error } = await admin.auth.getUser(token);
-      return error || !data.user ? null : data.user.id;
-    },
+    verifyUser: (token) => verifyJwt(token),
     llm: () => loadLlmConfig((n) => Deno.env.get(n)),
     allowedOrigins: (Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     dailyBudgetUsd: Number(Deno.env.get("DAILY_BUDGET_USD") ?? "0.30"),

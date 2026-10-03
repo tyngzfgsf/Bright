@@ -37,7 +37,7 @@ update public.app_config set value = value || jsonb_build_object('openai/gpt-oss
   '{"input": 0.00, "cached_input": 0.00, "output": 0.00}'::jsonb) where key = 'prices';  -- fill in real USD per 1M tokens
 ```
 If the provider reports a per-request cost (OpenRouter returns `usage.cost`), the server uses that instead of the computed figure.
-`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into Edge Functions automatically; do not set them.
+`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEYS`, `SUPABASE_SECRET_KEYS` and `SUPABASE_JWKS` are injected into Edge Functions automatically; do not set them. The functions use only `SUPABASE_SECRET_KEYS` (database access) and `SUPABASE_JWKS` (user-token verification). They never read the legacy `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`.
 Add your custom domain to `ALLOWED_ORIGINS` if you have one (comma-separated, exact origins, no trailing slash).
 
 ## 4. Deploy the functions
@@ -45,7 +45,7 @@ Add your custom domain to `ALLOWED_ORIGINS` if you have one (comma-separated, ex
 supabase functions deploy chat
 supabase functions deploy grade
 ```
-Both have `verify_jwt = true` in `supabase/config.toml` and also verify the user inside the function.
+Both have `verify_jwt = false` in `supabase/config.toml` on purpose: each function verifies the user's access token itself against `SUPABASE_JWKS` (ES256/RS256/EdDSA only) before doing anything else, so there is one tested verification path. Do not add `--no-verify-jwt` flags or change this without re-running the Deno tests.
 
 ## 5. Google sign-in (Supabase Auth)
 1. Google Cloud Console -> APIs & Services -> Credentials -> Create **OAuth client ID**:
@@ -60,7 +60,11 @@ Both have `verify_jwt = true` in `supabase/config.toml` and also verify the user
 4. Authentication -> Sign In / Providers: turn **off** anonymous sign-ins; keep email sign-up as you prefer.
 
 ## 6. Website values (public by design)
-Edit `bright-site/js/supabase-config.js`: set `SUPABASE_URL` and `SUPABASE_ANON_KEY` (Dashboard -> Project Settings -> API -> **anon / publishable** key only. NEVER the service_role key). Then `firebase deploy --only hosting` from `bright-site/`.
+Edit `bright-site/js/supabase-config.js`: set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` (Dashboard -> Project Settings -> API Keys -> **Publishable key**, `sb_publishable_...`). NEVER a secret key (`sb_secret_...`) or a legacy `service_role` key; Supabase also blocks secret keys in browsers, but don't rely on that. Then `firebase deploy --only hosting` from `bright-site/`.
+
+## 6b. Move off the legacy keys
+Dashboard -> Project Settings -> API Keys: create the publishable and secret keys if they don't exist, check that JWT signing keys (asymmetric) are enabled under JWT Keys, then **disable the legacy anon / service_role keys** once the app and site use the new ones. Supabase does not revoke them automatically, and they are deprecated.
+The app (later) takes the publishable key via `local.properties` / CI secret, never a secret key.
 
 ## 7. Spend protection
 - At your provider (OpenRouter: Keys page -> set a **credit limit** on this key, and keep only a small credit balance): cap spend at about $10/month.

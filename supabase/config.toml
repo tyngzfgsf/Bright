@@ -25,11 +25,14 @@ client_id = "env(GOOGLE_CLIENT_ID)"
 secret = "env(GOOGLE_CLIENT_SECRET)"
 skip_nonce_check = false
 
+# Both functions verify the user's access token themselves against SUPABASE_JWKS (functions/_shared/jwt.ts)
+# before touching the database or the LLM, so there is exactly one, tested verification path. The platform-level
+# check is therefore turned off (it is also meant for legacy/API-key callers, which these functions never accept).
 [functions.chat]
-verify_jwt = true
+verify_jwt = false
 
 [functions.grade]
-verify_jwt = true
+verify_jwt = false
 
 [db.seed]
 enabled = true

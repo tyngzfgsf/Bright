@@ -83,12 +83,14 @@ a moat. The moat is what accumulates on top of it:
    `LLM_MODEL_GRADE`) exists ONLY as a Supabase Edge Function secret (`supabase secrets set`).
    Never in the repo, git history, `BuildConfig`, Compose resources, shipped
    `local.properties`, website JS, logs, error messages, or chat. Never ask for a key in chat.
-2. Clients hold only the Supabase **anon** key and the user's session. The **service role**
-   key is used only inside Edge Functions and never leaves the server.
-3. Every Edge Function requires a valid user JWT, verified server-side; `user_id` comes from
-   the token, never from the request body.
+2. Clients hold only the Supabase **publishable** key (`sb_publishable_...`) and the user's session.
+   The **secret** key comes only from `SUPABASE_SECRET_KEYS` inside Edge Functions and never leaves
+   the server. Use the current key system only: never `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`
+   (legacy keys are disabled in the dashboard).
+3. Every Edge Function requires a valid user JWT, verified server-side against `SUPABASE_JWKS`
+   (asymmetric algs only); `user_id` comes from the token, never from the request body.
 4. RLS is ON for every table. Clients read only their own rows. All writes to usage/quota
-   tables happen in Edge Functions with the service role. No client can change `tier`.
+   tables happen in Edge Functions with the secret key. No client can change `tier`.
 5. The client never chooses model, `max_tokens`, temperature or system prompt. Prompts and
    rubrics live server-side; the client sends only `scenario_id`, `language`, `messages`
    (plus allow-listed enums).
