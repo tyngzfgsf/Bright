@@ -4,9 +4,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import com.bright.app.data.analytics.Analytics
 import com.bright.app.data.analytics.NoOpAnalytics
 import com.bright.app.data.auth.AuthService
+import com.bright.app.data.billing.BillingRepository
+import com.bright.app.data.billing.BillingService
+import com.bright.app.data.billing.PaymentLauncher
 import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.data.preferences.UserPreferences
+import com.bright.app.data.remote.AiGateway
 import com.bright.app.data.remote.GroqRepository
 import com.bright.app.data.share.ImageSharer
 import com.bright.app.data.update.AppUpdater
@@ -54,8 +58,28 @@ class BrightDependencies(
      */
     val languageChangeRequiresRestart: Boolean = false,
     /** Firebase on Android; a no-op on iOS for now. See Analytics. */
-    val analytics: Analytics = NoOpAnalytics
-)
+    val analytics: Analytics = NoOpAnalytics,
+    /**
+     * Null where billing isn't implemented (iOS) — the app then behaves as Free, and the paywall
+     * says purchases aren't available on this device. See MONETIZATION.md for why iOS needs
+     * StoreKit rather than this Stripe path.
+     */
+    val billingService: BillingService? = null,
+    val paymentLauncher: PaymentLauncher? = null,
+    /**
+     * ISO country of where the device is (network/SIM, then locale region), for local-currency
+     * prices. A function so it's read at purchase time, not frozen at startup.
+     */
+    val regionCountryCode: () -> String? = { null }
+) {
+    val billing: BillingRepository by lazy {
+        BillingRepository(userPreferences, billingService, paymentLauncher, authService, regionCountryCode)
+    }
+
+    val aiGateway: AiGateway by lazy {
+        AiGateway(userPreferences, groqRepository, authService, billing)
+    }
+}
 
 /**
  * `staticCompositionLocalOf` rather than `compositionLocalOf`: these dependencies are set once

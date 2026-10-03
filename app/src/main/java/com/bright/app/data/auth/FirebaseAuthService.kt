@@ -95,6 +95,11 @@ class FirebaseAuthService(
         }
     }
 
+    override suspend fun idToken(forceRefresh: Boolean): String? {
+        val user = auth.currentUser ?: return null
+        return runCatching { user.getIdToken(forceRefresh).await().token }.getOrNull()
+    }
+
     override suspend fun signOut() {
         auth.signOut()
         // Also clear Credential Manager's own state, otherwise the next sign-in silently reuses

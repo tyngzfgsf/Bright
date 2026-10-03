@@ -8,10 +8,14 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.bright.app.domain.DailyStreak
+import com.bright.app.domain.billing.Entitlement
 import com.bright.app.domain.model.Language
 import com.bright.app.domain.model.TriageSystem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 /**
  * NOTE: the Groq API key is stored in plain DataStore for simplicity (this is a local,
@@ -34,7 +38,12 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
         val STREAK_LAST_ACTIVE_EPOCH_DAY = longPreferencesKey("streak_last_active_epoch_day")
         val TRIAGE_SYSTEM_OVERRIDE = stringPreferencesKey("triage_system_override")
         val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
+        val CACHED_ENTITLEMENT = stringPreferencesKey("cached_entitlement")
+        val ACTIVE_HOSTED_DRILL = stringPreferencesKey("active_hosted_drill")
+        val STREAK_FREEZES_USED = intPreferencesKey("streak_freezes_used")
     }
+
+    private val entitlementJson = Json { ignoreUnknownKeys = true }
 
     companion object {
         const val DEFAULT_MODEL = "openai/gpt-oss-120b"
@@ -132,5 +141,62 @@ class UserPreferences(private val dataStore: DataStore<Preferences>) {
 
     suspend fun setNotificationPermissionAsked(asked: Boolean) {
         dataStore.edit { it[Keys.NOTIFICATION_PERMISSION_ASKED] = asked }
+    }
+
+    /**
+     * Last plan/usage the backend reported — see `BillingRepository`. A display cache only: the
+     * server re-checks the plan on every hosted drill, so editing this unlocks nothing billable.
+     */
+    val cachedEntitlement: Flow<Entitlement> = dataStore.data.map { prefs ->
+        prefs[Keys.CACHED_ENTITLEMENT]
+            ?.let { runCatching { entitlementJson.decodeFromString<Entitlement>(it) }.getOrNull() }
+            ?: Entitlement()
+    }
+
+    suspend fun setCachedEntitlement(entitlement: Entitlement) {
+        dataStore.edit { it[Keys.CACHED_ENTITLEMENT] = entitlementJson.encodeToString(entitlement) }
+    }
+
+    /**
+     * The hosted drill ticket for the session currently being played, as (sessionId, drillId).
+     * Persisted so leaving and re-opening the same session doesn't spend a second drill. Only the
+     * latest is kept: an older session re-opened later gets a new ticket, which is fair — it's a
+     * new sitting.
+     */
+    val activeHostedDrill: Flow<Pair<String, String>?> = dataStore.data.map { prefs ->
+        prefs[Keys.ACTIVE_HOSTED_DRILL]?.split('|')?.takeIf { it.size == 2 }?.let { it[0] to it[1] }
+    }
+
+    suspend fun setActiveHostedDrill(sessionId: String, drillId: String) {
+        dataStore.edit { it[Keys.ACTIVE_HOSTED_DRILL] = "$sessionId|$drillId" }
+    }
+
+    suspend fun clearActiveHostedDrill() {
+        dataStore.edit { it.remove(Keys.ACTIVE_HOSTED_DRILL) }
+    }
+
+    /** Freezes spent on this device. Available = server-granted total minus this. */
+    val streakFreezesUsed: Flow<Int> = dataStore.data.map { it[Keys.STREAK_FREEZES_USED] ?: 0 }
+
+    /**
+     * [recordActiveDay], spending streak freezes to bridge missed days when there are enough —
+     * see [DailyStreak.recordActiveDayWithFreezes]. Same return contract.
+     */
+    suspend fun recordActiveDay(todayEpochDay: Long, freezesAvailable: Int): Boolean {
+        var incremented = false
+        dataStore.edit { prefs ->
+            val previous = DailyStreak.State(
+                count = prefs[Keys.STREAK_COUNT] ?: 0,
+                lastActiveEpochDay = prefs[Keys.STREAK_LAST_ACTIVE_EPOCH_DAY] ?: 0L
+            )
+            val result = DailyStreak.recordActiveDayWithFreezes(previous, todayEpochDay, freezesAvailable)
+            incremented = result.state.count > previous.count
+            prefs[Keys.STREAK_COUNT] = result.state.count
+            prefs[Keys.STREAK_LAST_ACTIVE_EPOCH_DAY] = result.state.lastActiveEpochDay
+            if (result.freezesConsumed > 0) {
+                prefs[Keys.STREAK_FREEZES_USED] = (prefs[Keys.STREAK_FREEZES_USED] ?: 0) + result.freezesConsumed
+            }
+        }
+        return incremented
     }
 }

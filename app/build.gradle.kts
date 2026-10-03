@@ -8,6 +8,13 @@ plugins {
 
 val versionNameOverride = (project.findProperty("versionNameOverride") as String?)?.removePrefix("v")
 
+// Stripe publishable key (pk_test_… / pk_live_…) and the Stripe account's country. Neither is a
+// secret — publishable keys are designed to ship in apps. Set them in ~/.gradle/gradle.properties
+// or pass -P on the command line; CI passes them from repository variables. Left empty, the app
+// still builds and runs, and the paywall reports purchases as unavailable. See MONETIZATION.md.
+val stripePublishableKey = (project.findProperty("stripePublishableKey") as String?).orEmpty()
+val stripeMerchantCountry = (project.findProperty("stripeMerchantCountry") as String?) ?: "US"
+
 android {
     namespace = "com.bright.app"
     compileSdk = 35
@@ -18,6 +25,9 @@ android {
         targetSdk = 35
         versionCode = 6
         versionName = versionNameOverride ?: "1.5"
+
+        buildConfigField("String", "STRIPE_PUBLISHABLE_KEY", "\"$stripePublishableKey\"")
+        buildConfigField("String", "STRIPE_MERCHANT_COUNTRY", "\"$stripeMerchantCountry\"")
 
         vectorDrawables {
             useSupportLibrary = true
@@ -106,6 +116,15 @@ dependencies {
     implementation("androidx.credentials:credentials:1.3.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    // Callable Cloud Functions — the billing endpoints (bright-site/functions/billing/stripe.js).
+    implementation("com.google.firebase:firebase-functions")
+
+    // Stripe PaymentSheet: the in-app payment UI, with Google Pay and cards. Never a web page.
+    // Pinned to 22.8.1, the last release that builds with compileSdk 35 / AGP 8.9.0 — 23.x pulls
+    // androidx.activity 1.12 and browser 1.9, which need compileSdk 36 and AGP 8.9.1+. Move up
+    // together with a compileSdk bump.
+    implementation("com.stripe:stripe-android:22.8.1")
 
     // Task<T>.await(), for bridging Firebase's Play-Services Tasks into suspend functions.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")

@@ -17,6 +17,9 @@ import kotlinx.serialization.json.Json
 
 private const val GROQ_BASE_URL = "https://api.groq.com"
 
+/** The backend's authenticated Groq proxy (bright-site/functions/index.js). Not a secret. */
+const val HOSTED_PROXY_URL = "https://us-central1-bright-34c23.cloudfunctions.net/proxyChatCompletion"
+
 /**
  * Thin wrapper over Ktor's HttpClient for the two Groq endpoints the app calls. No explicit
  * engine is chosen here — Ktor's `HttpClient()` picks whichever engine is on the classpath at
@@ -54,6 +57,14 @@ class GroqApiClient(enableLogging: Boolean = false) {
     suspend fun createChatCompletion(bearerToken: String, request: GroqChatRequest): HttpResponse =
         client.post("$GROQ_BASE_URL/openai/v1/chat/completions") {
             header("Authorization", bearerToken)
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }
+
+    /** Same request and response shape as [createChatCompletion], sent to the hosted proxy. */
+    suspend fun createHostedChatCompletion(firebaseIdToken: String, request: GroqChatRequest): HttpResponse =
+        client.post(HOSTED_PROXY_URL) {
+            header("Authorization", "Bearer $firebaseIdToken")
             contentType(ContentType.Application.Json)
             setBody(request)
         }

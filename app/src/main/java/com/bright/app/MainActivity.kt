@@ -30,6 +30,8 @@ class MainActivity : AppCompatActivity() {
         splashScreen.setKeepOnScreenCondition { !isReady }
 
         val app = application as BrightApplication
+        // Must happen during onCreate: PaymentSheet registers an activity-result launcher.
+        app.paymentLauncher.attach(this)
         lifecycleScope.launch {
             val onboardingCompleted = app.userPreferences.onboardingCompleted.first()
             startDestination = if (onboardingCompleted) Screen.HOME else Screen.ONBOARDING

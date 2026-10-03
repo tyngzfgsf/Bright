@@ -9,7 +9,13 @@ data class GroqChatRequest(
     val messages: List<GroqMessage>,
     val temperature: Double = 0.85,
     @SerialName("max_completion_tokens") val maxCompletionTokens: Int = 700,
-    @SerialName("response_format") val responseFormat: GroqResponseFormat? = null
+    @SerialName("response_format") val responseFormat: GroqResponseFormat? = null,
+    /**
+     * Hosted drills only — the ticket from `startHostedDrill` that the backend proxy meters
+     * against. Null (and so omitted, thanks to `explicitNulls = false`) on direct BYOK calls to
+     * Groq, which would reject an unknown field.
+     */
+    @SerialName("drill_id") val drillId: String? = null
 )
 
 @Serializable

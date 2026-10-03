@@ -7,6 +7,8 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.bright.app.data.analytics.FirebaseAnalyticsTracker
 import com.bright.app.data.auth.AuthService
 import com.bright.app.data.auth.FirebaseAuthService
+import com.bright.app.data.billing.FirebaseBillingService
+import com.bright.app.data.billing.StripePaymentLauncher
 import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.local.buildDatabase
 import com.bright.app.data.local.getDatabaseBuilder
@@ -18,6 +20,7 @@ import com.bright.app.data.remote.GroqRepository
 import com.bright.app.data.share.AndroidImageSharer
 import com.bright.app.data.share.ImageSharer
 import com.bright.app.data.update.AndroidAppUpdater
+import com.bright.app.util.regionCountryCode
 import okio.Path.Companion.toOkioPath
 
 private const val PREFERENCES_FILE_NAME = "bright_prefs.preferences_pb"
@@ -86,6 +89,9 @@ class BrightApplication : Application() {
         FirebaseAuthService(this, currentActivity = { foregroundActivity })
     }
 
+    /** Attached to each new MainActivity in onCreate — see StripePaymentLauncher. */
+    val paymentLauncher: StripePaymentLauncher by lazy { StripePaymentLauncher(this) }
+
     /**
      * The platform-neutral bag the screens actually read from. Everything Android-specific
      * about building these (Context for the DB path and DataStore file, BuildConfig for the
@@ -101,7 +107,10 @@ class BrightApplication : Application() {
             appVersionName = BuildConfig.VERSION_NAME,
             appUpdater = AndroidAppUpdater(this),
             analytics = FirebaseAnalyticsTracker(this),
-            authService = authService
+            authService = authService,
+            billingService = FirebaseBillingService(),
+            paymentLauncher = paymentLauncher,
+            regionCountryCode = { regionCountryCode(this) }
         )
     }
 }

@@ -37,10 +37,8 @@ sealed interface SignInResult {
  * gets its own implementation when the backend phases reach it, rather than a stub pretending
  * the feature is there. See BACKEND_PLAN.md Phase 1.
  *
- * Note what this interface does *not* have: any way to read a token or a credential. Phase 1 is
- * identity only. The backend proxy (Phase 2) is what will need an ID token, and it gets one
- * from a method added then — keeping it off the interface until it's needed means nothing can
- * accidentally start passing credentials around in the meantime.
+ * [idToken] is the one credential this interface exposes: a short-lived Firebase ID token for
+ * the backend proxy (BACKEND_PLAN.md Phase 4). It's only ever sent to Bright's own functions.
  */
 interface AuthService {
     /**
@@ -56,4 +54,11 @@ interface AuthService {
     suspend fun signIn(): SignInResult
 
     suspend fun signOut()
+
+    /**
+     * A Firebase ID token for authenticating to Bright's backend, or null when signed out.
+     * Tokens last an hour and the platform SDK refreshes them; [forceRefresh] skips the cache,
+     * for retrying after the backend rejected one.
+     */
+    suspend fun idToken(forceRefresh: Boolean = false): String?
 }

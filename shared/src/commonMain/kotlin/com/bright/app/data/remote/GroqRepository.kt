@@ -8,6 +8,19 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/** Outcome of a hosted (backend-proxied) call — richer than [ApiResult] because the app reacts to each case differently. */
+sealed interface HostedChatResult {
+    data class Success(val text: String) : HostedChatResult
+
+    /** The drill ticket was missing, expired or used up (HTTP 402). Start a new drill and retry. */
+    data object DrillRejected : HostedChatResult
+
+    /** The Firebase session is no longer valid (HTTP 401). */
+    data object Unauthenticated : HostedChatResult
+
+    data class Error(val message: String) : HostedChatResult
+}
+
 class GroqRepository(
     private val apiClient: GroqApiClient = GroqApiClient()
 ) {
@@ -56,6 +69,49 @@ class GroqRepository(
             // readable reason (e.g. "Unable to resolve host", or the wrapped NSError's
             // description on iOS), so surface that instead of a hardcoded guess.
             ApiResult.Error(e.message ?: "Unexpected error talking to Groq.")
+        }
+    }
+
+    /**
+     * The hosted path: same conversation, sent through the backend proxy with the trainee's
+     * Firebase ID token and a metered drill ticket instead of a Groq key. The proxy picks the
+     * model itself, so none is passed.
+     */
+    suspend fun sendHostedConversation(
+        firebaseIdToken: String,
+        drillId: String,
+        messages: List<GroqMessage>,
+        jsonMode: Boolean = false
+    ): HostedChatResult = withContext(Dispatchers.Default) {
+        try {
+            val response = apiClient.createHostedChatCompletion(
+                firebaseIdToken = firebaseIdToken,
+                request = GroqChatRequest(
+                    // Ignored by the proxy (it forces its own hosted model); required by the type.
+                    model = "",
+                    messages = messages,
+                    responseFormat = if (jsonMode) GroqResponseFormat() else null,
+                    drillId = drillId
+                )
+            )
+            when (response.status.value) {
+                401 -> return@withContext HostedChatResult.Unauthenticated
+                402 -> return@withContext HostedChatResult.DrillRejected
+            }
+            if (!response.status.isSuccess()) {
+                return@withContext HostedChatResult.Error(
+                    parseErrorMessage(response.bodyAsText()) ?: "Request failed (HTTP ${response.status.value})."
+                )
+            }
+            val body: GroqChatResponse = response.body()
+            val reply = body.choices.firstOrNull()?.message?.content
+            if (reply.isNullOrBlank()) {
+                HostedChatResult.Error(body.error?.message ?: "Empty response from the model.")
+            } else {
+                HostedChatResult.Success(reply.trim())
+            }
+        } catch (e: Exception) {
+            HostedChatResult.Error(e.message ?: "Unexpected error talking to Bright's servers.")
         }
     }
 
