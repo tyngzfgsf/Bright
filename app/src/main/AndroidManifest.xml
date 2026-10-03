@@ -31,11 +31,6 @@
         android:theme="@style/Theme.Bright.Splash"
         tools:targetApi="35">
 
-        <!-- Lets Stripe PaymentSheet offer Google Pay. -->
-        <meta-data
-            android:name="com.google.android.gms.wallet.api.enabled"
-            android:value="true" />
-
         <!-- Firebase Analytics: no advertising ID, no ad personalization signals. -->
         <meta-data android:name="google_analytics_adid_collection_enabled" android:value="false" />
         <meta-data android:name="google_analytics_default_allow_ad_personalization_signals" android:value="false" />

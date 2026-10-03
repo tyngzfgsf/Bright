@@ -1,9 +1,11 @@
 package com.bright.app.data.billing
 
 import com.bright.app.data.auth.AuthService
+import com.bright.app.data.links.ExternalLinks
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.domain.billing.AddOn
 import com.bright.app.domain.billing.BillingPeriod
+import com.bright.app.domain.billing.BillingSource
 import com.bright.app.domain.billing.Currency
 import com.bright.app.domain.billing.Entitlement
 import com.bright.app.domain.billing.PlanId
@@ -13,11 +15,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,155 +33,210 @@ sealed interface PurchaseResult {
     data object Success : PurchaseResult
     data object Canceled : PurchaseResult
     data object SignInRequired : PurchaseResult
+    data object Unavailable : PurchaseResult
     data class Failed(val message: String) : PurchaseResult
 
-    /** Paid, but the webhook hasn't landed yet. The plan will show up on the next refresh. */
+    /** Paid, but the backend hasn't heard from the store yet. The plan shows up on the next refresh. */
     data object Pending : PurchaseResult
 }
 
+sealed interface CancelResult {
+    data class Done(val entitlement: Entitlement) : CancelResult
+    data object OfferApplied : CancelResult
+
+    /** A store plan: cancelling happens in Google Play / App Store settings, which were opened. */
+    data object OpenedStore : CancelResult
+
+    /** The trainee backed out of the store's confirmation sheet. Nothing to say. */
+    data object Dismissed : CancelResult
+    data class Failed(val message: String) : CancelResult
+}
+
 /**
- * The app's single view of the trainee's plan, and the orchestration of every purchase flow
- * (server call → payment sheet → wait for the webhook to confirm).
+ * The app's single view of the trainee's plan, and every purchase flow.
  *
- * The [Entitlement] is cached in DataStore so the plan survives offline cold starts. The cache
- * is a convenience for the UI only — the server re-checks the plan on every drill and every
- * model call, so a tampered cache unlocks nothing that costs money.
- *
- * [service] and [paymentLauncher] are null on platforms without billing (iOS today); the
- * repository then just reports the Free plan and every purchase fails politely.
+ * Plans can come from three places — Google Play, the App Store (both through [StoreBilling])
+ * and the website (Paddle) — and the backend merges them into one [Entitlement] per account.
+ * This class only ever *reads* that; buying something means: store sheet → RevenueCat → webhook
+ * → bright-proxy → [refresh]. The cached copy in DataStore is for display and offline use; the
+ * backend re-checks the plan on every hosted drill, so a tampered cache unlocks nothing.
  */
 class BillingRepository(
     private val preferences: UserPreferences,
-    private val service: BillingService?,
-    private val paymentLauncher: PaymentLauncher?,
+    private val api: WorkerApi,
+    private val store: StoreBilling,
     private val authService: AuthService?,
-    private val regionCountryCode: () -> String?
+    private val links: ExternalLinks?,
+    private val regionCountryCode: () -> String?,
+    /** Website checkout, for builds not distributed through an app store. Null in store builds. */
+    private val webCheckoutUrl: String?,
+    /** Where website subscribers manage billing. */
+    private val webAccountUrl: String
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     val entitlement: StateFlow<Entitlement> = preferences.cachedEntitlement
         .stateIn(scope, SharingStarted.Eagerly, Entitlement())
 
+    private val _storePrices = MutableStateFlow<Map<String, StorePrice>>(emptyMap())
+    /** The stores' own formatted prices, keyed like Pricing.lookupKey / AddOn.lookupKey. Empty until loaded. */
+    val storePrices: StateFlow<Map<String, StorePrice>> = _storePrices
+
     /** True when drills run on the backend (signed in, no own key). Metering only applies then. */
     val isHosted: Flow<Boolean> = combine(
         preferences.groqApiKey,
-        authService?.currentUser ?: kotlinx.coroutines.flow.flowOf(null)
+        authService?.currentUser ?: flowOf(null)
     ) { key, user -> key.isNullOrBlank() && user != null }.distinctUntilChanged()
 
-    /** Streak freezes still available: granted by the server minus spent on this device. */
+    /** Streak freezes still available: granted by the backend minus spent on this device. */
     val streakFreezesAvailable: Flow<Int> = combine(entitlement, preferences.streakFreezesUsed) { e, used ->
         (e.streakFreezesGranted - used).coerceAtLeast(0)
     }
 
-    val isPurchasingAvailable: Boolean get() = service != null && paymentLauncher?.isAvailable == true
+    /** Google Play / App Store purchases work in this build. */
+    val canPurchaseInApp: Boolean get() = store.isAvailable
 
-    /** Shown and charged in the currency of where the device is, not its language. */
+    /** No store here, but this build may send people to the website to buy. */
+    val canPurchaseOnWeb: Boolean get() = !store.isAvailable && webCheckoutUrl != null && links != null
+
+    /** For the fallback prices shown before (or without) store prices. */
     val currency: Currency get() = Currency.forCountry(regionCountryCode())
 
     init {
-        // Refresh whenever the account changes (sign-in, sign-out, cold start with a session).
         scope.launch {
             authService?.currentUser?.map { it?.uid }?.distinctUntilChanged()?.collect { uid ->
-                if (uid == null) preferences.setCachedEntitlement(Entitlement()) else refresh()
+                if (uid == null) {
+                    store.logOut()
+                    preferences.setCachedEntitlement(Entitlement())
+                } else {
+                    store.logIn(uid)
+                    refresh()
+                }
             }
         }
+        scope.launch { _storePrices.value = store.prices() }
     }
 
     suspend fun refresh(): Entitlement {
-        val svc = service ?: return entitlement.value
+        val token = authService?.idToken() ?: return entitlement.value
         val locale = Language.fromCode(preferences.languageCode.first()).code
-        return when (val result = svc.fetchStatus(locale)) {
+        return when (val result = api.account(token, locale)) {
             is BillingResult.Success -> result.data.also { preferences.setCachedEntitlement(it) }
             else -> entitlement.value
         }
     }
 
-    suspend fun startHostedDrill(): BillingResult<HostedDrill> {
-        val svc = service ?: return BillingResult.Failure("Billing isn't available on this device.")
-        val result = svc.startHostedDrill()
-        when (result) {
-            is BillingResult.Success -> preferences.setCachedEntitlement(result.data.entitlement)
-            // Keep the cached view honest so Home stops offering a Start button that can't work.
-            is BillingResult.OutOfDrills -> refresh()
-            else -> Unit
-        }
-        return result
-    }
-
+    /**
+     * Buys a plan in the store, then any add-ons ticked at checkout. The stores can't bundle a
+     * one-off purchase into a subscription, so each add-on is its own short confirmation — but
+     * the trainee chose them on one screen.
+     */
     suspend fun subscribe(plan: PlanId, period: BillingPeriod, addOns: List<AddOn>): PurchaseResult {
-        val svc = service ?: return PurchaseResult.Failed(UNAVAILABLE)
-        val currency = currency
+        if (authService?.idToken() == null) return PurchaseResult.SignInRequired
         val before = entitlement.value
-        val request = when (val r = svc.createSubscriptionCheckout(plan, period, currency, addOns)) {
-            is BillingResult.Success -> r.data
-            is BillingResult.SignedOut -> return PurchaseResult.SignInRequired
-            is BillingResult.Failure -> return PurchaseResult.Failed(r.message)
-            is BillingResult.OutOfDrills -> return PurchaseResult.Failed(UNAVAILABLE)
+        when (val outcome = store.purchasePlan(plan, period)) {
+            StoreOutcome.Completed -> Unit
+            else -> return outcome.toPurchaseResult()
         }
-        return pay(request, currency) { it.effectivePlan == plan && it != before }
+        addOns.forEach { store.purchaseAddOn(it) }
+        return awaitBackend { it.effectivePlan == plan && it != before }
     }
 
     suspend fun buyAddOn(addOn: AddOn): PurchaseResult {
-        val svc = service ?: return PurchaseResult.Failed(UNAVAILABLE)
-        val currency = currency
+        if (authService?.idToken() == null) return PurchaseResult.SignInRequired
         val before = entitlement.value
-        val request = when (val r = svc.createAddOnPayment(addOn, currency)) {
-            is BillingResult.Success -> r.data
-            is BillingResult.SignedOut -> return PurchaseResult.SignInRequired
-            is BillingResult.Failure -> return PurchaseResult.Failed(r.message)
-            is BillingResult.OutOfDrills -> return PurchaseResult.Failed(UNAVAILABLE)
-        }
-        return pay(request, currency) {
-            it.bonusDrills > before.bonusDrills || it.streakFreezesGranted > before.streakFreezesGranted
+        return when (val outcome = store.purchaseAddOn(addOn)) {
+            StoreOutcome.Completed -> awaitBackend {
+                it.bonusDrills > before.bonusDrills || it.streakFreezesGranted > before.streakFreezesGranted
+            }
+            else -> outcome.toPurchaseResult()
         }
     }
 
-    /** Dunning, trainee side: pay the failed renewal now with a new card or Google Pay. */
-    suspend fun fixFailedPayment(): PurchaseResult {
-        val svc = service ?: return PurchaseResult.Failed(UNAVAILABLE)
-        val statusBefore = entitlement.value.status
-        val request = when (val r = svc.retryFailedPayment()) {
-            is BillingResult.Success -> r.data
-            is BillingResult.SignedOut -> return PurchaseResult.SignInRequired
-            is BillingResult.Failure -> return PurchaseResult.Failed(r.message)
-            is BillingResult.OutOfDrills -> return PurchaseResult.Failed(UNAVAILABLE)
-        }
-        // A subscription keeps its original currency; the sheet only uses this for Google Pay's label.
-        return pay(request, currency) { it.status != statusBefore }
+    /** Only offered where [canPurchaseOnWeb] — never in a build that came from an app store. */
+    fun openWebCheckout() {
+        webCheckoutUrl?.let { links?.open(it) }
     }
 
-    suspend fun cancel(acceptRetentionOffer: Boolean): BillingResult<Entitlement> {
-        val svc = service ?: return BillingResult.Failure(UNAVAILABLE)
-        return svc.cancelSubscription(acceptRetentionOffer).also {
-            if (it is BillingResult.Success) preferences.setCachedEntitlement(it.data)
+    /** "Restore purchases" — Apple requires the button; it's also how a reinstall finds a store plan. */
+    suspend fun restore(): PurchaseResult = when (val outcome = store.restore()) {
+        StoreOutcome.Completed -> awaitBackend { it.hasPaidAccess }
+        else -> outcome.toPurchaseResult()
+    }
+
+    /**
+     * Cancel, or take the exit offer instead. Website plans are handled by the backend directly,
+     * from any device. Store plans: the offer is bought through the store's own discount
+     * mechanism, and a plain cancel has to happen in the store's settings — Apple and Google
+     * don't let apps cancel subscriptions themselves.
+     */
+    suspend fun cancel(acceptRetentionOffer: Boolean): CancelResult {
+        val token = authService?.idToken() ?: return CancelResult.Failed(SIGN_IN)
+        val e = entitlement.value
+        if (e.source == BillingSource.WEB) {
+            return when (val r = api.cancelWebSubscription(token, acceptRetentionOffer)) {
+                is BillingResult.Success -> {
+                    preferences.setCachedEntitlement(r.data)
+                    if (acceptRetentionOffer) CancelResult.OfferApplied else CancelResult.Done(r.data)
+                }
+                is BillingResult.Failure -> CancelResult.Failed(r.message)
+                BillingResult.SignedOut -> CancelResult.Failed(SIGN_IN)
+            }
+        }
+        if (!acceptRetentionOffer) return openStoreManagement()
+        return when (val outcome = store.purchaseRetentionOffer(e.effectivePlan, e.period ?: BillingPeriod.MONTHLY)) {
+            StoreOutcome.Completed -> {
+                (api.markRetentionOfferUsed(token) as? BillingResult.Success)?.let { preferences.setCachedEntitlement(it.data) }
+                CancelResult.OfferApplied
+            }
+            StoreOutcome.Canceled -> CancelResult.Dismissed
+            // Offer not configured in this store: don't strand them — let them cancel normally.
+            StoreOutcome.Unavailable -> openStoreManagement()
+            is StoreOutcome.Failed -> CancelResult.Failed(outcome.message)
         }
     }
 
-    suspend fun resume(): BillingResult<Entitlement> {
-        val svc = service ?: return BillingResult.Failure(UNAVAILABLE)
-        return svc.resumeSubscription().also {
-            if (it is BillingResult.Success) preferences.setCachedEntitlement(it.data)
+    suspend fun resume(): CancelResult {
+        val e = entitlement.value
+        if (e.source != BillingSource.WEB) return openStoreManagement()
+        val token = authService?.idToken() ?: return CancelResult.Failed(SIGN_IN)
+        return when (val r = api.resumeWebSubscription(token)) {
+            is BillingResult.Success -> CancelResult.Done(r.data).also { preferences.setCachedEntitlement(r.data) }
+            is BillingResult.Failure -> CancelResult.Failed(r.message)
+            BillingResult.SignedOut -> CancelResult.Failed(SIGN_IN)
         }
     }
 
     /**
-     * Presents the sheet, then waits for the webhook. Stripe confirms the payment to the app
-     * before it tells the backend, so the plan usually lags by a second or two; polling briefly
-     * means the paywall can close onto the new plan rather than onto a stale "Free".
+     * Dunning, trainee side: send them where the card can be fixed right now instead of waiting
+     * for the next automatic retry — the store's own page, or the website for Paddle plans.
      */
-    private suspend fun pay(
-        request: PaymentRequest,
-        currency: Currency,
-        isReflected: (Entitlement) -> Boolean
-    ): PurchaseResult {
-        if (request.type != IntentType.NONE) {
-            val launcher = paymentLauncher ?: return PurchaseResult.Failed(UNAVAILABLE)
-            when (val outcome = launcher.present(request, currency)) {
-                PaymentOutcome.Canceled -> return PurchaseResult.Canceled
-                is PaymentOutcome.Failed -> return PurchaseResult.Failed(outcome.message)
-                PaymentOutcome.Completed -> Unit
-            }
-        }
+    fun fixFailedPayment() {
+        val e = entitlement.value
+        val url = if (e.source == BillingSource.WEB) webAccountUrl else e.managementUrl ?: storeFallbackUrl(e.source)
+        url?.let { links?.open(it) }
+    }
+
+    private fun openStoreManagement(): CancelResult {
+        val e = entitlement.value
+        val url = e.managementUrl ?: storeFallbackUrl(e.source) ?: return CancelResult.Failed("")
+        val opener = links ?: return CancelResult.Failed("")
+        opener.open(url)
+        return CancelResult.OpenedStore
+    }
+
+    private fun storeFallbackUrl(source: BillingSource?): String? = when (source) {
+        BillingSource.PLAY_STORE -> "https://play.google.com/store/account/subscriptions"
+        BillingSource.APP_STORE -> "https://apps.apple.com/account/subscriptions"
+        else -> null
+    }
+
+    /**
+     * Stores confirm a purchase to the app before RevenueCat's webhook reaches the backend, so
+     * the plan usually lags by a second or two; polling briefly lets the paywall close onto the
+     * new plan rather than a stale "Free".
+     */
+    private suspend fun awaitBackend(isReflected: (Entitlement) -> Boolean): PurchaseResult {
         repeat(CONFIRM_POLL_ATTEMPTS) { attempt ->
             if (isReflected(refresh())) return PurchaseResult.Success
             delay(CONFIRM_POLL_BASE_MS * (attempt + 1))
@@ -185,8 +244,15 @@ class BillingRepository(
         return PurchaseResult.Pending
     }
 
+    private fun StoreOutcome.toPurchaseResult(): PurchaseResult = when (this) {
+        StoreOutcome.Completed -> PurchaseResult.Success
+        StoreOutcome.Canceled -> PurchaseResult.Canceled
+        StoreOutcome.Unavailable -> PurchaseResult.Unavailable
+        is StoreOutcome.Failed -> PurchaseResult.Failed(message)
+    }
+
     private companion object {
-        const val UNAVAILABLE = "Purchases aren't available on this device yet."
+        const val SIGN_IN = "Sign in first."
         const val CONFIRM_POLL_ATTEMPTS = 6
         const val CONFIRM_POLL_BASE_MS = 700L
     }

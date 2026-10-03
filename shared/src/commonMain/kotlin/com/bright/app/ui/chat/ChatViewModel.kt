@@ -171,8 +171,8 @@ class ChatViewModel(
      * proxy. Running out of hosted drills surfaces as an error line *and* a paywall event, so
      * dismissing the paywall leaves an honest explanation on screen rather than a dead chat.
      */
-    private suspend fun sendToAi(messages: List<GroqMessage>): ApiResult<String> =
-        when (val result = aiGateway.send(sessionId, messages)) {
+    private suspend fun sendToAi(messages: List<GroqMessage>, expectJson: Boolean): ApiResult<String> =
+        when (val result = aiGateway.send(sessionId, messages, expectJson)) {
             is AiResult.Success -> ApiResult.Success(result.text)
             is AiResult.Error -> ApiResult.Error(result.message)
             AiResult.OutOfDrills -> {
@@ -188,7 +188,7 @@ class ChatViewModel(
             addAll(historyAsGroqMessages())
             extraTrailingUserMessage?.let { add(GroqMessage(role = "user", content = it)) }
         }
-        return when (val result = sendToAi(messages)) {
+        return when (val result = sendToAi(messages, expectJson = true)) {
             is ApiResult.Success -> ApiResult.Success(AiTurnParser.parse(result.data))
             is ApiResult.Error -> ApiResult.Error(result.message)
         }
@@ -408,7 +408,7 @@ class ChatViewModel(
                 GroqMessage(role = "system", content = ScenarioPromptBuilder.askAsideSystemPrompt(currentLanguage()))
             ) + historyAsGroqMessages()
 
-            when (val result = sendToAi(messages)) {
+            when (val result = sendToAi(messages, expectJson = false)) {
                 is ApiResult.Success -> {
                     dao.insertMessage(
                         MessageEntity(
@@ -526,7 +526,7 @@ class ChatViewModel(
                 addAll(historyAsGroqMessages())
                 add(GroqMessage(role = "user", content = ExpertDebrief.request(currentLanguage())))
             }
-            when (val result = sendToAi(messages)) {
+            when (val result = sendToAi(messages, expectJson = false)) {
                 is ApiResult.Success -> dao.insertMessage(
                     MessageEntity(
                         id = randomId(),

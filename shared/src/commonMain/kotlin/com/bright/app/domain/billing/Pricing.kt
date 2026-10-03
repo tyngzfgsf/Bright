@@ -4,11 +4,10 @@ package com.bright.app.domain.billing
  * Bright's price book: plans, add-ons, and the currencies they're shown in. Pure values, no I/O
  * — same shape as [com.bright.app.domain.SkillProfile].
  *
- * **The backend has its own copy of these numbers** (`bright-site/functions/billing/catalog.js`)
- * and Stripe holds the authoritative charge amounts (Prices looked up by `lookup_key`, with one
- * `currency_options` entry per [Currency]). This copy exists so the paywall can render instantly
- * and offline; a mismatch shows a wrong number on screen, never a wrong charge. Change all three
- * together. See MONETIZATION.md.
+ * **These are reference prices, not what's charged.** Google Play, the App Store and Paddle each
+ * hold their own prices (store prices snap to the stores' price tiers). The paywall shows the
+ * store's own localized price when it has one and falls back to these otherwise — e.g. on a
+ * build without store billing. Keep the stores within these numbers; MONETIZATION.md lists them.
  *
  * Two rules are enforced by tests (`PricingTest`), not convention:
  * - The entry paid plan ([PlanId.PLUS], monthly) never costs more than US$3 in any currency.
@@ -20,7 +19,7 @@ enum class BillingPeriod { MONTHLY, ANNUAL }
 
 /**
  * [minorUnitsPerMajor] is 100 for cents, 1 for currencies without a minor unit (KRW) — the same
- * convention Stripe uses for amounts, so these numbers can be compared with Stripe's directly.
+ * convention the payment providers use for amounts.
  */
 enum class Currency(val code: String, val symbol: String, val minorUnitsPerMajor: Int) {
     ZAR("ZAR", "R", 100),
@@ -69,7 +68,7 @@ data class Money(val minorUnits: Long, val currency: Currency) {
 
 /** One-time purchases offered alongside a plan — at checkout, and when a free trainee hits the cap. */
 enum class AddOn(
-    /** Matches the Stripe Price `lookup_key` and the backend catalog key. */
+    /** The store product id (both stores) and the Paddle price key for this add-on. */
     val lookupKey: String
 ) {
     /** +[Pricing.DRILL_PACK_SIZE] hosted drills that never expire. Only useful on the capped Free plan. */
@@ -145,7 +144,7 @@ object Pricing {
     fun addOnPrice(addOn: AddOn, currency: Currency): Money =
         Money(ADD_ONS.getValue(addOn).getValue(currency), currency)
 
-    /** Stripe Price `lookup_key` for a plan, matching the backend catalog. Null for Free. */
+    /** The store package identifier / Paddle price key for a plan, e.g. "plus_annual". Null for Free. */
     fun lookupKey(plan: PlanId, period: BillingPeriod): String? = when (plan) {
         PlanId.FREE -> null
         else -> "${plan.name.lowercase()}_${period.name.lowercase()}"

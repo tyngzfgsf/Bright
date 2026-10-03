@@ -1,13 +1,27 @@
 package com.bright.app.domain.billing
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Where the subscription stands, as Stripe reports it (mirrored into Firestore by the webhook).
- * [PAST_DUE] is the dunning window: a renewal failed, Stripe is retrying it automatically, and
- * the trainee keeps their plan in the meantime — see [Entitlement.hasPaidAccess].
+ * Where the subscription stands, as the backend (bright-proxy) reports it from Google Play, the
+ * App Store or Paddle. [PAST_DUE] is the dunning window: a renewal failed, the store or Paddle is
+ * retrying it automatically, and the trainee keeps their plan in the meantime — see
+ * [Entitlement.hasPaidAccess].
  */
 enum class SubscriptionStatus { NONE, TRIALING, ACTIVE, PAST_DUE, CANCELED }
+
+/**
+ * Which payment system manages the active plan. Decides where cancelling and fixing a payment
+ * happen: Apple and Google own their subscriptions; website (Paddle) ones are managed through
+ * Bright's backend from any device.
+ */
+@Serializable
+enum class BillingSource {
+    @SerialName("play_store") PLAY_STORE,
+    @SerialName("app_store") APP_STORE,
+    @SerialName("web") WEB
+}
 
 /** Paid features, each gated on the lowest plan that includes it. */
 enum class Feature(val minimumPlan: PlanId) {
@@ -17,8 +31,8 @@ enum class Feature(val minimumPlan: PlanId) {
 }
 
 /**
- * What the trainee is entitled to right now. Built from the backend's `getBillingStatus`
- * response and cached locally so the app knows the plan offline.
+ * What the trainee is entitled to right now. Decoded from bright-proxy's `GET /v1/account` (field
+ * names match it exactly) and cached locally so the app knows the plan offline.
  *
  * Times are epoch millis; 0 means "not set".
  */
@@ -41,11 +55,15 @@ data class Entitlement(
     val trialEligible: Boolean = true,
     val retentionOfferEligible: Boolean = true,
     /** True while a retention discount is applied to the subscription. */
-    val discountActive: Boolean = false
+    val discountActive: Boolean = false,
+    /** Null on Free. */
+    val source: BillingSource? = null,
+    /** The store's own subscription-management page, for Play/App Store plans. */
+    val managementUrl: String? = null
 ) {
     /**
      * Past-due keeps access on purpose: cutting someone off the moment a card bounces punishes
-     * the most common, most fixable failure (an expired card) and loses people Stripe's retries
+     * the most common, most fixable failure (an expired card) and loses people automatic retries
      * would have recovered.
      */
     val hasPaidAccess: Boolean

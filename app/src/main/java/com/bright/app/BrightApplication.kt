@@ -7,8 +7,8 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import com.bright.app.data.analytics.FirebaseAnalyticsTracker
 import com.bright.app.data.auth.AuthService
 import com.bright.app.data.auth.FirebaseAuthService
-import com.bright.app.data.billing.FirebaseBillingService
-import com.bright.app.data.billing.StripePaymentLauncher
+import com.bright.app.data.billing.RevenueCatStoreBilling
+import com.bright.app.data.links.AndroidExternalLinks
 import com.bright.app.data.local.AppDatabase
 import com.bright.app.data.local.buildDatabase
 import com.bright.app.data.local.getDatabaseBuilder
@@ -89,9 +89,6 @@ class BrightApplication : Application() {
         FirebaseAuthService(this, currentActivity = { foregroundActivity })
     }
 
-    /** Attached to each new MainActivity in onCreate — see StripePaymentLauncher. */
-    val paymentLauncher: StripePaymentLauncher by lazy { StripePaymentLauncher(this) }
-
     /**
      * The platform-neutral bag the screens actually read from. Everything Android-specific
      * about building these (Context for the DB path and DataStore file, BuildConfig for the
@@ -108,8 +105,12 @@ class BrightApplication : Application() {
             appUpdater = AndroidAppUpdater(this),
             analytics = FirebaseAnalyticsTracker(this),
             authService = authService,
-            billingService = FirebaseBillingService(),
-            paymentLauncher = paymentLauncher,
+            proxyUrl = BuildConfig.BRIGHT_PROXY_URL,
+            storeBilling = RevenueCatStoreBilling(BuildConfig.REVENUECAT_API_KEY.ifBlank { null }),
+            // Website checkout only in the sideloaded GitHub build: Google Play's payments policy
+            // forbids pointing Play users at outside payment for a digital subscription.
+            webCheckoutUrl = if (BuildConfig.DISTRIBUTION == "github") "${BrightDependencies.WEBSITE_URL}/pricing" else null,
+            externalLinks = AndroidExternalLinks(this),
             regionCountryCode = { regionCountryCode(this) }
         )
     }

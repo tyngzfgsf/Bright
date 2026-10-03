@@ -28,10 +28,12 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.LocalBrightDependencies
 import com.bright.app.data.billing.BillingRepository
-import com.bright.app.data.billing.BillingResult
+import com.bright.app.data.billing.CancelResult
 import com.bright.app.data.billing.PaywallReason
 import com.bright.app.data.billing.PurchaseResult
+import com.bright.app.data.billing.StorePrice
 import com.bright.app.domain.billing.AddOn
+import com.bright.app.domain.billing.BillingSource
 import com.bright.app.domain.billing.Entitlement
 import com.bright.app.domain.billing.Pricing
 import com.bright.app.domain.billing.SubscriptionStatus
@@ -55,8 +57,10 @@ sealed interface PlanNotice {
 
 class PlanViewModel(private val billing: BillingRepository) : ViewModel() {
     val entitlement: StateFlow<Entitlement> = billing.entitlement
+    val storePrices: StateFlow<Map<String, StorePrice>> = billing.storePrices
     val currency = billing.currency
-    val canPurchase = billing.isPurchasingAvailable
+    /** Add-ons are store purchases; builds without a store don't offer them here. */
+    val canPurchase = billing.canPurchaseInApp
 
     private val _cancelStep = MutableStateFlow(CancelStep.NONE)
     val cancelStep: StateFlow<CancelStep> = _cancelStep
@@ -85,25 +89,29 @@ class PlanViewModel(private val billing: BillingRepository) : ViewModel() {
 
     fun acceptOffer() = run {
         _cancelStep.value = CancelStep.NONE
-        when (val r = billing.cancel(acceptRetentionOffer = true)) {
-            is BillingResult.Success -> _notice.value = PlanNotice.OfferApplied
-            is BillingResult.Failure -> _notice.value = PlanNotice.Error(r.message)
-            else -> Unit
-        }
+        show(billing.cancel(acceptRetentionOffer = true))
     }
 
+    /**
+     * Website plans cancel right here (at period end). Store plans can't be cancelled by an app:
+     * this opens Google Play's or the App Store's subscription page instead.
+     */
     fun confirmCancel() = run {
         _cancelStep.value = CancelStep.NONE
-        (billing.cancel(acceptRetentionOffer = false) as? BillingResult.Failure)?.let {
-            _notice.value = PlanNotice.Error(it.message)
+        show(billing.cancel(acceptRetentionOffer = false))
+    }
+
+    fun resume() = run { show(billing.resume()) }
+
+    fun fixPayment() = billing.fixFailedPayment()
+
+    private fun show(result: CancelResult) {
+        _notice.value = when (result) {
+            CancelResult.OfferApplied -> PlanNotice.OfferApplied
+            is CancelResult.Failed -> result.message.takeIf { it.isNotBlank() }?.let { PlanNotice.Error(it) }
+            is CancelResult.Done, CancelResult.OpenedStore, CancelResult.Dismissed -> null
         }
     }
-
-    fun resume() = run {
-        (billing.resume() as? BillingResult.Failure)?.let { _notice.value = PlanNotice.Error(it.message) }
-    }
-
-    fun fixPayment() = run { handle(billing.fixFailedPayment()) }
 
     fun buy(addOn: AddOn) = run { handle(billing.buyAddOn(addOn)) }
 
@@ -115,7 +123,7 @@ class PlanViewModel(private val billing: BillingRepository) : ViewModel() {
         _notice.value = when (result) {
             PurchaseResult.Success, PurchaseResult.Pending -> PlanNotice.PurchaseDone
             is PurchaseResult.Failed -> PlanNotice.Error(result.message)
-            PurchaseResult.Canceled, PurchaseResult.SignInRequired -> null
+            PurchaseResult.Canceled, PurchaseResult.SignInRequired, PurchaseResult.Unavailable -> null
         }
     }
 
@@ -150,6 +158,8 @@ fun PlanSection(
     val busy by viewModel.busy.collectAsState()
     val notice by viewModel.notice.collectAsState()
     val freezesAvailable by app.billing.streakFreezesAvailable.collectAsState(0)
+    val storePrices by viewModel.storePrices.collectAsState()
+    val prices = PriceDisplay(storePrices, viewModel.currency)
     val colors = MaterialTheme.colorScheme
 
     Column(
@@ -200,11 +210,18 @@ fun PlanSection(
                     .padding(14.dp)
             ) {
                 Text(stringResource(Res.string.billing_status_past_due), style = MaterialTheme.typography.bodyMedium)
+                storeName(e.source)?.let { store ->
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(Res.string.billing_managed_in_store_note, store),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant
+                    )
+                }
                 Spacer(Modifier.height(10.dp))
                 BrightButton(
                     text = stringResource(Res.string.billing_update_payment),
                     onClick = viewModel::fixPayment,
-                    loading = busy,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -238,7 +255,7 @@ fun PlanSection(
                         stringResource(
                             Res.string.billing_buy_drills,
                             Pricing.DRILL_PACK_SIZE,
-                            Pricing.addOnPrice(AddOn.DRILL_PACK, viewModel.currency).format()
+                            prices.addOn(AddOn.DRILL_PACK)
                         )
                     )
                 }
@@ -248,13 +265,23 @@ fun PlanSection(
                     stringResource(
                         Res.string.billing_buy_freezes,
                         Pricing.STREAK_FREEZE_PACK_SIZE,
-                        Pricing.addOnPrice(AddOn.STREAK_FREEZES, viewModel.currency).format()
+                        prices.addOn(AddOn.STREAK_FREEZES)
                     )
                 )
             }
         }
 
         if (e.hasPaidAccess) {
+            storeName(e.source)?.let { store ->
+                if (e.status != SubscriptionStatus.PAST_DUE) {
+                    Text(
+                        stringResource(Res.string.billing_managed_in_store_note, store),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+                }
+            }
             if (e.cancelAtPeriodEnd) {
                 TextButton(onClick = viewModel::resume, enabled = !busy) {
                     Text(stringResource(Res.string.billing_resume))
@@ -335,6 +362,14 @@ fun PlanSection(
         )
         CancelStep.NONE -> Unit
     }
+}
+
+/** "Google Play" / "App Store" for store plans, null for website ones (managed right here). */
+@Composable
+private fun storeName(source: BillingSource?): String? = when (source) {
+    BillingSource.PLAY_STORE -> "Google Play"
+    BillingSource.APP_STORE -> "App Store"
+    else -> null
 }
 
 @Composable

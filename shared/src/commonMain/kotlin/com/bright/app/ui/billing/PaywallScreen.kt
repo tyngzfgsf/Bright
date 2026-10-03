@@ -4,9 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -57,6 +55,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.LocalBrightDependencies
 import com.bright.app.data.billing.PaywallReason
+import com.bright.app.data.billing.StorePrice
 import com.bright.app.domain.billing.AddOn
 import com.bright.app.domain.billing.BillingPeriod
 import com.bright.app.domain.billing.Currency
@@ -72,15 +71,39 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 /**
+ * Prices as the trainee will be charged: the store's own localized strings once they've loaded
+ * (stores snap prices to their tiers and pick the currency from the store account), and Bright's
+ * reference table in the device's local currency until then — or in builds without a store.
+ */
+class PriceDisplay(private val store: Map<String, StorePrice>, private val currency: Currency) {
+    val fromStore: Boolean get() = store.isNotEmpty()
+
+    /** The big number: per month, even for annual plans. */
+    fun perMonth(plan: PlanId, period: BillingPeriod): String {
+        if (plan == PlanId.FREE) return Money(0, currency).format()
+        val key = Pricing.lookupKey(plan, period)
+        store[key]?.let { return if (period == BillingPeriod.ANNUAL) it.perMonthFormatted ?: it.formatted else it.formatted }
+        return Pricing.monthlyEquivalent(plan, period, currency).format()
+    }
+
+    /** What one billing period costs. */
+    fun periodTotal(plan: PlanId, period: BillingPeriod): String =
+        store[Pricing.lookupKey(plan, period)]?.formatted ?: Pricing.price(plan, period, currency).format()
+
+    fun addOn(addOn: AddOn): String =
+        store[addOn.lookupKey]?.formatted ?: Pricing.addOnPrice(addOn, currency).format()
+}
+
+/**
  * The one pricing page, inside the app: three plans at most, one highlighted, outcomes before
- * features, local currency, and an annual toggle that leads with the per-month price.
+ * features, local prices, and an annual toggle that leads with the per-month price.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaywallScreen(
     reason: PaywallReason,
     onClose: () -> Unit,
-    /** Called after a successful purchase, with the plan's display name, before closing. */
+    /** Called after a successful purchase, with a confirmation line, before closing. */
     onPurchased: (String) -> Unit = {}
 ) {
     val app = LocalBrightDependencies.current
@@ -90,6 +113,8 @@ fun PaywallScreen(
     )
     val state by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
+    val storePrices by viewModel.storePrices.collectAsState()
+    val prices = remember(storePrices) { PriceDisplay(storePrices, viewModel.currency) }
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -103,6 +128,7 @@ fun PaywallScreen(
         PaywallMessage.SignInRequired -> stringResource(Res.string.paywall_sign_in_required)
         PaywallMessage.Unavailable -> stringResource(Res.string.paywall_unavailable)
         PaywallMessage.Pending -> stringResource(Res.string.paywall_pending)
+        PaywallMessage.RestoredNothing -> stringResource(Res.string.paywall_restored_nothing)
         is PaywallMessage.Error -> m.text
         null -> null
     }
@@ -130,8 +156,9 @@ fun PaywallScreen(
             PaywallBottomBar(
                 state = state,
                 entitlement = entitlement,
-                currency = viewModel.currency,
+                prices = prices,
                 startsWithTrial = viewModel.startsWithTrial(state.selectedPlan),
+                buysOnWeb = !viewModel.canPurchaseInApp && viewModel.canPurchaseOnWeb,
                 onContinue = {
                     if (state.selectedPlan == PlanId.FREE) onClose() else viewModel.continueWithSelected()
                 }
@@ -168,7 +195,7 @@ fun PaywallScreen(
                 PlanCard(
                     plan = plan,
                     period = state.period,
-                    currency = viewModel.currency,
+                    prices = prices,
                     selected = state.selectedPlan == plan,
                     isCurrent = entitlement.effectivePlan == plan,
                     onSelect = { viewModel.selectPlan(plan) }
@@ -177,12 +204,26 @@ fun PaywallScreen(
             }
 
             Text(
-                text = stringResource(Res.string.paywall_footer, viewModel.currency.code),
+                text = if (prices.fromStore) {
+                    stringResource(Res.string.paywall_footer_store)
+                } else {
+                    stringResource(Res.string.paywall_footer, viewModel.currency.code)
+                },
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
             )
+            if (viewModel.canPurchaseInApp) {
+                TextButton(
+                    onClick = viewModel::restore,
+                    enabled = !state.isWorking,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(stringResource(Res.string.paywall_restore), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Spacer(Modifier.height(12.dp))
         }
     }
 
@@ -194,9 +235,8 @@ fun PaywallScreen(
         ) {
             CheckoutSheet(
                 state = state,
-                currency = viewModel.currency,
+                prices = prices,
                 startsWithTrial = viewModel.startsWithTrial(state.selectedPlan),
-                dueToday = viewModel.dueToday(state),
                 onToggleAddOn = viewModel::toggleAddOn,
                 onPay = viewModel::pay
             )
@@ -263,7 +303,7 @@ private fun PeriodToggle(period: BillingPeriod, onSelect: (BillingPeriod) -> Uni
 private fun PlanCard(
     plan: PlanId,
     period: BillingPeriod,
-    currency: Currency,
+    prices: PriceDisplay,
     selected: Boolean,
     isCurrent: Boolean,
     onSelect: () -> Unit
@@ -316,7 +356,19 @@ private fun PlanCard(
         Text(text = stringResource(outcomeFor(plan)), style = MaterialTheme.typography.bodyMedium, color = muted)
 
         Spacer(Modifier.height(14.dp))
-        PriceBlock(plan, period, currency, content, muted)
+        Text(
+            text = stringResource(Res.string.paywall_price_per_month, prices.perMonth(plan, period)),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = content
+        )
+        if (plan != PlanId.FREE && period == BillingPeriod.ANNUAL) {
+            Text(
+                text = stringResource(Res.string.paywall_billed_annually_short, prices.periodTotal(plan, period)),
+                style = MaterialTheme.typography.labelMedium,
+                color = muted
+            )
+        }
 
         Spacer(Modifier.height(14.dp))
         bulletsFor(plan).forEach { bullet ->
@@ -337,30 +389,6 @@ private fun PlanCard(
     }
 }
 
-@Composable
-private fun PriceBlock(
-    plan: PlanId,
-    period: BillingPeriod,
-    currency: Currency,
-    content: androidx.compose.ui.graphics.Color,
-    muted: androidx.compose.ui.graphics.Color
-) {
-    val perMonth = Pricing.monthlyEquivalent(plan, period, currency)
-    Text(
-        text = stringResource(Res.string.paywall_price_per_month, perMonth.format()),
-        style = MaterialTheme.typography.headlineSmall,
-        fontWeight = FontWeight.Bold,
-        color = content
-    )
-    if (plan != PlanId.FREE && period == BillingPeriod.ANNUAL) {
-        Text(
-            text = stringResource(Res.string.paywall_billed_annually_short, Pricing.price(plan, period, currency).format()),
-            style = MaterialTheme.typography.labelMedium,
-            color = muted
-        )
-    }
-}
-
 private fun outcomeFor(plan: PlanId) = when (plan) {
     PlanId.FREE -> Res.string.paywall_free_outcome
     PlanId.PLUS -> Res.string.paywall_plus_outcome
@@ -373,12 +401,22 @@ private fun bulletsFor(plan: PlanId) = when (plan) {
     PlanId.PRO -> listOf(Res.string.paywall_pro_bullet_1, Res.string.paywall_pro_bullet_2, Res.string.paywall_pro_bullet_3)
 }
 
+/** "R49/month" or "R40.83/month, billed annually (R490)" — recurring price for trial and checkout copy. */
+@Composable
+private fun recurringPrice(plan: PlanId, period: BillingPeriod, prices: PriceDisplay): String =
+    if (period == BillingPeriod.MONTHLY) {
+        stringResource(Res.string.paywall_price_per_month, prices.periodTotal(plan, period))
+    } else {
+        stringResource(Res.string.paywall_billed_annually, prices.perMonth(plan, period), prices.periodTotal(plan, period))
+    }
+
 @Composable
 private fun PaywallBottomBar(
     state: PaywallUiState,
     entitlement: Entitlement,
-    currency: Currency,
+    prices: PriceDisplay,
     startsWithTrial: Boolean,
+    buysOnWeb: Boolean,
     onContinue: () -> Unit
 ) {
     val plan = state.selectedPlan
@@ -386,6 +424,7 @@ private fun PaywallBottomBar(
     val label = when {
         plan == PlanId.FREE -> stringResource(Res.string.paywall_cta_free)
         isCurrent -> stringResource(Res.string.paywall_cta_current)
+        buysOnWeb -> stringResource(Res.string.paywall_cta_web)
         entitlement.hasPaidAccess -> stringResource(Res.string.paywall_cta_switch, stringResource(planName(plan)))
         startsWithTrial -> stringResource(Res.string.paywall_cta_trial, Pricing.PLUS_TRIAL_DAYS)
         else -> stringResource(Res.string.paywall_cta_subscribe, stringResource(planName(plan)))
@@ -408,11 +447,7 @@ private fun PaywallBottomBar(
         if (startsWithTrial && plan == PlanId.PLUS && !isCurrent) {
             Spacer(Modifier.height(8.dp))
             Text(
-                text = stringResource(
-                    Res.string.paywall_trial_note,
-                    Pricing.PLUS_TRIAL_DAYS,
-                    periodPrice(plan, state.period, currency)
-                ),
+                text = stringResource(Res.string.paywall_trial_note, Pricing.PLUS_TRIAL_DAYS, recurringPrice(plan, state.period, prices)),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -422,23 +457,11 @@ private fun PaywallBottomBar(
     }
 }
 
-/** "R49/month" or "R490/year"-style recurring price, for trial and checkout copy. */
-@Composable
-private fun periodPrice(plan: PlanId, period: BillingPeriod, currency: Currency): String {
-    val price = Pricing.price(plan, period, currency).format()
-    return if (period == BillingPeriod.MONTHLY) {
-        stringResource(Res.string.paywall_price_per_month, price)
-    } else {
-        stringResource(Res.string.paywall_billed_annually, Pricing.monthlyEquivalent(plan, period, currency).format(), price)
-    }
-}
-
 @Composable
 private fun CheckoutSheet(
     state: PaywallUiState,
-    currency: Currency,
+    prices: PriceDisplay,
     startsWithTrial: Boolean,
-    dueToday: Money,
     onToggleAddOn: (AddOn) -> Unit,
     onPay: () -> Unit
 ) {
@@ -461,9 +484,20 @@ private fun CheckoutSheet(
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = Pricing.price(state.selectedPlan, state.period, currency).format(),
+                text = prices.periodTotal(state.selectedPlan, state.period),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold
+            )
+        }
+        if (startsWithTrial) {
+            Text(
+                text = stringResource(
+                    Res.string.checkout_trial_then,
+                    Pricing.PLUS_TRIAL_DAYS,
+                    recurringPrice(state.selectedPlan, state.period, prices)
+                ),
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.onSurfaceVariant
             )
         }
 
@@ -479,7 +513,7 @@ private fun CheckoutSheet(
             addOns.forEach { addOn ->
                 AddOnRow(
                     addOn = addOn,
-                    price = Pricing.addOnPrice(addOn, currency),
+                    price = prices.addOn(addOn),
                     checked = addOn in state.selectedAddOns,
                     onToggle = { onToggleAddOn(addOn) }
                 )
@@ -488,25 +522,9 @@ private fun CheckoutSheet(
 
         Spacer(Modifier.height(16.dp))
         HorizontalDivider(color = colors.outline.copy(alpha = 0.3f))
-        Spacer(Modifier.height(12.dp))
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(Res.string.checkout_due_today), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            Text(dueToday.format(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        }
-        if (startsWithTrial) {
-            Text(
-                text = stringResource(Res.string.checkout_then, periodPrice(state.selectedPlan, state.period, currency)),
-                style = MaterialTheme.typography.labelMedium,
-                color = colors.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.End)
-            )
-        }
-
         Spacer(Modifier.height(16.dp))
         BrightButton(
-            text = stringResource(
-                if (startsWithTrial && dueToday.minorUnits == 0L) Res.string.checkout_start_trial else Res.string.checkout_pay
-            ),
+            text = stringResource(if (startsWithTrial) Res.string.checkout_start_trial else Res.string.checkout_pay),
             onClick = onPay,
             loading = state.isWorking,
             modifier = Modifier.fillMaxWidth()
@@ -515,7 +533,7 @@ private fun CheckoutSheet(
 }
 
 @Composable
-fun AddOnRow(addOn: AddOn, price: Money, checked: Boolean, onToggle: () -> Unit) {
+fun AddOnRow(addOn: AddOn, price: String, checked: Boolean, onToggle: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -535,7 +553,7 @@ fun AddOnRow(addOn: AddOn, price: Money, checked: Boolean, onToggle: () -> Unit)
             Text(addOnTitle(addOn), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
             Text(stringResource(addOnBody(addOn)), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
-        Text("+${price.format()}", style = MaterialTheme.typography.bodyLarge)
+        Text("+$price", style = MaterialTheme.typography.bodyLarge)
     }
 }
 

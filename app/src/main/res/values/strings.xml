@@ -13,7 +13,4 @@
     <string name="auth_error_no_activity">Couldn\'t open the sign-in screen. Try again.</string>
     <string name="auth_error_generic">Sign-in failed. Check your connection and try again.</string>
 
-    <!-- Billing (StripePaymentLauncher) -->
-    <string name="billing_error_not_configured">Payments aren\'t set up in this build yet.</string>
-    <string name="billing_error_generic">Something went wrong with the payment. Please try again.</string>
 </resources>

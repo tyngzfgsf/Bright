@@ -7,11 +7,11 @@ import com.bright.app.data.auth.SignInResult
 import com.bright.app.data.billing.BillingRepository
 import com.bright.app.data.billing.PaywallReason
 import com.bright.app.data.billing.PurchaseResult
+import com.bright.app.data.billing.StorePrice
 import com.bright.app.domain.billing.AddOn
 import com.bright.app.domain.billing.BillingPeriod
 import com.bright.app.domain.billing.Currency
 import com.bright.app.domain.billing.Entitlement
-import com.bright.app.domain.billing.Money
 import com.bright.app.domain.billing.PlanId
 import com.bright.app.domain.billing.Pricing
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -38,6 +38,7 @@ sealed interface PaywallMessage {
     data object SignInRequired : PaywallMessage
     data object Unavailable : PaywallMessage
     data object Pending : PaywallMessage
+    data object RestoredNothing : PaywallMessage
     data class Error(val text: String) : PaywallMessage
 }
 
@@ -51,20 +52,23 @@ class PaywallViewModel(
     val uiState: StateFlow<PaywallUiState> = _uiState
 
     val entitlement: StateFlow<Entitlement> = billing.entitlement
+    val storePrices: StateFlow<Map<String, StorePrice>> = billing.storePrices
 
     val isSignedIn: StateFlow<Boolean> = (authService?.currentUser ?: flowOf(null))
         .map { it != null }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    /** Fallback currency for the reference prices, used until (or unless) store prices load. */
     val currency: Currency = billing.currency
-    val canPurchase: Boolean = billing.isPurchasingAvailable
+    val canPurchaseInApp: Boolean = billing.canPurchaseInApp
+    val canPurchaseOnWeb: Boolean = billing.canPurchaseOnWeb
 
     /** Fires the plan just bought; the screen closes and shows a confirmation. */
     private val _purchased = MutableSharedFlow<PlanId>(extraBufferCapacity = 1)
     val purchased: SharedFlow<PlanId> = _purchased
 
     init {
-        // Plan and trial eligibility may have changed elsewhere (another device, the webhook).
+        // Plan and trial eligibility may have changed elsewhere (another device, the website).
         viewModelScope.launch { billing.refresh() }
     }
 
@@ -80,17 +84,14 @@ class PaywallViewModel(
 
     fun closeCheckout() = update { copy(checkoutOpen = false) }
 
-    /** The main button. Signs in first if needed, then opens the checkout sheet. */
+    /** The main button. Signs in first if needed (plans follow the account), then checkout. */
     fun continueWithSelected() {
-        if (!canPurchase) {
-            update { copy(message = PaywallMessage.Unavailable) }
-            return
+        when {
+            canPurchaseInApp -> if (isSignedIn.value) openCheckout() else signInThen { openCheckout() }
+            // A build outside the app stores: the website sells the same plans to the same account.
+            canPurchaseOnWeb -> billing.openWebCheckout()
+            else -> update { copy(message = PaywallMessage.Unavailable) }
         }
-        if (!isSignedIn.value) {
-            signInThen { openCheckout() }
-            return
-        }
-        openCheckout()
     }
 
     private fun openCheckout() = update {
@@ -106,34 +107,45 @@ class PaywallViewModel(
             val addOns = Pricing.checkoutAddOnsFor(state.selectedPlan).filter { it in state.selectedAddOns }
             val result = billing.subscribe(state.selectedPlan, state.period, addOns)
             update { copy(isWorking = false) }
-            when (result) {
-                PurchaseResult.Success -> {
-                    update { copy(checkoutOpen = false) }
-                    _purchased.tryEmit(state.selectedPlan)
-                }
-                PurchaseResult.Pending -> update { copy(checkoutOpen = false, message = PaywallMessage.Pending) }
-                PurchaseResult.Canceled -> Unit
-                PurchaseResult.SignInRequired -> update { copy(message = PaywallMessage.SignInRequired) }
-                is PurchaseResult.Failed -> update { copy(message = PaywallMessage.Error(result.message)) }
+            handle(result) {
+                update { copy(checkoutOpen = false) }
+                _purchased.tryEmit(state.selectedPlan)
             }
         }
     }
 
-    /** Whether the selected plan would start with a free trial. Mirrors the backend's rule. */
+    /** Apple requires a visible way to restore purchases; it also rescues a reinstall. */
+    fun restore() {
+        if (_uiState.value.isWorking) return
+        viewModelScope.launch {
+            update { copy(isWorking = true) }
+            val result = billing.restore()
+            update { copy(isWorking = false) }
+            handle(result, onPending = { update { copy(message = PaywallMessage.RestoredNothing) } }) {
+                _purchased.tryEmit(entitlement.value.effectivePlan)
+            }
+        }
+    }
+
+    private inline fun handle(result: PurchaseResult, onPending: () -> Unit = {
+        update { copy(checkoutOpen = false, message = PaywallMessage.Pending) }
+    }, onSuccess: () -> Unit) {
+        when (result) {
+            PurchaseResult.Success -> onSuccess()
+            PurchaseResult.Pending -> onPending()
+            PurchaseResult.Canceled -> Unit
+            PurchaseResult.SignInRequired -> update { copy(message = PaywallMessage.SignInRequired) }
+            PurchaseResult.Unavailable -> update { copy(message = PaywallMessage.Unavailable) }
+            is PurchaseResult.Failed -> update { copy(message = PaywallMessage.Error(result.message)) }
+        }
+    }
+
+    /**
+     * Whether the selected plan would start with a free trial. The stores make the final call
+     * (they track trial eligibility per store account); this mirrors it for the copy.
+     */
     fun startsWithTrial(plan: PlanId = _uiState.value.selectedPlan): Boolean =
         plan == PlanId.PLUS && entitlement.value.trialEligible && !entitlement.value.hasPaidAccess
-
-    /** What the checkout sheet charges today: nothing for the plan during a trial, plus any add-ons. */
-    fun dueToday(state: PaywallUiState): Money {
-        val plan = if (startsWithTrial(state.selectedPlan)) {
-            Money(0, currency)
-        } else {
-            Pricing.price(state.selectedPlan, state.period, currency)
-        }
-        return state.selectedAddOns
-            .filter { it in Pricing.checkoutAddOnsFor(state.selectedPlan) }
-            .fold(plan) { total, addOn -> total + Pricing.addOnPrice(addOn, currency) }
-    }
 
     private fun signInThen(next: () -> Unit) {
         val auth = authService ?: run {

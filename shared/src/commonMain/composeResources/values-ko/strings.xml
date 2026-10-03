@@ -221,6 +221,12 @@
     <string name="paywall_sign_in_required">구독하려면 로그인하세요. 요금제는 계정에 연결됩니다.</string>
     <string name="paywall_success">이제 %1$s 회원입니다. 바로 케이스를 시작해 보세요.</string>
     <string name="paywall_pending">결제가 완료되었습니다. 잠시 후 요금제가 반영됩니다.</string>
+    <string name="paywall_footer_store">언제든 해지할 수 있습니다. 표시된 가격은 앱스토어에서 청구되는 금액입니다.</string>
+    <string name="paywall_restore">구매 복원</string>
+    <string name="paywall_restored_nothing">이 계정으로 복원할 구매 내역이 없습니다.</string>
+    <string name="paywall_cta_web">웹사이트에서 계속하기</string>
+    <string name="checkout_trial_then">%1$d일 무료, 이후 %2$s</string>
+    <string name="billing_managed_in_store_note">이 요금제의 해지와 결제 정보는 %1$s에서 관리됩니다.</string>
 
     <!-- Checkout -->
     <string name="checkout_title">주문 내역</string>
@@ -229,8 +235,6 @@
     <string name="addon_drill_pack_body">기한 없음. 시험 주간에 딱 좋아요.</string>
     <string name="addon_streak_freezes_title">연속 기록 보호권 %1$d개</string>
     <string name="addon_streak_freezes_body">하루 쉬어도 연속 기록이 유지돼요.</string>
-    <string name="checkout_due_today">오늘 결제 금액</string>
-    <string name="checkout_then">이후 %1$s</string>
     <string name="checkout_pay">Google Pay 또는 카드로 결제</string>
     <string name="checkout_start_trial">무료 체험 시작</string>
 

@@ -221,6 +221,12 @@
     <string name="paywall_sign_in_required">Sign in to subscribe. Your plan follows your account.</string>
     <string name="paywall_success">You're on %1$s. Go run a case.</string>
     <string name="paywall_pending">Payment received. Your plan will show up in a moment.</string>
+    <string name="paywall_footer_store">Cancel anytime. Prices are what your app store will charge.</string>
+    <string name="paywall_restore">Restore purchases</string>
+    <string name="paywall_restored_nothing">No previous purchases found for this account.</string>
+    <string name="paywall_cta_web">Continue on the website</string>
+    <string name="checkout_trial_then">Free for %1$d days, then %2$s</string>
+    <string name="billing_managed_in_store_note">Cancelling and payment details for this plan are handled by %1$s.</string>
 
     <!-- Checkout -->
     <string name="checkout_title">Your order</string>
@@ -229,8 +235,6 @@
     <string name="addon_drill_pack_body">Never expire. Perfect for exam week.</string>
     <string name="addon_streak_freezes_title">%1$d streak freezes</string>
     <string name="addon_streak_freezes_body">Miss a day without losing your streak.</string>
-    <string name="checkout_due_today">Due today</string>
-    <string name="checkout_then">Then %1$s</string>
     <string name="checkout_pay">Pay with Google Pay or card</string>
     <string name="checkout_start_trial">Start free trial</string>
 
