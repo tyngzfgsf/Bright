@@ -11,7 +11,8 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "setup-stripe": "node scripts/setup-stripe.js",
-    "check": "node --check index.js && node --check billing/catalog.js && node --check billing/entitlements.js && node --check billing/stripe.js && node --check billing/emails.js && node --check scripts/setup-stripe.js"
+    "check": "node --check index.js && node --check billing/catalog.js && node --check billing/entitlements.js && node --check billing/stripe.js && node --check billing/emails.js && node --check scripts/setup-stripe.js",
+    "test": "firebase emulators:exec --only firestore --project demo-bright 'node --test test/*.test.js'"
   },
   "dependencies": {
     "firebase-admin": "^13.0.2",
