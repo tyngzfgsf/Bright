@@ -227,4 +227,21 @@
     <string name="criterion_burns_cooling">Cool the burn under cool running water for 20 minutes (worthwhile up to 3 hours after injury); no ice; remove jewellery and clothing that isn't stuck.</string>
     <string name="criterion_burns_fluids">Estimate %TBSA (rule of nines; the patient's palm is about 1%); large burns need formula-guided IV fluids, 2-4 mL x kg x %TBSA over 24 hours with half in the first 8, titrated to urine output.</string>
     <string name="criterion_burns_airway">Signs of inhalation injury (facial burns, singed nasal hair, soot, hoarseness, stridor): assess the airway early and consider early intubation.</string>
+
+    <!-- Patient vitals monitor (simulation engine state). Keep values/ and values-ko/ in sync. -->
+    <string name="monitor_hr">HR</string>
+    <string name="monitor_bp">BP</string>
+    <string name="monitor_spo2">SpO₂</string>
+    <string name="monitor_rr">RR</string>
+    <string name="monitor_unit_hr">bpm</string>
+    <string name="monitor_unit_bp">mmHg</string>
+    <string name="monitor_unit_spo2">%</string>
+    <string name="monitor_unit_rr">/min</string>
+    <string name="monitor_consciousness_alert">Alert</string>
+    <string name="monitor_consciousness_verbal">Responds to voice</string>
+    <string name="monitor_consciousness_pain">Responds to pain</string>
+    <string name="monitor_consciousness_unresponsive">Unresponsive</string>
+    <string name="monitor_elapsed">Elapsed %1$s</string>
+    <string name="monitor_needs_review">Training simulation draft · needs medical review</string>
+    <string name="monitor_description">Patient monitor. Heart rate %1$d beats per minute, blood pressure %2$d over %3$d, oxygen saturation %4$d percent, respiratory rate %5$d breaths per minute, %6$s.</string>
 </resources>

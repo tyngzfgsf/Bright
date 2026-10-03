@@ -27,6 +27,7 @@ function num(v: string | undefined): number | undefined {
  * Provider settings, all from Supabase secrets (server-only). Any OpenAI-compatible
  * /chat/completions endpoint works: OpenRouter by default, or another by changing LLM_BASE_URL.
  *   LLM_BASE_URL, LLM_API_KEY, LLM_MODEL_CHAT, LLM_MODEL_GRADE
+ *   optional: LLM_MODEL_CLASSIFY (small/cheap model for the simulation's per-turn action classifier; default: the chat model)
  *   optional: LLM_PRICE_INPUT_PER_M / LLM_PRICE_CACHED_INPUT_PER_M / LLM_PRICE_OUTPUT_PER_M (USD per 1M tokens),
  *             LLM_EXTRA_BODY (JSON object merged into every request, e.g. provider routing prefs)
  */
@@ -51,6 +52,7 @@ export function loadLlmConfig(get: (name: string) => string | undefined): LlmCon
     apiKey: get("LLM_API_KEY")?.trim() || undefined,
     chatModel: get("LLM_MODEL_CHAT")?.trim() || DEFAULT_LLM_MODEL,
     gradeModel: get("LLM_MODEL_GRADE")?.trim() || DEFAULT_LLM_MODEL,
+    classifyModel: get("LLM_MODEL_CLASSIFY")?.trim() || null,
     priceOverride,
     extraBody,
   };

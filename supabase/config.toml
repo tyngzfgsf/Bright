@@ -34,6 +34,11 @@ verify_jwt = false
 [functions.grade]
 verify_jwt = false
 
+# Same reasoning for the simulation endpoint (start / turn / end).
+[functions.sim]
+verify_jwt = false
+
 [db.seed]
 enabled = true
-sql_paths = ["./seed.sql"]
+# seed_sim.sql is generated from scenarios/*.json (scripts/gen-sim-seed.ts) and inserts INACTIVE rows.
+sql_paths = ["./seed.sql", "./seed_sim.sql"]

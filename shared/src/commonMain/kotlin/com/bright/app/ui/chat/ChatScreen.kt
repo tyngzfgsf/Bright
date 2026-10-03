@@ -158,6 +158,14 @@ fun ChatScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            // The server rules engine's patient monitor; absent unless a simulation session is feeding it.
+            uiState.vitals?.let { vitals ->
+                VitalsMonitorPanel(
+                    vitals = vitals,
+                    needsReview = uiState.vitalsNeedReview,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                )
+            }
             LazyColumn(
                 state = listState,
                 modifier = Modifier.weight(1f).fillMaxWidth(),

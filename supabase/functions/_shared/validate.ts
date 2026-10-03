@@ -2,6 +2,7 @@ import {
   AI_ROLES, DIFFICULTIES, MAX_CHAT_MESSAGES, MAX_GRADE_MESSAGES, MAX_MESSAGE_CHARS, MODES,
   TRAINEE_ROLES, TRIAGE_SYSTEMS,
 } from "./config.ts";
+import { NARRATE_MAX_MESSAGES } from "./sim/narrate.ts";
 import type { Lang, Msg } from "./types.ts";
 
 export class ValidationError extends Error {}
@@ -61,6 +62,52 @@ export function parseChatBody(raw: unknown) {
 }
 
 export function parseGradeBody(raw: unknown) {
-  const o = asObject(raw, ["scenario_id", "language", "messages"]);
-  return common(o, MAX_GRADE_MESSAGES, false);
+  const o = asObject(raw, ["scenario_id", "language", "messages", "session_id"]);
+  const parsed = common(o, MAX_GRADE_MESSAGES, false);
+  // Optional: grade against a simulation session's engine log. An opaque, server-issued handle; ownership is checked server-side.
+  const sessionId = o.session_id === undefined ? null : uuid(o.session_id, "session_id");
+  return { ...parsed, sessionId };
+}
+
+function uuid(v: unknown, what: string): string {
+  if (typeof v !== "string" || !UUID.test(v)) return fail(what);
+  return v;
+}
+
+/** Simulation endpoint. `action` selects the shape; each action has its own allow-list of keys. */
+export type SimBody =
+  | { action: "start"; scenarioId: string; language: Lang }
+  | { action: "turn"; sessionId: string; messages: Msg[] }
+  | { action: "end"; sessionId: string };
+
+export function parseSimBody(raw: unknown): SimBody {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) fail("body");
+  const action = (raw as Record<string, unknown>).action;
+  if (action === "start") {
+    const o = asObject(raw, ["action", "scenario_id", "language"]);
+    if (o.language !== "ko" && o.language !== "en") fail("language");
+    return { action, scenarioId: uuid(o.scenario_id, "scenario_id"), language: o.language as Lang };
+  }
+  if (action === "turn") {
+    // No model, prompt, token or limit keys: a turn is just a session handle plus recent chat history.
+    const o = asObject(raw, ["action", "session_id", "messages"]);
+    const sessionId = uuid(o.session_id, "session_id");
+    if (!Array.isArray(o.messages) || o.messages.length === 0) fail("messages");
+    const messages: Msg[] = (o.messages as unknown[]).map((m) => {
+      if (typeof m !== "object" || m === null) fail("message");
+      const { role, content } = m as Record<string, unknown>;
+      if (role !== "user" && role !== "assistant") fail("role");
+      if (typeof content !== "string") fail("content");
+      const text = (content as string).trim();
+      if (text.length === 0 || text.length > MAX_MESSAGE_CHARS) fail("content length");
+      return { role: role as Msg["role"], content: text };
+    });
+    if (messages[messages.length - 1].role !== "user") fail("last message must be from user");
+    return { action, sessionId, messages: messages.slice(-NARRATE_MAX_MESSAGES) };
+  }
+  if (action === "end") {
+    const o = asObject(raw, ["action", "session_id"]);
+    return { action, sessionId: uuid(o.session_id, "session_id") };
+  }
+  return fail("action");
 }

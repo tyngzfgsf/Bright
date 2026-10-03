@@ -8,6 +8,9 @@ export type ErrorCode =
   | "invalid_input"
   | "payload_too_large"
   | "forbidden_origin"
+  | "not_found"
+  | "session_closed"
+  | "session_busy"
   | "upstream_error";
 
 export const STATUS: Record<ErrorCode, number> = {
@@ -19,6 +22,9 @@ export const STATUS: Record<ErrorCode, number> = {
   daily_limit: 429,
   rate_limited: 429,
   budget_reached: 503,
+  not_found: 404,
+  session_closed: 409,
+  session_busy: 409,
   upstream_error: 502,
 };
 

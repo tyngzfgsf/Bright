@@ -49,3 +49,35 @@ insert into public.scenarios (slug, language, title, system_prompt, rubric) valu
    {"id":"ST-IMAGING","text":"출혈 배제를 위한 응급 비조영 두부 CT를 시행하고 뇌졸중 팀을 가동한다","points":3},
    {"id":"ST-TREAT","text":"재관류 치료(가이드라인 시간 내 혈전용해, 대혈관 폐색 시 혈전제거술)를 고려한다","points":1},
    {"id":"ST-SUPPORT","text":"삼킴 평가 전까지 금식하고 기도를 감시하며 필요 없는 적극적 혈압 강하는 피한다","points":1}]'::jsonb);
+
+-- Rubric skill tags for the scenarios above (same idempotent statement as migration 20261004000002_rubric_tags.sql,
+-- which has nothing to update on a fresh database because migrations run before this seed).
+with tagmap (id, tags) as (values
+  ('CA-RESPONSE', '["assessment"]'::jsonb),
+  ('CA-HELP',     '["escalation","communication"]'::jsonb),
+  ('CA-CPR',      '["circulation"]'::jsonb),
+  ('CA-RHYTHM',   '["circulation"]'::jsonb),
+  ('CA-DRUGS',    '["medication"]'::jsonb),
+  ('CA-CAUSES',   '["assessment"]'::jsonb),
+  ('AN-RECOGNISE','["assessment"]'::jsonb),
+  ('AN-EPI',      '["medication"]'::jsonb),
+  ('AN-HELP',     '["escalation"]'::jsonb),
+  ('AN-POSITION', '["circulation"]'::jsonb),
+  ('AN-SUPPORT',  '["breathing","circulation"]'::jsonb),
+  ('AN-REPEAT',   '["medication"]'::jsonb),
+  ('ST-RECOGNISE','["assessment"]'::jsonb),
+  ('ST-ONSET',    '["assessment"]'::jsonb),
+  ('ST-GLUCOSE',  '["assessment"]'::jsonb),
+  ('ST-IMAGING',  '["escalation"]'::jsonb),
+  ('ST-TREAT',    '["medication"]'::jsonb),
+  ('ST-SUPPORT',  '["airway","safety"]'::jsonb)
+)
+update public.scenarios s
+   set rubric = (
+     select coalesce(jsonb_agg(
+              case when m.tags is not null and not (e.item ? 'tags')
+                   then e.item || jsonb_build_object('tags', m.tags) else e.item end
+              order by e.ord), '[]'::jsonb)
+       from jsonb_array_elements(s.rubric) with ordinality as e(item, ord)
+       left join tagmap m on m.id = e.item ->> 'id')
+ where jsonb_typeof(s.rubric) = 'array' and jsonb_array_length(s.rubric) > 0;

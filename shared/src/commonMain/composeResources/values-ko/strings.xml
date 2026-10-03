@@ -227,4 +227,21 @@
     <string name="criterion_burns_cooling">시원한 흐르는 물로 20분간 식힘 (수상 후 3시간까지 효과 있음): 얼음은 쓰지 않고, 달라붙지 않은 장신구와 옷은 제거.</string>
     <string name="criterion_burns_fluids">화상 면적(%TBSA) 추정 (9의 법칙, 환자 손바닥이 약 1%): 광범위 화상은 공식에 따라 24시간 동안 2-4mL x kg x %TBSA, 첫 8시간에 절반, 소변량에 맞춰 조절.</string>
     <string name="criterion_burns_airway">흡입 손상 징후 (얼굴 화상, 그을린 코털, 그을음, 쉰 목소리, 협착음): 기도를 조기에 평가하고 조기 삽관 고려.</string>
+
+    <!-- 환자 활력징후 모니터 (시뮬레이션 엔진 상태). values/ 와 values-ko/ 를 항상 함께 수정하세요. -->
+    <string name="monitor_hr">심박</string>
+    <string name="monitor_bp">혈압</string>
+    <string name="monitor_spo2">SpO₂</string>
+    <string name="monitor_rr">호흡</string>
+    <string name="monitor_unit_hr">회/분</string>
+    <string name="monitor_unit_bp">mmHg</string>
+    <string name="monitor_unit_spo2">%</string>
+    <string name="monitor_unit_rr">회/분</string>
+    <string name="monitor_consciousness_alert">의식 명료</string>
+    <string name="monitor_consciousness_verbal">말에 반응</string>
+    <string name="monitor_consciousness_pain">통증에 반응</string>
+    <string name="monitor_consciousness_unresponsive">반응 없음</string>
+    <string name="monitor_elapsed">경과 %1$s</string>
+    <string name="monitor_needs_review">훈련용 시뮬레이션 초안 · 의학 검토 필요</string>
+    <string name="monitor_description">환자 모니터. 심박수 분당 %1$d회, 혈압 %2$d에 %3$d, 산소포화도 %4$d퍼센트, 호흡수 분당 %5$d회, %6$s.</string>
 </resources>

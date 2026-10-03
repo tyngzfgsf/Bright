@@ -4,12 +4,16 @@ import { errorResponse } from "./errors.ts";
 import { llmChat, UpstreamError } from "./llm.ts";
 import { finish, guard, reserve } from "./pipeline.ts";
 import { buildGradeSystemPrompt, formatTranscript } from "./prompt.ts";
+import { describeEngineLog, parseState } from "./sim/engine.ts";
+import { type RubricTag, tagsOf } from "./sim/rubric.ts";
+import { parseSimConfig } from "./sim/simconfig.ts";
 import type { Deps, RubricItem } from "./types.ts";
 import { parseGradeBody, ValidationError } from "./validate.ts";
 
 export interface GradeResult {
   score: number;
-  items: { id: string; passed: boolean; note: string }[];
+  /** `tags` come from the server-side rubric (never from the model) so a skill profile can aggregate by area. */
+  items: { id: string; passed: boolean; note: string; tags: RubricTag[] }[];
   feedback: string;
 }
 
@@ -28,7 +32,7 @@ export function validateGrade(raw: any, rubric: RubricItem[]): GradeResult | nul
   const earned = rubric.reduce((n, r) => n + (byId.get(r.id)!.passed ? r.points : 0), 0);
   return {
     score: total > 0 ? Math.round((earned / total) * 100) : 0,
-    items: rubric.map((r) => ({ id: r.id, ...byId.get(r.id)! })),
+    items: rubric.map((r) => ({ id: r.id, ...byId.get(r.id)!, tags: tagsOf(r) })),
     feedback: raw.feedback.slice(0, 800),
   };
 }
@@ -52,14 +56,26 @@ export function makeGradeHandler(deps: Deps) {
       return finish(deps, "grade", t0, errorResponse("invalid_input", cors), uid, "invalid_input");
     }
 
+    // Optional simulation session: its engine log becomes trusted grading evidence. Ownership is checked
+    // against the token's user id; another user's session is indistinguishable from a missing one.
+    let engineLog: string | undefined;
+    if (input.sessionId) {
+      const session = await deps.store.getSession(uid, input.sessionId);
+      if (!session) return finish(deps, "grade", t0, errorResponse("not_found", cors), uid, "not_found");
+      const cfg = session.scenario_id === scenario.id ? parseSimConfig(scenario.sim) : null;
+      const state = cfg ? parseState(session.state, cfg) : null;
+      if (!cfg || !state) return finish(deps, "grade", t0, errorResponse("invalid_input", cors), uid, "invalid_input");
+      engineLog = describeEngineLog(cfg, state);
+    }
+
     const r = await reserve(ctx, GRADE_QUOTA_COST);
     if ("res" in r) return r.res;
     const quota = r.quota;
 
     const model = ctx.profile.tier.grade_model ?? deps.llm().gradeModel;
     const messages = [
-      { role: "system", content: buildGradeSystemPrompt(scenario, input.language) },
-      { role: "user", content: formatTranscript(input.messages) },
+      { role: "system", content: buildGradeSystemPrompt(scenario, input.language, engineLog !== undefined) },
+      { role: "user", content: formatTranscript(input.messages, engineLog) },
     ];
     const fail = async () => {
       await deps.store.refundQuota(uid, GRADE_QUOTA_COST, quota.day).catch(() => {});

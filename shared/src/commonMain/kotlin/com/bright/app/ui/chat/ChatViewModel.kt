@@ -18,6 +18,7 @@ import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.domain.AiTurn
 import com.bright.app.domain.AiTurnParser
 import com.bright.app.domain.DailyStreak
+import com.bright.app.domain.PatientVitals
 import com.bright.app.domain.ScenarioClock
 import com.bright.app.domain.ScenarioPromptBuilder
 import com.bright.app.domain.ScenarioState
@@ -38,6 +39,7 @@ import com.bright.app.domain.model.ScoringCriterion
 import com.bright.app.domain.model.TriageSystem
 import com.bright.app.domain.model.TraineeRole
 import com.bright.app.util.ApiResult
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -63,7 +65,11 @@ data class ChatUiState(
     val decompensationEnabled: Boolean = false,
     /** When the question still awaiting an answer was asked — drives the on-screen decision timer. */
     val openQuestionAtMillis: Long? = null,
-    val lateAfterSeconds: Long = ScenarioClock.lateAfterSeconds(Difficulty.INTERMEDIATE)
+    val lateAfterSeconds: Long = ScenarioClock.lateAfterSeconds(Difficulty.INTERMEDIATE),
+    /** The server rules engine's patient monitor, when a simulation session is driving this chat; null hides the panel. */
+    val vitals: PatientVitals? = null,
+    /** True while the running simulation scenario is flagged "needs medical review" by the server. */
+    val vitalsNeedReview: Boolean = false
 )
 
 class ChatViewModel(
@@ -88,7 +94,17 @@ class ChatViewModel(
 
     private val messagesFlow = dao.observeMessages(sessionId)
 
-    val uiState: StateFlow<ChatUiState> = combine(
+    private val _engineMonitor = MutableStateFlow<Pair<PatientVitals, Boolean>?>(null)
+
+    /**
+     * Feed the `state` of each response from the server's simulation endpoint here (parsed with
+     * [PatientVitalsParser]); pass null to hide the monitor. The app only displays it, never computes it.
+     */
+    fun onEngineState(vitals: PatientVitals?, needsReview: Boolean = false) {
+        _engineMonitor.value = vitals?.let { it to needsReview }
+    }
+
+    private val baseState: Flow<ChatUiState> = combine(
         messagesFlow, _isSending, _errorMessage, preferences.streakState, preferences.notificationPermissionAsked
     ) { entities, sending, error, streakState, permissionAsked ->
         val currentSession = session
@@ -109,6 +125,10 @@ class ChatViewModel(
             openQuestionAtMillis = ScenarioClock.openQuestionAt(entities.map { it.toEvent() }),
             lateAfterSeconds = ScenarioClock.lateAfterSeconds(currentDifficulty())
         )
+    }
+
+    val uiState: StateFlow<ChatUiState> = combine(baseState, _engineMonitor) { state, monitor ->
+        state.copy(vitals = monitor?.first, vitalsNeedReview = monitor?.second ?: false)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ChatUiState())
 
     init {

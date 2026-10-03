@@ -117,3 +117,26 @@ For an end-to-end run with a fake provider, put `LLM_API_KEY=fake` and `LLM_BASE
 
 ## 10. Legal to-dos (not code)
 Privacy policy + terms (user messages are sent to your LLM provider and the model host it routes to); confirm the minimum age with your lawyer (Korea: 14 under PIPA; EU member states can require up to 16).
+
+## 11. Patient-state simulation engine (Prompt 1)
+Details: `docs/PATIENT_STATE_ENGINE.md`. In this order:
+
+1. **Apply the two new migrations** (never edit old ones): `supabase db push` (adds `sessions`, `scenarios.sim`, the session functions, rubric tags). Then Dashboard -> Advisors -> Security: confirm no new warnings and that `sessions` shows RLS enabled.
+2. **Seed the two worked scenarios (inserted INACTIVE)**:
+   ```bash
+   psql "<SESSION_POOLER_CONNECTION_STRING>" -f supabase/seed_sim.sql
+   ```
+   Safe to re-run: it refreshes the content and never flips `active`. After editing `supabase/scenarios/*.json`, regenerate with `deno run --allow-read --allow-write scripts/gen-sim-seed.ts`.
+3. **Optional cheaper classifier**: `supabase secrets set LLM_MODEL_CLASSIFY=<a small, cheap model id>` (type it in your own terminal; if unset, the chat model is used).
+4. **Deploy all three functions** (shared code changed): `supabase functions deploy chat grade sim`. `sim` has `verify_jwt = false` in `config.toml` on purpose, like the others.
+5. **Check real prices** (step 3 above): a turn is now two calls, so wrong prices make the budget kill switch twice as wrong.
+6. **Medical review (blocks release)**: give `supabase/scenarios/anaphylaxis-sim.json` and `asthma-sim.json` to a clinician. Every number and rule is a fictional placeholder and no dose is verified. Only after sign-off: edit the JSON (`review.status` -> `reviewed`, drop "[needs medical review]" from the titles and the note), regenerate, re-apply the seed, then `update public.scenarios set active = true where slug in ('anaphylaxis-sim','asthma-sim');`. Until then the scenarios are invisible to users.
+7. **Smoke-test `sim` on a project with no real users** (activation is global, so do this before launch or flip `active` back right after): temporarily activate one scenario, get a user token as in step 4b, then
+   ```bash
+   curl -s -X POST "$SUPABASE_URL/functions/v1/sim" -H "authorization: Bearer $TOKEN" -H "content-type: application/json" \
+     -d '{"action":"start","scenario_id":"<uuid from scenarios>","language":"en"}'
+   ```
+   then a `turn` with the returned `session_id`. Deactivate again afterwards. (`scripts/smoke-test.sh` only covers `chat` for now.)
+8. **Not done here (needs your decision / the sign-in work)**: the app does not call `sim` yet. `ChatViewModel.onEngineState(...)` and the monitor panel are ready; wiring needs the Supabase sign-in + secure session storage (rule 8) and BYOK removal.
+9. **Optional data hygiene**: sessions are never deleted automatically. If you want a retention window: `delete from public.sessions where updated_at < now() - interval '30 days';` as a scheduled job.
+10. **Run the local tests** once: `scripts/run-sql-tests.sh` (needs Postgres binaries, `brew install postgresql@17`) and `cd supabase/functions && deno test -A`.

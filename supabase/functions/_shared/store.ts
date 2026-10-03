@@ -2,7 +2,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { makeJwtVerifier, pickSecretKey } from "./jwt.ts";
 import { loadLlmConfig } from "./llm-config.ts";
-import type { AppConfig, Deps, Lang, Price, Profile, Quota, Scenario, Store } from "./types.ts";
+import type { AppConfig, Deps, Lang, Price, Profile, Quota, Scenario, SessionRow, Store } from "./types.ts";
 
 /** Production wiring. Database access uses a secret key (bypasses RLS) and exists only inside Edge Functions. */
 export function productionDeps(): Deps {
@@ -28,7 +28,7 @@ export function productionDeps(): Deps {
     async getScenario(id): Promise<Scenario | null> {
       const { data } = await admin.from("scenarios").select("*").eq("id", id).eq("active", true).maybeSingle();
       // deno-lint-ignore no-explicit-any
-      return data ? { ...(data as any), language: (data as any).language as Lang } : null;
+      return data ? { ...(data as any), language: (data as any).language as Lang, sim: (data as any).sim ?? null } : null;
     },
     async getConfig(): Promise<AppConfig> {
       if (cfg && Date.now() - cfg.at < 60_000) return cfg.value;
@@ -63,6 +63,36 @@ export function productionDeps(): Deps {
     },
     async recordUsage(uid, input, output, costUsd) {
       await admin.rpc("record_usage", { p_user: uid, p_in: input, p_out: output, p_cost: costUsd });
+    },
+    // Simulation sessions. Each RPC filters on p_user inside SQL (tested with two users in tests/sessions_rls.sql).
+    async createSession(uid, scenarioId, state) {
+      const { data, error } = await admin.rpc("create_session", { p_user: uid, p_scenario: scenarioId, p_state: state });
+      if (error || typeof data !== "string") throw error ?? new Error("create_session failed");
+      return data;
+    },
+    async getSession(uid, id): Promise<SessionRow | null> {
+      const { data, error } = await admin.rpc("get_session", { p_user: uid, p_id: id });
+      if (error) throw error;
+      const r = Array.isArray(data) ? data[0] : data;
+      return r ? { id: r.id, scenario_id: r.scenario_id, state: r.state, turn_count: r.turn_count, status: r.status } : null;
+    },
+    async claimSessionTurn(uid, id, expected) {
+      const { data, error } = await admin.rpc("claim_session_turn", { p_user: uid, p_id: id, p_expected: expected });
+      if (error) throw error;
+      return data === true;
+    },
+    async commitSessionTurn(uid, id, expected, state, status) {
+      const { data, error } = await admin.rpc("commit_session_turn", { p_user: uid, p_id: id, p_expected: expected, p_state: state, p_status: status });
+      if (error) throw error;
+      return data === true;
+    },
+    async releaseSessionTurn(uid, id) {
+      await admin.rpc("release_session_turn", { p_user: uid, p_id: id });
+    },
+    async endSession(uid, id) {
+      const { data, error } = await admin.rpc("end_session", { p_user: uid, p_id: id });
+      if (error) throw error;
+      return typeof data === "string" ? data as SessionRow["status"] : null;
     },
   };
 
