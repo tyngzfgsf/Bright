@@ -12,6 +12,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.savedstate.read
+import com.bright.app.data.billing.PaywallReason
+import com.bright.app.ui.billing.PaywallScreen
 import com.bright.app.ui.chat.ChatScreen
 import com.bright.app.ui.history.HistoryScreen
 import com.bright.app.ui.home.HomeScreen
@@ -36,10 +38,12 @@ fun BrightNavGraph(
     ) {
         composable(Screen.ONBOARDING) {
             OnboardingScreen(
-                onFinished = {
+                onFinished = { firstSessionId ->
                     navController.navigate(Screen.HOME) {
                         popUpTo(Screen.ONBOARDING) { inclusive = true }
                     }
+                    // Straight into the first case — the "aha" is a scored answer, not a home screen.
+                    firstSessionId?.let { navController.navigate(Screen.chat(it)) }
                 }
             )
         }
@@ -49,7 +53,8 @@ fun BrightNavGraph(
                 onStartSession = { sessionId -> navController.navigate(Screen.chat(sessionId)) },
                 onOpenHistory = { navController.navigate(Screen.HISTORY) },
                 onOpenSettings = { navController.navigate(Screen.SETTINGS) },
-                onOpenStats = { navController.navigate(Screen.STATS) }
+                onOpenStats = { navController.navigate(Screen.STATS) },
+                onOpenPaywall = { reason -> navController.navigate(Screen.paywall(reason)) }
             )
         }
 
@@ -67,7 +72,8 @@ fun BrightNavGraph(
                     navController.navigate(Screen.ONBOARDING) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                onOpenPaywall = { reason -> navController.navigate(Screen.paywall(reason)) }
             )
         }
 
@@ -85,7 +91,20 @@ fun BrightNavGraph(
             val sessionId = backStackEntry.arguments?.read { getStringOrNull("sessionId") }.orEmpty()
             ChatScreen(
                 sessionId = sessionId,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onOpenPaywall = { reason -> navController.navigate(Screen.paywall(reason)) }
+            )
+        }
+
+        composable(
+            route = Screen.PAYWALL,
+            arguments = listOf(navArgument("reason") { })
+        ) { backStackEntry ->
+            val reasonName = backStackEntry.arguments?.read { getStringOrNull("reason") }
+            val reason = PaywallReason.entries.firstOrNull { it.name == reasonName } ?: PaywallReason.BROWSE
+            PaywallScreen(
+                reason = reason,
+                onClose = { navController.popBackStack() }
             )
         }
     }

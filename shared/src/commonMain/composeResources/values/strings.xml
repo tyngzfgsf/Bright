@@ -178,4 +178,111 @@
     <string name="common_delete">Delete</string>
     <string name="common_done">Done</string>
     <string name="common_back">Back</string>
+
+    <!-- ===== Monetization (MONETIZATION.md) ===== -->
+
+    <!-- Paywall -->
+    <string name="paywall_title_browse">Walk into your next emergency already knowing what to do</string>
+    <string name="paywall_title_drill_limit">You've used this month's free drills</string>
+    <string name="paywall_subtitle_drill_limit">Keep your streak and your momentum going. Go unlimited.</string>
+    <string name="paywall_title_custom">Rehearse the exact case you're dreading</string>
+    <string name="paywall_title_debrief">See exactly what an expert would have done differently</string>
+    <string name="paywall_subtitle_default">Pick the plan that gets you there.</string>
+    <string name="paywall_period_monthly">Monthly</string>
+    <string name="paywall_period_annual">Annual</string>
+    <string name="paywall_annual_badge">Get %1$d months free</string>
+    <string name="paywall_badge_recommended">Most popular</string>
+    <string name="paywall_plan_free">Free</string>
+    <string name="paywall_plan_plus">Plus</string>
+    <string name="paywall_plan_pro">Pro</string>
+    <string name="paywall_free_outcome">Build the daily habit</string>
+    <string name="paywall_plus_outcome">Train every day, on any case, with no limits</string>
+    <string name="paywall_pro_outcome">Know exactly what to fix after every case</string>
+    <string name="paywall_free_bullet_1">%1$d AI drills a month</string>
+    <string name="paywall_free_bullet_2">Missed cases come back for review automatically</string>
+    <string name="paywall_free_bullet_3">Daily streak and skill profile</string>
+    <string name="paywall_plus_bullet_1">Unlimited AI drills, so you can run a case before every shift</string>
+    <string name="paywall_plus_bullet_2">Write your own scenario and rehearse the case you're dreading</string>
+    <string name="paywall_plus_bullet_3">Everything in Free</string>
+    <string name="paywall_pro_bullet_1">An expert debrief after every case: what you missed, and why it matters</string>
+    <string name="paywall_pro_bullet_2">3 streak freezes every month, so a night shift never breaks your streak</string>
+    <string name="paywall_pro_bullet_3">Everything in Plus</string>
+    <string name="paywall_price_per_month">%1$s/month</string>
+    <string name="paywall_billed_annually">%1$s/month, billed annually (%2$s)</string>
+    <string name="paywall_cta_trial">Start %1$d-day free trial</string>
+    <string name="paywall_cta_subscribe">Continue with %1$s</string>
+    <string name="paywall_cta_switch">Switch to %1$s</string>
+    <string name="paywall_cta_current">Your current plan</string>
+    <string name="paywall_cta_free">Keep using Free</string>
+    <string name="paywall_trial_note">Free for %1$d days, then %2$s. Cancel before then and you won't be charged. We'll email you 3 days before your trial ends.</string>
+    <string name="paywall_footer">Cancel anytime in Settings. Prices in %1$s.</string>
+    <string name="paywall_unavailable">Purchases aren't available on this device yet.</string>
+    <string name="paywall_sign_in_required">Sign in to subscribe. Your plan follows your account.</string>
+    <string name="paywall_success">You're on %1$s. Go run a case.</string>
+    <string name="paywall_pending">Payment received. Your plan will show up in a moment.</string>
+
+    <!-- Checkout -->
+    <string name="checkout_title">Your order</string>
+    <string name="checkout_addons_title">Add to your order</string>
+    <string name="addon_drill_pack_title">+%1$d drills</string>
+    <string name="addon_drill_pack_body">Never expire. Perfect for exam week.</string>
+    <string name="addon_streak_freezes_title">%1$d streak freezes</string>
+    <string name="addon_streak_freezes_body">Miss a day without losing your streak.</string>
+    <string name="checkout_due_today">Due today</string>
+    <string name="checkout_then">Then %1$s</string>
+    <string name="checkout_pay">Pay with Google Pay or card</string>
+    <string name="checkout_start_trial">Start free trial</string>
+
+    <!-- Plan & billing (Settings) -->
+    <string name="billing_section">Plan &amp; billing</string>
+    <string name="billing_status_trial">Free trial until %1$s</string>
+    <string name="billing_status_renews">Renews on %1$s</string>
+    <string name="billing_status_cancels">Ends on %1$s</string>
+    <string name="billing_status_past_due">Your last payment didn't go through. We'll retry automatically, and you keep full access in the meantime.</string>
+    <string name="billing_update_payment">Update payment</string>
+    <string name="billing_drills_used">%1$d of %2$d free drills used this month</string>
+    <string name="billing_bonus_drills">+%1$d bonus drills</string>
+    <string name="billing_streak_freezes">%1$d streak freezes available</string>
+    <string name="billing_see_plans">See plans</string>
+    <string name="billing_change_plan">Change plan</string>
+    <string name="billing_cancel">Cancel subscription</string>
+    <string name="billing_resume">Keep my subscription</string>
+    <string name="billing_discount_active">Discount applied</string>
+    <string name="billing_buy_drills">Buy +%1$d drills · %2$s</string>
+    <string name="billing_buy_freezes">Buy %1$d streak freezes · %2$s</string>
+    <string name="billing_byok_note">You're using your own Groq key, so your drills aren't counted.</string>
+    <string name="billing_signed_out_note">Sign in to get %1$d free drills a month. No API key needed.</string>
+    <string name="billing_purchase_done">Added to your account.</string>
+
+    <!-- Exit offer -->
+    <string name="exit_offer_title">Wait, before you go</string>
+    <string name="exit_offer_body">Stay and get %1$d% off your next %2$d months. Your streak, skill profile and review queue stay exactly as they are.</string>
+    <string name="exit_offer_accept">Keep Bright at %1$d% off</string>
+    <string name="exit_offer_decline">Cancel anyway</string>
+    <string name="exit_offer_applied">Done. %1$d% off for your next %2$d months.</string>
+    <string name="cancel_confirm_title">Cancel your plan?</string>
+    <string name="cancel_confirm_body">You'll keep %1$s until %2$s, then move to Free with %3$d drills a month.</string>
+    <string name="cancel_confirm_yes">Cancel plan</string>
+    <string name="cancel_confirm_no">Keep plan</string>
+
+    <!-- Upgrade prompts -->
+    <string name="nudge_drills_left">%1$d free drills left this month</string>
+    <string name="nudge_out_of_drills">No free drills left this month</string>
+    <string name="nudge_go_unlimited">Go unlimited</string>
+    <string name="home_free_drills_left">%1$d of %2$d free drills left this month</string>
+    <string name="lock_custom_scenario">Write your own scenario · Plus</string>
+    <string name="debrief_button">Get expert debrief</string>
+    <string name="debrief_locked">Expert debrief · Pro</string>
+    <string name="chat_not_connected">Sign in for free drills, or add your own Groq key in Settings, to start a case.</string>
+    <string name="chat_out_of_drills">You've used this month's free drills.</string>
+
+    <!-- Onboarding: account + first case -->
+    <string name="onboarding_account_title">Start training in seconds</string>
+    <string name="onboarding_account_subtitle">Sign in with Google for %1$d free drills a month. No API key, no setup.</string>
+    <string name="onboarding_account_signed_in">Signed in as %1$s</string>
+    <string name="onboarding_use_own_key">I have my own Groq key</string>
+    <string name="onboarding_first_case_title">Your first case takes 2 minutes</string>
+    <string name="onboarding_first_case_subtitle">A beginner-level cardiac arrest. Answer the way you would at the bedside, and you'll get a score and feedback on every step.</string>
+    <string name="onboarding_first_case_start">Start my first case</string>
+    <string name="onboarding_first_case_later">I'll look around first</string>
 </resources>

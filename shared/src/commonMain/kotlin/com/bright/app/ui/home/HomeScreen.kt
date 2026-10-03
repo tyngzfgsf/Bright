@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Badge
@@ -73,6 +74,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.LocalBrightDependencies
+import com.bright.app.data.billing.PaywallReason
+import com.bright.app.domain.billing.Feature
+import com.bright.app.ui.billing.DrillLimitNudge
 import com.bright.app.resources.Res
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
@@ -247,18 +251,38 @@ private fun HomeProgressCard(
     }
 }
 
+/** Stands in for a Plus-only input: looks like the field, opens the paywall when tapped. */
+@Composable
+private fun LockedFeatureRow(text: String, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.background)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.height(16.dp), tint = colors.onSurfaceVariant)
+        Spacer(Modifier.width(10.dp))
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+    }
+}
+
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onStartSession: (String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenStats: () -> Unit
+    onOpenStats: () -> Unit,
+    onOpenPaywall: (PaywallReason) -> Unit = {}
 ) {
     val app = LocalBrightDependencies.current
     val viewModel: HomeViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, app.appVersionName, app.appUpdater, app.notifier, app.analytics) }
+            initializer { HomeViewModel(app.database.chatDao(), app.userPreferences, app.appVersionName, app.appUpdater, app.notifier, app.analytics, app.billing) }
         }
     )
     val uiState by viewModel.uiState.collectAsState()
@@ -266,6 +290,9 @@ fun HomeScreen(
     val streakDays by viewModel.streakDays.collectAsState()
     val dueForReview by viewModel.dueForReview.collectAsState()
     val triageSystem by viewModel.triageSystem.collectAsState()
+    val entitlement by viewModel.entitlement.collectAsState()
+    val isHosted by viewModel.isHosted.collectAsState()
+    val canWriteCustom = entitlement.has(Feature.CUSTOM_SCENARIOS)
     var isStarting by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -372,6 +399,11 @@ fun HomeScreen(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                             advanceTourFrom("start")
+                            // Out of hosted drills: the paywall instead of a chat that can't start.
+                            if (isHosted && entitlement.isOutOfDrills) {
+                                onOpenPaywall(PaywallReason.DRILL_LIMIT)
+                                return@BrightButton
+                            }
                             isStarting = true
                             scope.launch {
                                 val id = viewModel.startSession()
@@ -398,6 +430,14 @@ fun HomeScreen(
                     text = stringResource(Res.string.home_greeting),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                DrillLimitNudge(
+                    entitlement = entitlement,
+                    isHosted = isHosted,
+                    onGoUnlimited = { onOpenPaywall(PaywallReason.DRILL_LIMIT) },
+                    showWhenPlenty = true,
+                    modifier = Modifier.padding(top = 12.dp)
                 )
 
                 // --- Progress card: review queue (most specific/actionable) takes priority
@@ -497,12 +537,19 @@ fun HomeScreen(
                     }
 
                     Spacer(Modifier.height(6.dp))
-                    BrightTextField(
-                        value = uiState.customScenario,
-                        onValueChange = { viewModel.setCustomScenario(it) },
-                        placeholder = stringResource(Res.string.home_custom_scenario_hint),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    if (canWriteCustom) {
+                        BrightTextField(
+                            value = uiState.customScenario,
+                            onValueChange = { viewModel.setCustomScenario(it) },
+                            placeholder = stringResource(Res.string.home_custom_scenario_hint),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        LockedFeatureRow(
+                            text = stringResource(Res.string.lock_custom_scenario),
+                            onClick = { onOpenPaywall(PaywallReason.CUSTOM_SCENARIO) }
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(14.dp))
@@ -589,13 +636,15 @@ fun HomeScreen(
                                         )
                                     }
                                 }
-                                Spacer(Modifier.height(10.dp))
-                                BrightTextField(
-                                    value = uiState.customAiRole,
-                                    onValueChange = { viewModel.setCustomAiRole(it) },
-                                    placeholder = stringResource(Res.string.home_custom_ai_role_hint),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                                if (canWriteCustom) {
+                                    Spacer(Modifier.height(10.dp))
+                                    BrightTextField(
+                                        value = uiState.customAiRole,
+                                        onValueChange = { viewModel.setCustomAiRole(it) },
+                                        placeholder = stringResource(Res.string.home_custom_ai_role_hint),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
 
                                 Spacer(Modifier.height(20.dp))
                                 BrightDiscreteSlider(

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.bright.app.data.analytics.Analytics
 import com.bright.app.data.analytics.AnalyticsEvent
 import com.bright.app.data.analytics.ScenarioLabel
+import com.bright.app.data.billing.BillingRepository
+import com.bright.app.data.billing.PaywallReason
 import com.bright.app.data.local.ChatDao
 import com.bright.app.util.currentLocalEpochDay
 import com.bright.app.util.currentTimeMillis
@@ -13,11 +15,15 @@ import com.bright.app.data.local.QuestionRecordEntity
 import com.bright.app.data.local.SessionEntity
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqMessage
-import com.bright.app.data.remote.GroqRepository
+import com.bright.app.data.remote.AiGateway
+import com.bright.app.data.remote.AiResult
 import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.domain.AiTurn
 import com.bright.app.domain.AiTurnParser
 import com.bright.app.domain.DailyStreak
+import com.bright.app.domain.ExpertDebrief
+import com.bright.app.domain.billing.Entitlement
+import com.bright.app.domain.billing.Feature
 import com.bright.app.domain.ScenarioPromptBuilder
 import com.bright.app.domain.SpacedRepetitionScheduler
 import com.bright.app.domain.syncLocalNotifications
@@ -39,6 +45,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.bright.app.util.randomId
+import com.bright.app.resources.Res
+import com.bright.app.resources.chat_not_connected
+import com.bright.app.resources.chat_out_of_drills
+import org.jetbrains.compose.resources.getString
 
 data class ChatUiState(
     val messages: List<ChatMessage> = emptyList(),
@@ -57,7 +67,8 @@ class ChatViewModel(
     private val sessionId: String,
     private val dao: ChatDao,
     private val preferences: UserPreferences,
-    private val groqRepository: GroqRepository,
+    private val aiGateway: AiGateway,
+    private val billing: BillingRepository,
     private val notifier: LocalNotifier,
     private val analytics: Analytics
 ) : ViewModel() {
@@ -72,6 +83,17 @@ class ChatViewModel(
     // simply settling into place on first collection.
     private val _streakMilestoneEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val streakMilestoneEvent: SharedFlow<Unit> = _streakMilestoneEvent
+
+    /** An action needs a paid plan (or more drills). The screen answers by opening the paywall. */
+    private val _paywallEvent = MutableSharedFlow<PaywallReason>(extraBufferCapacity = 1)
+    val paywallEvent: SharedFlow<PaywallReason> = _paywallEvent
+
+    /** Plan and usage, for the expert-debrief button and the near-limit nudge. */
+    val entitlement: StateFlow<Entitlement> = billing.entitlement
+
+    /** Whether this trainee's drills are metered (signed in, no own key). */
+    val isHosted: StateFlow<Boolean> = billing.isHosted
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private val messagesFlow = dao.observeMessages(sessionId)
 
@@ -144,15 +166,29 @@ class ChatViewModel(
         }
     }
 
+    /**
+     * Every model call goes through [AiGateway], which picks the trainee's own key or the hosted
+     * proxy. Running out of hosted drills surfaces as an error line *and* a paywall event, so
+     * dismissing the paywall leaves an honest explanation on screen rather than a dead chat.
+     */
+    private suspend fun sendToAi(messages: List<GroqMessage>): ApiResult<String> =
+        when (val result = aiGateway.send(sessionId, messages)) {
+            is AiResult.Success -> ApiResult.Success(result.text)
+            is AiResult.Error -> ApiResult.Error(result.message)
+            AiResult.OutOfDrills -> {
+                _paywallEvent.tryEmit(PaywallReason.DRILL_LIMIT)
+                ApiResult.Error(getString(Res.string.chat_out_of_drills))
+            }
+            AiResult.NotConnected -> ApiResult.Error(getString(Res.string.chat_not_connected))
+        }
+
     private suspend fun callAi(extraTrailingUserMessage: String? = null): ApiResult<AiTurn> {
-        val apiKey = preferences.groqApiKey.first().orEmpty()
-        val model = preferences.groqModel.first()
         val messages = buildList {
             add(GroqMessage(role = "system", content = systemPrompt()))
             addAll(historyAsGroqMessages())
             extraTrailingUserMessage?.let { add(GroqMessage(role = "user", content = it)) }
         }
-        return when (val result = groqRepository.sendConversation(apiKey, model, messages, jsonMode = false)) {
+        return when (val result = sendToAi(messages)) {
             is ApiResult.Success -> ApiResult.Success(AiTurnParser.parse(result.data))
             is ApiResult.Error -> ApiResult.Error(result.message)
         }
@@ -284,7 +320,8 @@ class ChatViewModel(
                     )
                 )
             }
-            if (preferences.recordActiveDay(currentLocalEpochDay())) {
+            val freezes = billing.streakFreezesAvailable.first()
+            if (preferences.recordActiveDay(currentLocalEpochDay(), freezes)) {
                 _streakMilestoneEvent.tryEmit(Unit)
                 analytics.log(AnalyticsEvent.StreakDayReached(preferences.streakState.first().count))
             }
@@ -367,13 +404,11 @@ class ChatViewModel(
                 )
             )
             _isSending.value = true
-            val apiKey = preferences.groqApiKey.first().orEmpty()
-            val model = preferences.groqModel.first()
             val messages = listOf(
                 GroqMessage(role = "system", content = ScenarioPromptBuilder.askAsideSystemPrompt(currentLanguage()))
             ) + historyAsGroqMessages()
 
-            when (val result = groqRepository.sendConversation(apiKey, model, messages, jsonMode = false)) {
+            when (val result = sendToAi(messages)) {
                 is ApiResult.Success -> {
                     dao.insertMessage(
                         MessageEntity(
@@ -460,6 +495,46 @@ class ChatViewModel(
                 is ApiResult.Success -> applyTurn(
                     if (hasUngradedAnswer) result.data.copy(sessionComplete = true)
                     else result.data.copy(score = null, feedback = null, sessionComplete = true)
+                )
+                is ApiResult.Error -> _errorMessage.value = result.message
+            }
+            _isSending.value = false
+        }
+    }
+
+    /**
+     * Pro: an attending-level review of the finished case, appended as an answer bubble. For
+     * anyone without Pro this is the feature-gated upgrade prompt — the button stays visible and
+     * opens the paywall, which is how most people discover the feature exists at all.
+     */
+    fun requestExpertDebrief() {
+        if (_isSending.value) return
+        if (!billing.entitlement.value.has(Feature.EXPERT_DEBRIEF)) {
+            _paywallEvent.tryEmit(PaywallReason.EXPERT_DEBRIEF)
+            return
+        }
+        viewModelScope.launch {
+            _isSending.value = true
+            _errorMessage.value = null
+            val messages = buildList {
+                add(
+                    GroqMessage(
+                        role = "system",
+                        content = ExpertDebrief.systemPrompt(resolvedScenarioDescription(), currentTraineeRole(), currentLanguage())
+                    )
+                )
+                addAll(historyAsGroqMessages())
+                add(GroqMessage(role = "user", content = ExpertDebrief.request(currentLanguage())))
+            }
+            when (val result = sendToAi(messages)) {
+                is ApiResult.Success -> dao.insertMessage(
+                    MessageEntity(
+                        id = randomId(),
+                        sessionId = sessionId,
+                        role = MessageRole.AI_ANSWER.name,
+                        text = result.data,
+                        timestampMillis = currentTimeMillis()
+                    )
                 )
                 is ApiResult.Error -> _errorMessage.value = result.message
             }

@@ -10,3 +10,6 @@ actual fun formatSessionTimestamp(epochMillis: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(epochMillis))
 
 actual fun currentLocalEpochDay(): Long = LocalDate.now().toEpochDay()
+
+actual fun formatDate(epochMillis: Long): String =
+    DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(epochMillis))

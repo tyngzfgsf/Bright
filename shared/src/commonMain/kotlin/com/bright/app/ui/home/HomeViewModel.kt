@@ -6,6 +6,7 @@ import com.bright.app.data.analytics.Analytics
 import com.bright.app.data.analytics.AnalyticsEvent
 import com.bright.app.data.analytics.AnalyticsEvent.SessionSource
 import com.bright.app.data.analytics.ScenarioLabel
+import com.bright.app.data.billing.BillingRepository
 import com.bright.app.data.local.ChatDao
 import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.SessionEntity
@@ -15,6 +16,7 @@ import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.data.update.AppUpdater
 import com.bright.app.domain.DailyStreak
 import com.bright.app.domain.SkillProfile
+import com.bright.app.domain.billing.Entitlement
 import com.bright.app.domain.startReviewSession
 import com.bright.app.domain.syncLocalNotifications
 import com.bright.app.domain.model.TriageSystem
@@ -26,6 +28,7 @@ import com.bright.app.domain.model.TraineeRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -51,7 +54,8 @@ class HomeViewModel(
     /** Null where sideloaded updates don't exist (iOS) — no badge is shown then. */
     appUpdater: AppUpdater? = null,
     private val notifier: LocalNotifier,
-    private val analytics: Analytics
+    private val analytics: Analytics,
+    private val billing: BillingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -72,10 +76,19 @@ class HomeViewModel(
         .map { !it.isNullOrBlank() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
-    /** 0 when there's no current streak to show — see [DailyStreak.displayedCount]. */
-    val streakDays: StateFlow<Int> = preferences.streakState
-        .map { DailyStreak.displayedCount(it, currentLocalEpochDay()) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    /**
+     * 0 when there's no current streak to show — see [DailyStreak.displayedCount]. Streak freezes
+     * count as keeping it alive, since the next completed session will spend them to bridge the gap.
+     */
+    val streakDays: StateFlow<Int> = combine(preferences.streakState, billing.streakFreezesAvailable) { state, freezes ->
+        DailyStreak.displayedCount(state, currentLocalEpochDay(), freezes)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val entitlement: StateFlow<Entitlement> = billing.entitlement
+
+    /** Whether drills run hosted (and so are metered). */
+    val isHosted: StateFlow<Boolean> = billing.isHosted
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     /** KTAS or ESI, whichever is currently active — see [UserPreferences.triageSystem]. */
     val triageSystem: StateFlow<TriageSystem> = preferences.triageSystem

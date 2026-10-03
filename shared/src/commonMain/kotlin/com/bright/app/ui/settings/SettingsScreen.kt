@@ -49,6 +49,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.LocalBrightDependencies
+import com.bright.app.data.billing.PaywallReason
+import com.bright.app.ui.billing.PlanSection
 import com.bright.app.resources.Res
 import com.bright.app.resources.*
 import com.bright.app.domain.model.Language
@@ -62,7 +64,8 @@ import com.bright.app.ui.components.SelectableChip
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    onReplayTutorial: () -> Unit
+    onReplayTutorial: () -> Unit,
+    onOpenPaywall: (PaywallReason) -> Unit = {}
 ) {
     val app = LocalBrightDependencies.current
     var languageChanged by remember { mutableStateOf(false) }
@@ -340,6 +343,15 @@ fun SettingsScreen(
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
+
+                Spacer(Modifier.height(28.dp))
+                SectionLabel(stringResource(Res.string.billing_section))
+                Spacer(Modifier.height(10.dp))
+                PlanSection(
+                    isSignedIn = currentUser != null,
+                    usesOwnKey = uiState.apiKey.isNotBlank(),
+                    onOpenPaywall = onOpenPaywall
+                )
             }
 
             Spacer(Modifier.height(28.dp))

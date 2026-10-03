@@ -21,3 +21,6 @@ expect fun currentLocalEpochDay(): Long
  * locale.
  */
 expect fun formatSessionTimestamp(epochMillis: Long): String
+
+/** A date only (e.g. "Oct 10, 2026"), for renewal and trial-end dates. Same reasoning as above. */
+expect fun formatDate(epochMillis: Long): String
