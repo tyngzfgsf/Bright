@@ -1,7 +1,7 @@
 import { GRADE_MAX_OUTPUT_TOKENS, GRADE_QUOTA_COST, GRADE_TEMPERATURE, MAX_BODY_BYTES } from "./config.ts";
-import { costUsd, estimateUsage, extractUsage } from "./cost.ts";
+import { costUsd, estimateUsage, extractUsage, reasoningParam } from "./cost.ts";
 import { errorResponse } from "./errors.ts";
-import { groqChat, UpstreamError } from "./groq.ts";
+import { llmChat, UpstreamError } from "./llm.ts";
 import { finish, guard, reserve } from "./pipeline.ts";
 import { buildGradeSystemPrompt, formatTranscript } from "./prompt.ts";
 import type { Deps, RubricItem } from "./types.ts";
@@ -56,7 +56,7 @@ export function makeGradeHandler(deps: Deps) {
     if ("res" in r) return r.res;
     const quota = r.quota;
 
-    const model = ctx.profile.tier.grade_model;
+    const model = ctx.profile.tier.grade_model ?? deps.llm().gradeModel;
     const messages = [
       { role: "system", content: buildGradeSystemPrompt(scenario, input.language) },
       { role: "user", content: formatTranscript(input.messages) },
@@ -68,14 +68,13 @@ export function makeGradeHandler(deps: Deps) {
 
     let upstream: Response;
     try {
-      upstream = await groqChat(deps, {
+      upstream = await llmChat(deps, {
         model,
         messages,
         temperature: GRADE_TEMPERATURE,
-        max_completion_tokens: GRADE_MAX_OUTPUT_TOKENS,
+        max_tokens: GRADE_MAX_OUTPUT_TOKENS,
         response_format: { type: "json_object" },
-        reasoning_effort: ctx.config.reasoningEffort,
-        include_reasoning: false,
+        ...reasoningParam(ctx.config.reasoningEffort),
       });
     } catch (e) {
       if (!(e instanceof UpstreamError)) throw e;
@@ -86,7 +85,7 @@ export function makeGradeHandler(deps: Deps) {
     let payload: any;
     try { payload = await upstream.json(); } catch { return await fail(); }
     const used = extractUsage(payload) ?? estimateUsage(messages, GRADE_MAX_OUTPUT_TOKENS);
-    const cost = costUsd(ctx.config, model, used);
+    const cost = costUsd(ctx.config, deps.llm(), model, used);
     await deps.store.recordUsage(uid, used.input, used.output, cost).catch(() => {});
 
     let result: GradeResult | null = null;

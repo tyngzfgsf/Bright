@@ -52,6 +52,11 @@ select pg_temp.expect_denied($$select public.get_global_cost()$$);
 -- scenario_list exposes only id/slug/language/title
 select pg_temp.assert_eq('scenario_list readable', (select count(*) > 0 from public.scenario_list), true);
 select pg_temp.assert_eq('scenario_list columns', (select count(*) from information_schema.columns where table_name='scenario_list'), 4::bigint);
+-- scenarios: safe columns readable, secret columns denied (column-level privileges)
+select pg_temp.assert_eq('scenarios safe cols readable', (select count(*) > 0 from (select id, slug, language, title, active from public.scenarios) t), true);
+select pg_temp.expect_denied($$select system_prompt from public.scenarios$$);
+select pg_temp.expect_denied($$select rubric from public.scenarios$$);
+select pg_temp.expect_denied($$insert into public.scenarios (slug, language, title, system_prompt) values ('x','en','x','x')$$);
 select pg_temp.assert_eq('tiers readable', (select count(*) >= 3 from public.tiers), true);
 -- confirm_age affects only the caller, and cannot touch tier
 select public.confirm_age();
@@ -64,7 +69,13 @@ select pg_temp.assert_eq('B NOT confirmed by A', (select age_confirmed from publ
 set local role anon;
 select pg_temp.expect_denied($$select * from public.profiles$$);
 select pg_temp.expect_denied($$select * from public.scenario_list$$);
+select pg_temp.expect_denied($$select id from public.scenarios$$);
 select pg_temp.expect_denied($$select public.confirm_age()$$);
+reset role;
+
+-- ===== service role still reads full scenario rows (what chat/grade rely on)
+set local role service_role;
+select pg_temp.assert_eq('service reads secrets', (select count(*) > 0 from public.scenarios where system_prompt <> '' and jsonb_array_length(rubric) > 0), true);
 reset role;
 
 -- ===== service role: quota RPCs

@@ -2,5 +2,5 @@
   "imports": {
     "@std/assert": "jsr:@std/assert@1"
   },
-  "tasks": { "test": "deno test --allow-net --allow-env" }
+  "tasks": { "test": "deno test --allow-net --allow-env --allow-read" }
 }

@@ -1,7 +1,7 @@
 import { CHAT_TEMPERATURE, MAX_BODY_BYTES } from "./config.ts";
-import { costUsd, estimateUsage, extractUsage } from "./cost.ts";
+import { costUsd, estimateUsage, extractUsage, reasoningParam } from "./cost.ts";
 import { errorResponse } from "./errors.ts";
-import { groqChat, sseData, UpstreamError } from "./groq.ts";
+import { llmChat, sseData, UpstreamError } from "./llm.ts";
 import { finish, guard, reserve, type Ctx } from "./pipeline.ts";
 import { buildAskSystemPrompt, buildChatSystemPrompt } from "./prompt.ts";
 import type { Deps, Quota, Usage } from "./types.ts";
@@ -32,7 +32,7 @@ export function makeChatHandler(deps: Deps) {
     if ("res" in r) return r.res;
     const quota = r.quota;
 
-    const model = ctx.profile.tier.chat_model;
+    const model = ctx.profile.tier.chat_model ?? deps.llm().chatModel;
     const maxOut = ctx.profile.tier.max_output_tokens;
     const system = input.mode === "ask"
       ? buildAskSystemPrompt(scenario, input.language)
@@ -42,15 +42,13 @@ export function makeChatHandler(deps: Deps) {
     const abort = new AbortController();
     let upstream: Response;
     try {
-      upstream = await groqChat(deps, {
+      upstream = await llmChat(deps, {
         model,
         messages,
         temperature: CHAT_TEMPERATURE,
-        max_completion_tokens: maxOut,
+        max_tokens: maxOut,
         stream: true,
-        stream_options: { include_usage: true },
-        reasoning_effort: ctx.config.reasoningEffort,
-        include_reasoning: false,
+        ...reasoningParam(ctx.config.reasoningEffort),
       }, abort.signal);
     } catch (e) {
       if (!(e instanceof UpstreamError)) throw e;
@@ -82,6 +80,7 @@ function streamBack(
           if (data === "[DONE]") break;
           let chunk;
           try { chunk = JSON.parse(data); } catch { continue; }
+          if (chunk?.error) { failed = true; break; } // providers may report mid-stream errors inside a 200 stream
           usage = extractUsage(chunk) ?? usage;
           const delta = chunk?.choices?.[0]?.delta?.content;
           if (typeof delta === "string" && delta.length > 0) {
@@ -108,7 +107,7 @@ function streamBack(
 
       // Bill what was actually used; if the stream never reported usage, charge a conservative estimate.
       const used = usage ?? estimateUsage(o.messages, o.maxOut);
-      const cost = costUsd(ctx.config, o.model, used);
+      const cost = costUsd(ctx.config, deps.llm(), o.model, used);
       await deps.store.recordUsage(uid, used.input, used.output, cost).catch(() => {});
       deps.log({ fn: "chat", uid, status, code, latency_ms: Date.now() - t0, input_tokens: used.input, output_tokens: used.output, cost_usd: cost });
       try { controller.close(); } catch { /* already closed */ }

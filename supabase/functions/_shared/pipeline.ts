@@ -60,7 +60,7 @@ export async function guard(req: Request, deps: Deps, fn: LogEntry["fn"], maxByt
 
 export type Reserved = { res: Response } | { quota: Quota };
 
-/** Global budget kill switch, then the atomic per-user quota. Never calls Groq itself. */
+/** Global budget kill switch, then the atomic per-user quota. Never calls the LLM itself. */
 export async function reserve(ctx: Ctx, n: number): Promise<Reserved> {
   const { deps, uid, cors, fn, t0 } = ctx;
   if ((await deps.store.getGlobalCost()) >= deps.dailyBudgetUsd) {

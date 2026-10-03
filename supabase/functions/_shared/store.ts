@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-import-prefix
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { loadLlmConfig } from "./llm-config.ts";
 import type { AppConfig, Deps, Lang, Price, Profile, Quota, Scenario, Store } from "./types.ts";
 
 /** Production wiring. Uses the service-role client that Supabase injects into Edge Functions. */
@@ -30,7 +31,7 @@ export function productionDeps(): Deps {
       const value: AppConfig = {
         prices: (m.get("prices") ?? {}) as Record<string, Price>,
         rateLimitPerMinute: Number(m.get("rate_limit_per_minute") ?? 6),
-        reasoningEffort: (m.get("reasoning_effort") ?? "low") as AppConfig["reasoningEffort"],
+        reasoningEffort: String(m.get("reasoning_effort") ?? "low"),
       };
       cfg = { at: Date.now(), value };
       return value;
@@ -65,8 +66,7 @@ export function productionDeps(): Deps {
       const { data, error } = await admin.auth.getUser(token);
       return error || !data.user ? null : data.user.id;
     },
-    groqBaseUrl: Deno.env.get("GROQ_BASE_URL") ?? "https://api.groq.com", // override only for local fake-Groq tests
-    groqKey: () => Deno.env.get("GROQ_API_KEY"),
+    llm: () => loadLlmConfig((n) => Deno.env.get(n)),
     allowedOrigins: (Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     dailyBudgetUsd: Number(Deno.env.get("DAILY_BUDGET_USD") ?? "0.30"),
     fetch: (...a) => fetch(...a),

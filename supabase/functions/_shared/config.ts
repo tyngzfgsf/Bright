@@ -7,8 +7,11 @@ export const GRADE_QUOTA_COST = 2; // a grade counts as 2 messages
 export const CHAT_TEMPERATURE = 0.7;
 export const GRADE_TEMPERATURE = 0.2;
 export const GRADE_MAX_OUTPUT_TOKENS = 1200;
-export const GROQ_RETRY_DELAY_MS = 500;
-export const GROQ_RETRY_DELAY_CAP_MS = 2000;
+export const LLM_RETRY_DELAY_MS = 500;
+export const LLM_RETRY_DELAY_CAP_MS = 2000;
+// Last-resort price (USD per 1M tokens) when no price is configured anywhere: deliberately high so the
+// budget kill switch trips early rather than late. Set real prices in app_config or LLM_PRICE_* secrets.
+export const SAFETY_PRICE = { input: 1.0, cached_input: 1.0, output: 3.0 };
 
 export const DIFFICULTIES = ["beginner", "intermediate", "advanced"] as const;
 export const TRAINEE_ROLES = ["doctor", "nurse", "emt"] as const;

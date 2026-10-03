@@ -1,7 +1,7 @@
 import type { Lang, Msg, RubricItem, Scenario } from "./types.ts";
 
-// Static content first (system prompt + scenario + rubric), conversation after it, so Groq's
-// automatic prefix caching can discount the repeated part. Nothing per-request goes before the
+// Static content first (system prompt + scenario + rubric), conversation after it, so providers
+// with automatic prefix caching can discount the repeated part. Nothing per-request goes before the
 // conversation except the enum choices, which change rarely within a session.
 
 export interface ChatOptions {

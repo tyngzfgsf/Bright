@@ -14,8 +14,9 @@ export interface Scenario {
 export interface TierCfg {
   name: string;
   daily_message_limit: number;
-  chat_model: string;
-  grade_model: string;
+  /** null => use the LLM_MODEL_CHAT / LLM_MODEL_GRADE secret. */
+  chat_model: string | null;
+  grade_model: string | null;
   max_output_tokens: number;
 }
 export interface Profile { tier: TierCfg; age_confirmed: boolean }
@@ -30,9 +31,25 @@ export interface Price { input: number; cached_input: number; output: number } /
 export interface AppConfig {
   prices: Record<string, Price>;
   rateLimitPerMinute: number;
-  reasoningEffort: "low" | "medium" | "high";
+  reasoningEffort: string; // "low" | "medium" | "high" | ... | "off"
 }
-export interface Usage { input: number; cachedInput: number; output: number }
+export interface Usage {
+  input: number;
+  cachedInput: number;
+  output: number;
+  /** USD cost if the provider reports it (e.g. OpenRouter's usage.cost). */
+  reportedCost?: number;
+}
+
+export interface LlmConfig {
+  /** null => LLM_BASE_URL was invalid (e.g. plain http to a remote host); calls fail closed. */
+  baseUrl: string | null;
+  apiKey: string | undefined;
+  chatModel: string;
+  gradeModel: string;
+  priceOverride?: Price;
+  extraBody: Record<string, unknown>;
+}
 
 /** Everything the functions need from the database. Production impl: store.ts (service role). */
 export interface Store {
@@ -61,8 +78,8 @@ export interface Deps {
   store: Store;
   /** Returns the user id for a valid access token, else null. */
   verifyUser(accessToken: string): Promise<string | null>;
-  groqBaseUrl: string;
-  groqKey(): string | undefined;
+  /** Server-only provider settings (secrets). Read per call so a rotated secret takes effect. */
+  llm(): LlmConfig;
   allowedOrigins: string[];
   dailyBudgetUsd: number;
   fetch: typeof fetch;

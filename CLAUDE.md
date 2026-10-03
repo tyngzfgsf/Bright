@@ -1,6 +1,6 @@
 # Bright — Android app
 
-AI medical-emergency drill trainer. Kotlin + Jetpack Compose, Groq API for the AI,
+AI medical-emergency drill trainer. Kotlin + Jetpack Compose, an OpenAI-compatible LLM (via Supabase Edge Functions) for the AI,
 Room for local storage, DataStore for prefs. Package `com.bright.app`, minSdk 26.
 
 ## Repo structure (important — two separate GitHub repos)
@@ -77,9 +77,10 @@ a moat. The moat is what accumulates on top of it:
 - `strings.xml` always gets replaced as a complete file for both `values/` and `values-ko/`
   together, never partial edits — easy to lose sync between languages otherwise.
 
-## Security rules (backend: Supabase + Groq) — do not weaken
+## Security rules (backend: Supabase + LLM provider) — do not weaken
 
-1. The Groq key exists ONLY as a Supabase Edge Function secret (`supabase secrets set`).
+1. The LLM API key (`LLM_API_KEY`; provider/model via `LLM_BASE_URL`, `LLM_MODEL_CHAT`,
+   `LLM_MODEL_GRADE`) exists ONLY as a Supabase Edge Function secret (`supabase secrets set`).
    Never in the repo, git history, `BuildConfig`, Compose resources, shipped
    `local.properties`, website JS, logs, error messages, or chat. Never ask for a key in chat.
 2. Clients hold only the Supabase **anon** key and the user's session. The **service role**
@@ -91,7 +92,7 @@ a moat. The moat is what accumulates on top of it:
 5. The client never chooses model, `max_tokens`, temperature or system prompt. Prompts and
    rubrics live server-side; the client sends only `scenario_id`, `language`, `messages`
    (plus allow-listed enums).
-6. Never return raw upstream (Groq) error bodies; map to small generic error codes.
+6. Never return raw upstream (LLM provider) error bodies; map to small generic error codes.
 7. Never log message content — only user id, token counts, cost, status, latency.
 8. Store the Supabase session in secure platform storage (Android Keystore-backed, iOS
    Keychain) — never plain SharedPreferences/UserDefaults/DataStore.

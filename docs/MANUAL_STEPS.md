@@ -17,14 +17,26 @@ supabase db push                           # applies supabase/migrations/*
 psql "<SESSION_POOLER_CONNECTION_STRING>" -f supabase/seed.sql
 ```
 
-## 3. Secrets (the Groq key lives ONLY here)
-Create a Groq key at console.groq.com/keys, then:
+## 3. Secrets (the LLM API key lives ONLY here)
+Create an API key with your provider (default: OpenRouter, openrouter.ai/keys), then:
 ```bash
-supabase secrets set GROQ_API_KEY=...                     # type it into your own terminal
+supabase secrets set LLM_API_KEY=...                      # type it into your own terminal
+supabase secrets set LLM_BASE_URL=https://openrouter.ai/api/v1   # optional: this is the default
+supabase secrets set LLM_MODEL_CHAT=openai/gpt-oss-20b    # optional: this is the default
+supabase secrets set LLM_MODEL_GRADE=openai/gpt-oss-20b   # optional: this is the default
 supabase secrets set ALLOWED_ORIGINS=https://bright-34c23.web.app,https://bright-34c23.firebaseapp.com
 supabase secrets set DAILY_BUDGET_USD=0.30
 supabase secrets list                                      # shows names only
 ```
+Any OpenAI-compatible `/chat/completions` provider works: change `LLM_BASE_URL` (must be https), the key and the model ids.
+Optional secrets: `LLM_PRICE_INPUT_PER_M`, `LLM_PRICE_CACHED_INPUT_PER_M`, `LLM_PRICE_OUTPUT_PER_M` (USD per 1M tokens, used for models without an `app_config` price) and `LLM_EXTRA_BODY` (JSON object merged into every request, e.g. `{"provider":{"sort":"price"}}`; it can never override model, messages or limits).
+
+**Set real prices — the seeded price is only a conservative placeholder.** The budget kill switch is only as accurate as these numbers. Take them from your provider's model page and run in the SQL editor:
+```sql
+update public.app_config set value = value || jsonb_build_object('openai/gpt-oss-20b',
+  '{"input": 0.00, "cached_input": 0.00, "output": 0.00}'::jsonb) where key = 'prices';  -- fill in real USD per 1M tokens
+```
+If the provider reports a per-request cost (OpenRouter returns `usage.cost`), the server uses that instead of the computed figure.
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into Edge Functions automatically; do not set them.
 Add your custom domain to `ALLOWED_ORIGINS` if you have one (comma-separated, exact origins, no trailing slash).
 
@@ -51,25 +63,25 @@ Both have `verify_jwt = true` in `supabase/config.toml` and also verify the user
 Edit `bright-site/js/supabase-config.js`: set `SUPABASE_URL` and `SUPABASE_ANON_KEY` (Dashboard -> Project Settings -> API -> **anon / publishable** key only. NEVER the service_role key). Then `firebase deploy --only hosting` from `bright-site/`.
 
 ## 7. Spend protection
-- Groq console -> Settings -> **Limits / spend limit**: set a monthly cap (about $10) if offered.
+- At your provider (OpenRouter: Keys page -> set a **credit limit** on this key, and keep only a small credit balance): cap spend at about $10/month.
 - Keep `DAILY_BUDGET_USD=0.30` (about $9/month worst case). The kill switch stops *all* users for the rest of the Seoul day once reached.
 - To change a user's tier (no payments yet): SQL editor -> `update public.profiles set tier = 'pro' where id = '<uuid>';`
 - To change models/limits/prices without redeploying: edit `public.tiers` / `public.app_config`.
 
 ## 8. Rotate anything that was ever committed
-- Secret scan found **no Groq key** in the working tree or git history (only a `gsk_...` placeholder on the old key page).
+- Secret scan found **no real API key** in the working tree or git history (only a `gsk_...` placeholder on the old BYOK key page).
 - Firebase web API keys (`AIza...`) are in `app/google-services.json` and `bright-site/js/firebase-config.js`: these are public identifiers, but restrict them in Google Cloud Console -> Credentials (Android package + SHA-1; HTTP referrers for the web key).
-- If you ever pasted a real Groq key anywhere (old Firestore `users/*.groqApiKey` documents hold users' own keys): ask those users to rotate theirs, then delete those documents.
+- If you ever pasted a real provider key anywhere (old Firestore `users/*` documents hold users' own BYOK keys): ask those users to rotate theirs, then delete those documents.
 
 ## 9. Local testing
 ```bash
 supabase start                 # needs Docker
 supabase db reset              # migrations + seed
-cd supabase/functions && deno test --allow-net --allow-env
+cd supabase/functions && deno test --allow-net --allow-env --allow-read
 psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f supabase/tests/rls_and_quota.sql
 DB_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres supabase/tests/parallel_quota.sh
 ```
-For an end-to-end run with a fake Groq, put `GROQ_API_KEY=fake` and `GROQ_BASE_URL=http://host.docker.internal:<port>` in `supabase/.env.local` (git-ignored) and `supabase functions serve --env-file supabase/.env.local`.
+For an end-to-end run with a fake provider, put `LLM_API_KEY=fake` and `LLM_BASE_URL=http://host.docker.internal:<port>/v1` in `supabase/.env.local` (git-ignored) and `supabase functions serve --env-file supabase/.env.local`.
 
 ## 10. Legal to-dos (not code)
-Privacy policy + terms (user messages are sent to Groq); confirm the minimum age with your lawyer (Korea: 14 under PIPA; EU member states can require up to 16).
+Privacy policy + terms (user messages are sent to your LLM provider and the model host it routes to); confirm the minimum age with your lawyer (Korea: 14 under PIPA; EU member states can require up to 16).

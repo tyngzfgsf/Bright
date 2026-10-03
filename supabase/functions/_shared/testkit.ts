@@ -1,3 +1,4 @@
+import { loadLlmConfig } from "./llm-config.ts";
 import type { AppConfig, Deps, LogEntry, Profile, Quota, Scenario, Store } from "./types.ts";
 
 export const UID_A = "11111111-1111-4111-8111-111111111111";
@@ -25,8 +26,8 @@ export class FakeStore implements Store {
   usage: { uid: string; input: number; output: number; cost: number }[] = [];
   config: AppConfig = {
     prices: {
-      "openai/gpt-oss-20b": { input: 0.075, cached_input: 0.0375, output: 0.3 },
-      "openai/gpt-oss-120b": { input: 0.15, cached_input: 0.075, output: 0.6 },
+      "test/chat-model": { input: 0.1, cached_input: 0.05, output: 0.4 },
+      "test/grade-model": { input: 0.2, cached_input: 0.1, output: 0.8 },
     },
     rateLimitPerMinute: 1000,
     reasoningEffort: "low",
@@ -35,7 +36,7 @@ export class FakeStore implements Store {
     for (const uid of [UID_A, UID_B]) {
       this.profiles.set(uid, {
         age_confirmed: true,
-        tier: { name: "free", daily_message_limit: limit, chat_model: "openai/gpt-oss-20b", grade_model: "openai/gpt-oss-120b", max_output_tokens: 321 },
+        tier: { name: "free", daily_message_limit: limit, chat_model: null, grade_model: null, max_output_tokens: 321 },
       });
     }
   }
@@ -68,14 +69,16 @@ export class FakeStore implements Store {
   }
 }
 
-export type GroqMode = "ok" | "retry-then-ok" | "always-500" | "always-429" | "no-usage" | "bad-grade" | "grade-ok";
+export type LlmMode = "ok" | "retry-then-ok" | "always-500" | "always-429" | "no-usage" | "bad-grade" | "grade-ok" | "reports-cost" | "midstream-error";
 
-/** Fake Groq. Records every request body it receives; never sees a real key. */
-export function startFakeGroq(mode: GroqMode) {
+/** Fake OpenAI-compatible provider. Records every request (body, path, auth header); never sees a real key. */
+export function startFakeLlm(mode: LlmMode) {
   const requests: Record<string, unknown>[] = [];
+  const seen: { path: string; auth: string | null }[] = [];
   let calls = 0;
   const server = Deno.serve({ port: 0, onListen() {} }, async (req) => {
     calls++;
+    seen.push({ path: new URL(req.url).pathname, auth: req.headers.get("authorization") });
     requests.push(await req.json());
     const fail = mode === "always-500" || (mode === "retry-then-ok" && calls === 1);
     if (mode === "always-429") return new Response("UPSTREAM-SECRET-DETAIL", { status: 429, headers: { "retry-after": "0" } });
@@ -94,27 +97,29 @@ export function startFakeGroq(mode: GroqMode) {
     const lines = [
       { choices: [{ delta: { content: '{"next_prompt":' } }] },
       { choices: [{ delta: { content: '"Check breathing"}' } }] },
-      ...(mode === "no-usage" ? [] : [{ choices: [], usage: { prompt_tokens: 1000, completion_tokens: 100, prompt_tokens_details: { cached_tokens: 500 } } }]),
+      ...(mode === "midstream-error" ? [{ error: { message: "UPSTREAM-SECRET-DETAIL", code: 500 } }] : []),
+      ...(mode === "no-usage" || mode === "midstream-error" ? [] : [{ choices: [], usage: { prompt_tokens: 1000, completion_tokens: 100, prompt_tokens_details: { cached_tokens: 500 }, ...(mode === "reports-cost" ? { cost: 0.00042 } : {}) } }]),
     ];
     const body = lines.map((l) => `data: ${JSON.stringify(l)}\n\n`).join("") + "data: [DONE]\n\n";
     return new Response(enc.encode(body), { headers: { "content-type": "text/event-stream" } });
   });
   const addr = server.addr as Deno.NetAddr;
   return {
-    url: `http://127.0.0.1:${addr.port}`,
+    url: `http://127.0.0.1:${addr.port}/api/v1`,
     requests,
+    seen,
     calls: () => calls,
     stop: () => server.shutdown(),
   };
 }
 
-export function makeDeps(store: Store, groqUrl: string, over: Partial<Deps> = {}) {
+export function makeDeps(store: Store, llmUrl: string, over: Partial<Deps> = {}, env: Record<string, string> = {}) {
+  const vars: Record<string, string> = { LLM_BASE_URL: llmUrl, LLM_API_KEY: "test-key-not-real", LLM_MODEL_CHAT: "test/chat-model", LLM_MODEL_GRADE: "test/grade-model", ...env };
   const logs: LogEntry[] = [];
   const deps: Deps = {
     store,
     verifyUser: (t) => Promise.resolve(t === "tok-A" ? UID_A : t === "tok-B" ? UID_B : null),
-    groqBaseUrl: groqUrl,
-    groqKey: () => "test-key-not-real",
+    llm: () => loadLlmConfig((n) => vars[n]),
     allowedOrigins: ["https://bright.example"],
     dailyBudgetUsd: 0.3,
     fetch: (...a) => fetch(...a),

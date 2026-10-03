@@ -1,26 +1,28 @@
-import { GROQ_RETRY_DELAY_CAP_MS, GROQ_RETRY_DELAY_MS } from "./config.ts";
+import { LLM_RETRY_DELAY_CAP_MS, LLM_RETRY_DELAY_MS } from "./config.ts";
 import type { Deps } from "./types.ts";
 
 export class UpstreamError extends Error {}
 
 /**
- * POSTs a chat completion. One short retry on 429/5xx/network error, then a generic failure.
- * Never exposes or logs the upstream error body.
+ * POSTs an OpenAI-compatible chat completion to LLM_BASE_URL. One short retry on 429/5xx/network
+ * error, then a generic failure. Never exposes or logs the upstream error body. `extraBody`
+ * (LLM_EXTRA_BODY) is merged first, so it can never override model, messages or limits.
  */
-export async function groqChat(
+export async function llmChat(
   deps: Deps,
   body: Record<string, unknown>,
   signal?: AbortSignal,
 ): Promise<Response> {
-  const key = deps.groqKey();
-  if (!key) throw new UpstreamError("not configured");
+  const cfg = deps.llm();
+  if (!cfg.apiKey || !cfg.baseUrl) throw new UpstreamError("not configured");
+  const payload = JSON.stringify({ ...cfg.extraBody, ...body });
   for (let attempt = 0; attempt < 2; attempt++) {
     let res: Response | null = null;
     try {
-      res = await deps.fetch(`${deps.groqBaseUrl}/openai/v1/chat/completions`, {
+      res = await deps.fetch(`${cfg.baseUrl}/chat/completions`, {
         method: "POST",
-        headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-        body: JSON.stringify(body),
+        headers: { "content-type": "application/json", authorization: `Bearer ${cfg.apiKey}` },
+        body: payload,
         signal,
       });
     } catch {
@@ -32,14 +34,14 @@ export async function groqChat(
     await res?.body?.cancel().catch(() => {});
     if (!retryable || attempt === 1) break;
     const wait = Number.isFinite(retryAfter) && retryAfter > 0
-      ? Math.min(retryAfter * 1000, GROQ_RETRY_DELAY_CAP_MS)
-      : GROQ_RETRY_DELAY_MS;
+      ? Math.min(retryAfter * 1000, LLM_RETRY_DELAY_CAP_MS)
+      : LLM_RETRY_DELAY_MS;
     await deps.sleep(wait);
   }
   throw new UpstreamError("upstream failed");
 }
 
-/** Yields the `data:` payloads of an SSE body ("[DONE]" included). */
+/** Yields the `data:` payloads of an SSE body ("[DONE]" included). Comment lines (": keep-alive") are ignored. */
 export async function* sseData(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
   const reader = body.getReader();
   const dec = new TextDecoder();

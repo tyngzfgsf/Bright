@@ -215,7 +215,7 @@ insert into public.tiers (name, daily_message_limit, chat_model, grade_model, ma
   ('pro',  50,  'openai/gpt-oss-20b', 'openai/gpt-oss-120b', 700),
   ('plus', 150, 'openai/gpt-oss-20b', 'openai/gpt-oss-120b', 900);
 
--- USD per 1M tokens (verified against console.groq.com/docs on 2026-10-03).
+-- Placeholder prices (USD per 1M tokens); a later migration replaces them with provider-neutral config.
 insert into public.app_config (key, value) values
   ('prices', '{
      "openai/gpt-oss-20b":  {"input": 0.075, "cached_input": 0.0375, "output": 0.30},
