@@ -1,0 +1,44 @@
+# Local Supabase config (supabase start). Production settings live in the dashboard.
+project_id = "bright"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+max_rows = 100
+
+[db]
+port = 54322
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000", "com.bright.app://login-callback"]
+jwt_expiry = 3600
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false
+
+# Both functions verify the user's access token themselves against SUPABASE_JWKS (functions/_shared/jwt.ts)
+# before touching the database or the LLM, so there is exactly one, tested verification path. The platform-level
+# check is therefore turned off (it is also meant for legacy/API-key callers, which these functions never accept).
+[functions.chat]
+verify_jwt = false
+
+[functions.grade]
+verify_jwt = false
+
+# Same reasoning for the simulation endpoint (start / turn / end).
+[functions.sim]
+verify_jwt = false
+
+[db.seed]
+enabled = true
+# seed_sim.sql is generated from scenarios/*.json (scripts/gen-sim-seed.ts) and inserts INACTIVE rows.
+sql_paths = ["./seed.sql", "./seed_sim.sql"]

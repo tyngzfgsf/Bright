@@ -30,3 +30,20 @@ DerivedData/
 
 # Claude Code worktrees (each is its own checkout)
 .claude/worktrees/
+
+# Secrets — never commit (see "Security rules" in CLAUDE.md)
+.env
+.env.*
+!.env.example
+supabase/.env
+supabase/.env.*
+supabase/.temp/
+supabase/.branches/
+*.jks
+*.keystore
+*.p12
+*.pem
+
+# Question generator review artifacts (scripts/generate-questions.ts) — local only
+scripts/questions/questions_draft.sql
+scripts/questions/questions_rejected.json
