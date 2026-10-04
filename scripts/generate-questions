@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Draft practice questions from scripts/questions/scenarios.json -> scripts/questions/questions_draft.sql.
+# Runs on YOUR machine with LLM_API_KEY from your shell. See docs/QUESTIONS.md.
+#
+#   export LLM_API_KEY=...            # never commit it; type it into your own terminal
+#   scripts/generate-questions --dry-run          # shows the expected number of drafts, no network
+#   scripts/generate-questions --scenario anaphylaxis --lang ko
+#
+# Deno permissions are the safety boundary: read/write only scripts/questions, network only to the LLM host, and
+# only the LLM_* variables. The script cannot see database credentials or reach the database.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+command -v deno >/dev/null || { echo "Install Deno first: brew install deno" >&2; exit 2; }
+
+BASE="${LLM_BASE_URL:-https://openrouter.ai/api/v1}"
+HOST="$(printf '%s' "$BASE" | sed -E 's#^https://([^/:]+).*#\1#')"
+case "$BASE" in https://*) ;; *) echo "LLM_BASE_URL must start with https://" >&2; exit 2;; esac
+
+exec deno run \
+  --no-prompt \
+  --allow-read=scripts/questions \
+  --allow-write=scripts/questions \
+  --allow-net="$HOST" \
+  --allow-env=LLM_API_KEY,LLM_BASE_URL,LLM_MODEL,LLM_VALIDATOR_MODEL \
+  scripts/generate-questions.ts "$@"

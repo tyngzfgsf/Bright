@@ -40,6 +40,18 @@ for t in tests/rls_and_quota.sql tests/sessions_rls.sql tests/questions_rls.sql;
   psql -q -o /dev/null -v ON_ERROR_STOP=1 -f "$t" && echo "PASS: $t" || fail=1
 done
 
+# The generator's output format (scripts/questions/testdata/sample_draft.sql, a golden file checked by
+# scripts/questions/lib_test.ts) must load into the real schema, as drafts only, and be safe to re-run.
+echo "== generated questions_draft.sql format"
+if psql -q -v ON_ERROR_STOP=1 -f ../scripts/questions/testdata/sample_draft.sql >/dev/null \
+   && psql -q -v ON_ERROR_STOP=1 -f ../scripts/questions/testdata/sample_draft.sql >/dev/null \
+   && [ "$(psql -qAt -c "select count(*) || ' ' || bool_and(status = 'draft') from public.questions where id::text like '5a3b1e00-%'")" = "2 true" ]; then
+  echo "PASS: generated SQL loads as 2 drafts, idempotently"
+  psql -q -c "delete from public.questions where id::text like '5a3b1e00-%'" >/dev/null
+else
+  echo "FAIL: generated SQL"; fail=1
+fi
+
 echo "== tests/parallel_claim.sh"
 bash tests/parallel_claim.sh && echo "PASS: tests/parallel_claim.sh" || fail=1
 exit $fail
