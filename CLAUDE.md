@@ -100,3 +100,39 @@ a moat. The moat is what accumulates on top of it:
   pasted directly into the terminal.
 - `strings.xml` always gets replaced as a complete file for both `values/` and `values-ko/`
   together, never partial edits — easy to lose sync between languages otherwise.
+
+## Security rules (backend: Supabase + LLM provider) — do not weaken
+
+1. The LLM API key (`LLM_API_KEY`; provider/model via `LLM_BASE_URL`, `LLM_MODEL_CHAT`,
+   `LLM_MODEL_GRADE`) exists ONLY as a Supabase Edge Function secret (`supabase secrets set`).
+   Never in the repo, git history, `BuildConfig`, Compose resources, shipped
+   `local.properties`, website JS, logs, error messages, or chat. Never ask for a key in chat.
+2. Clients hold only the Supabase **publishable** key (`sb_publishable_...`) and the user's session.
+   The **secret** key comes only from `SUPABASE_SECRET_KEYS` inside Edge Functions and never leaves
+   the server. Use the current key system only: never `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`
+   (legacy keys are disabled in the dashboard).
+3. Every Edge Function requires a valid user JWT, verified server-side against `SUPABASE_JWKS`
+   (asymmetric algs only); `user_id` comes from the token, never from the request body.
+4. RLS is ON for every table. Clients read only their own rows. All writes to usage/quota
+   tables happen in Edge Functions with the secret key. No client can change `tier`.
+5. The client never chooses model, `max_tokens`, temperature or system prompt. Prompts and
+   rubrics live server-side; the client sends only `scenario_id`, `language`, `messages`
+   (plus allow-listed enums).
+6. Never return raw upstream (LLM provider) error bodies; map to small generic error codes.
+7. Never log message content — only user id, token counts, cost, status, latency.
+8. Store the Supabase session in secure platform storage (Android Keystore-backed, iOS
+   Keychain) — never plain SharedPreferences/UserDefaults/DataStore.
+9. Never print environment variables or secrets in command output or summaries.
+
+## Bounded sessions and the question bank — do not weaken
+
+- Every chat runs inside a server-side session (`start_session`); `chat`/`grade` take scenario and language from the
+  session. Turn cap, inactivity (30 min) and "already ended" (409 `session_ended`) are enforced in SQL, not the client.
+- Practice questions are generated **offline** by `scripts/generate-questions` (Jason's machine, `LLM_API_KEY` from the
+  shell, Deno permissions limited to `scripts/questions` + the LLM host; never database credentials), reviewed by a
+  human, then approved in SQL. Never generate questions live per user.
+- Only `status = 'approved'` questions are ever served; clients can never read `questions`; the answer key and
+  explanation leave the server only in `answer_question`'s response; correctness is computed server-side.
+- The question path makes no LLM call and uses no message quota (its own rate-limit bucket).
+- Keep question data format-neutral (structured stem/options/key/explanation, stable ids) so a printable renderer can
+  be added later. Details: `docs/QUESTIONS.md`.

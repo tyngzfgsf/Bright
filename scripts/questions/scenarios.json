@@ -1,0 +1,314 @@
+{
+  "_readme": [
+    "One entry per scenario slug, matching supabase/seed.sql (same rubric ids).",
+    "Fill in reference_notes for each language from YOUR trusted source (guideline excerpt, textbook notes, KTAS manual).",
+    "The generator may only use the rubric text and these notes: no other facts, drugs, doses or numbers.",
+    "Write the Korean notes in Korean; questions are generated natively per language, never translated.",
+    "A scenario/language with empty reference_notes is refused, so nothing is generated from the rubric alone."
+  ],
+  "scenarios": [
+    {
+      "slug": "cardiac-arrest",
+      "en": {
+        "title": "Cardiac arrest",
+        "reference_notes": "",
+        "rubric": [
+          {
+            "id": "CA-RESPONSE",
+            "text": "Checks responsiveness and breathing (no more than 10 seconds) and recognises arrest",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "CA-HELP",
+            "text": "Calls for help / activates the emergency response and requests an AED or defibrillator",
+            "tags": [
+              "escalation",
+              "communication"
+            ]
+          },
+          {
+            "id": "CA-CPR",
+            "text": "Starts high-quality chest compressions: centre of chest, about 5-6 cm deep, 100-120 per minute, full recoil, minimal interruptions",
+            "tags": [
+              "circulation"
+            ]
+          },
+          {
+            "id": "CA-RHYTHM",
+            "text": "Applies pads/monitor early and delivers a shock if the rhythm is shockable (VF/pulseless VT)",
+            "tags": [
+              "circulation"
+            ]
+          },
+          {
+            "id": "CA-DRUGS",
+            "text": "Obtains IV/IO access and gives epinephrine at the guideline interval after the first shock (non-shockable: as soon as possible)",
+            "tags": [
+              "medication"
+            ]
+          },
+          {
+            "id": "CA-CAUSES",
+            "text": "Considers reversible causes (Hs and Ts)",
+            "tags": [
+              "assessment"
+            ]
+          }
+        ]
+      },
+      "ko": {
+        "title": "심정지",
+        "reference_notes": "",
+        "rubric": [
+          {
+            "id": "CA-RESPONSE",
+            "text": "의식과 호흡을 확인(10초 이내)하고 심정지를 인지한다",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "CA-HELP",
+            "text": "도움을 요청하고 응급 대응 체계를 활성화하며 AED/제세동기를 요청한다",
+            "tags": [
+              "escalation",
+              "communication"
+            ]
+          },
+          {
+            "id": "CA-CPR",
+            "text": "양질의 가슴압박을 시작한다: 가슴 중앙, 약 5-6cm 깊이, 분당 100-120회, 완전한 이완, 중단 최소화",
+            "tags": [
+              "circulation"
+            ]
+          },
+          {
+            "id": "CA-RHYTHM",
+            "text": "패드/모니터를 조기에 부착하고 제세동이 필요한 리듬(심실세동/무맥성 심실빈맥)이면 제세동한다",
+            "tags": [
+              "circulation"
+            ]
+          },
+          {
+            "id": "CA-DRUGS",
+            "text": "정맥/골내 접근을 확보하고 가이드라인 간격에 맞춰 에피네프린을 투여한다",
+            "tags": [
+              "medication"
+            ]
+          },
+          {
+            "id": "CA-CAUSES",
+            "text": "가역적 원인(Hs와 Ts)을 고려한다",
+            "tags": [
+              "assessment"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "slug": "anaphylaxis",
+      "en": {
+        "title": "Anaphylaxis",
+        "reference_notes": "",
+        "rubric": [
+          {
+            "id": "AN-RECOGNISE",
+            "text": "Recognises anaphylaxis from skin plus airway/breathing/circulation involvement after a likely trigger",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "AN-EPI",
+            "text": "Gives intramuscular epinephrine promptly (adult 0.3-0.5 mg, anterolateral thigh) before antihistamines or steroids",
+            "tags": [
+              "medication"
+            ]
+          },
+          {
+            "id": "AN-HELP",
+            "text": "Calls for help / emergency services and removes the trigger if possible",
+            "tags": [
+              "escalation"
+            ]
+          },
+          {
+            "id": "AN-POSITION",
+            "text": "Positions the patient supine with legs raised (or seated if breathless); does not let them stand",
+            "tags": [
+              "circulation"
+            ]
+          },
+          {
+            "id": "AN-SUPPORT",
+            "text": "Gives high-flow oxygen, establishes IV access and gives a fluid bolus for hypotension",
+            "tags": [
+              "breathing",
+              "circulation"
+            ]
+          },
+          {
+            "id": "AN-REPEAT",
+            "text": "Repeats epinephrine in 5-15 minutes if no response and plans observation for biphasic reaction",
+            "tags": [
+              "medication"
+            ]
+          }
+        ]
+      },
+      "ko": {
+        "title": "아나필락시스",
+        "reference_notes": "",
+        "rubric": [
+          {
+            "id": "AN-RECOGNISE",
+            "text": "가능한 유발 요인 후 피부 증상과 기도/호흡/순환 이상이 함께 나타나는 아나필락시스를 인지한다",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "AN-EPI",
+            "text": "항히스타민제나 스테로이드보다 먼저 에피네프린을 근육주사한다(성인 0.3-0.5mg, 대퇴 외측)",
+            "tags": [
+              "medication"
+            ]
+          },
+          {
+            "id": "AN-HELP",
+            "text": "도움/응급 서비스를 요청하고 가능하면 유발 요인을 제거한다",
+            "tags": [
+              "escalation"
+            ]
+          },
+          {
+            "id": "AN-POSITION",
+            "text": "다리를 올린 앙와위(호흡곤란 시 앉은 자세)를 취하게 하고 일어서지 못하게 한다",
+            "tags": [
+              "circulation"
+            ]
+          },
+          {
+            "id": "AN-SUPPORT",
+            "text": "고유량 산소를 투여하고 정맥로를 확보하며 저혈압에는 수액 볼루스를 투여한다",
+            "tags": [
+              "breathing",
+              "circulation"
+            ]
+          },
+          {
+            "id": "AN-REPEAT",
+            "text": "반응이 없으면 5-15분 후 에피네프린을 반복하고 재발성(이상성) 반응을 위해 관찰을 계획한다",
+            "tags": [
+              "medication"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "slug": "stroke",
+      "en": {
+        "title": "Acute stroke",
+        "reference_notes": "",
+        "rubric": [
+          {
+            "id": "ST-RECOGNISE",
+            "text": "Recognises stroke signs (e.g. FAST) and treats it as time-critical",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "ST-ONSET",
+            "text": "Establishes last-known-well time",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "ST-GLUCOSE",
+            "text": "Checks blood glucose to exclude hypoglycaemia mimic",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "ST-IMAGING",
+            "text": "Arranges urgent non-contrast CT head to exclude haemorrhage; activates stroke team",
+            "tags": [
+              "escalation"
+            ]
+          },
+          {
+            "id": "ST-TREAT",
+            "text": "Considers reperfusion (thrombolysis within the guideline window; thrombectomy for large-vessel occlusion)",
+            "tags": [
+              "medication"
+            ]
+          },
+          {
+            "id": "ST-SUPPORT",
+            "text": "Keeps nil by mouth until swallow screen, monitors airway and avoids aggressive BP lowering unless indicated",
+            "tags": [
+              "airway",
+              "safety"
+            ]
+          }
+        ]
+      },
+      "ko": {
+        "title": "급성 뇌졸중",
+        "reference_notes": "",
+        "rubric": [
+          {
+            "id": "ST-RECOGNISE",
+            "text": "뇌졸중 징후(예: FAST)를 인지하고 시간이 중요한 응급으로 다룬다",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "ST-ONSET",
+            "text": "마지막 정상 확인 시각을 확인한다",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "ST-GLUCOSE",
+            "text": "저혈당 유사 증상을 배제하기 위해 혈당을 확인한다",
+            "tags": [
+              "assessment"
+            ]
+          },
+          {
+            "id": "ST-IMAGING",
+            "text": "출혈 배제를 위한 응급 비조영 두부 CT를 시행하고 뇌졸중 팀을 가동한다",
+            "tags": [
+              "escalation"
+            ]
+          },
+          {
+            "id": "ST-TREAT",
+            "text": "재관류 치료(가이드라인 시간 내 혈전용해, 대혈관 폐색 시 혈전제거술)를 고려한다",
+            "tags": [
+              "medication"
+            ]
+          },
+          {
+            "id": "ST-SUPPORT",
+            "text": "삼킴 평가 전까지 금식하고 기도를 감시하며 필요 없는 적극적 혈압 강하는 피한다",
+            "tags": [
+              "airway",
+              "safety"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
