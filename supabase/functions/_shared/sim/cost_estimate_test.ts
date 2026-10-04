@@ -19,7 +19,7 @@ const history = (n: number) => Array.from({ length: n }, (_, i) =>
   i % 2 === 0 ? "I check his airway and ask him to say his name, then call for help." : "My throat is so tight... I can barely get words out, please help me.");
 
 // ---- old turn: one call, drill template + 6-item rubric + up to 10 history messages, JSON turn out
-const oldSystem = buildChatSystemPrompt({ ...row, id: "x", sim: null, rubric: row.rubric.slice(0, 6) }, {
+const oldSystem = buildChatSystemPrompt({ ...row, id: "x", sim: null, max_turns: 15, rubric: row.rubric.slice(0, 6) }, {
   language: "en", difficulty: "intermediate", traineeRole: "doctor", triageSystem: "ESI", aiRole: "patient",
 });
 const oldIn = tokens(oldSystem) + history(10).reduce((n, m) => n + tokens(m), 0);

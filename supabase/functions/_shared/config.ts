@@ -1,5 +1,5 @@
 // Fixed limits. Model names, prices and per-tier limits live in the database (tiers/app_config).
-export const MAX_BODY_BYTES = { chat: 32 * 1024, grade: 96 * 1024 };
+export const MAX_BODY_BYTES = { chat: 32 * 1024, grade: 96 * 1024, small: 4 * 1024 };
 export const MAX_CHAT_MESSAGES = 10; // older history is trimmed server-side
 export const MAX_GRADE_MESSAGES = 60;
 export const MAX_MESSAGE_CHARS = 1500;
@@ -18,3 +18,15 @@ export const TRAINEE_ROLES = ["doctor", "nurse", "emt"] as const;
 export const TRIAGE_SYSTEMS = ["KTAS", "ESI"] as const;
 export const AI_ROLES = ["patient", "doctor"] as const;
 export const MODES = ["turn", "ask"] as const;
+
+// Bounded sessions (enforced in SQL: migrations/20261005000001_bounded_sessions.sql; mirrored by testkit's FakeStore).
+export const DEFAULT_MAX_TURNS = 15;
+export const IDLE_MINUTES = 30;
+/** An abandoned (timed-out) session is still graded if it reached this many turns. */
+export const MIN_TURNS_GRADEABLE_ABANDONED = 3;
+/** A finished session needs at least one turn to be graded (an empty transcript costs an LLM call for nothing). */
+export const MIN_TURNS_GRADEABLE_COMPLETED = 1;
+
+// Questions (no LLM call anywhere on this path).
+export const REVIEW_DAILY_CAP = 10;
+export const WEAKEST_SKILLS_SHOWN = 3;

@@ -45,16 +45,17 @@ select pg_temp.assert_eq('sessions policies', (select count(*) from pg_policies 
 select pg_temp.assert_eq('sessions policy is select-only', (select cmd from pg_policies where tablename = 'sessions'), 'SELECT');
 select pg_temp.assert_eq('session columns',
   (select array_agg(column_name::text order by ordinal_position) from information_schema.columns where table_name = 'sessions' and table_schema = 'public'),
-  array['id','user_id','scenario_id','state','turn_count','status','started_at','updated_at','turn_lock_until']);
+  array['id','user_id','scenario_id','state','turn_count','status','started_at','updated_at','turn_lock_until',
+        'language','max_turns','last_activity_at','ended_at','end_reason','graded_at','score','missed_rubric_ids']);
 
 -- ===== setup as the Edge Functions do (service_role via the SECURITY DEFINER functions)
 create temp table ids (name text primary key, id uuid);
 grant all on ids to public;
 set local role service_role;
 insert into ids select 'scenario', id from public.scenarios where slug = 'anaphylaxis-sim' and language = 'en';
-insert into ids select 'A1', public.create_session('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'scenario'), '{"v":1,"hr":118}'::jsonb);
-insert into ids select 'A2', public.create_session('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'scenario'), '{"v":1,"hr":99}'::jsonb);
-insert into ids select 'B1', public.create_session('bbbbbbbb-0000-4000-8000-00000000000b', (select id from ids where name = 'scenario'), '{"v":1,"hr":77}'::jsonb);
+insert into ids select 'A1', public.create_session('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'scenario'), '{"v":1,"hr":118}'::jsonb, 'en', 14);
+insert into ids select 'A2', public.create_session('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'scenario'), '{"v":1,"hr":99}'::jsonb, 'en', 14);
+insert into ids select 'B1', public.create_session('bbbbbbbb-0000-4000-8000-00000000000b', (select id from ids where name = 'scenario'), '{"v":1,"hr":77}'::jsonb, 'en', 14);
 reset role;
 select pg_temp.assert_eq('scenario seeded (inactive worked example)', (select active from public.scenarios s join ids on ids.id = s.id and ids.name = 'scenario'), false);
 
@@ -76,7 +77,7 @@ select pg_temp.expect_denied($$select sim from public.scenarios$$);
 select pg_temp.expect_denied($$select * from public.scenarios$$);
 select pg_temp.assert_eq('scenario_list still exposes 4 columns', (select count(*) from information_schema.columns where table_name = 'scenario_list'), 4::bigint);
 -- no client can call any of the session functions
-select pg_temp.expect_denied($$select public.create_session(auth.uid(), (select id from ids where name = 'scenario'), '{}')$$);
+select pg_temp.expect_denied($$select public.create_session(auth.uid(), (select id from ids where name = 'scenario'), '{}', 'en', 14)$$);
 select pg_temp.expect_denied($$select * from public.get_session(auth.uid(), (select id from ids where name = 'A1'))$$);
 select pg_temp.expect_denied($$select public.claim_session_turn(auth.uid(), (select id from ids where name = 'A1'), 0)$$);
 select pg_temp.expect_denied($$select public.commit_session_turn(auth.uid(), (select id from ids where name = 'A1'), 0, '{}', 'active')$$);
@@ -94,7 +95,7 @@ reset role;
 -- ===== anon: nothing
 set local role anon;
 select pg_temp.expect_denied($$select * from public.sessions$$);
-select pg_temp.expect_denied($$select public.get_session('aaaaaaaa-0000-4000-8000-00000000000a', gen_random_uuid())$$);
+select pg_temp.expect_denied($$select public.get_session('aaaaaaaa-0000-4000-8000-00000000000a', gen_random_uuid(), now())$$);
 reset role;
 
 -- ===== ownership inside the SECURITY DEFINER functions: user B's id can never touch user A's session
@@ -132,13 +133,13 @@ select pg_temp.assert_eq('no claim on a completed session', public.claim_session
 select pg_temp.assert_eq('no commit on a completed session', public.commit_session_turn('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'A1'), 1, '{}', 'active'), false);
 
 -- ===== state-only storage and size guard (CHECK constraints)
-select pg_temp.expect_error($$select public.create_session('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'scenario'), '"just a string"'::jsonb)$$, '23514');
-select pg_temp.expect_error($$select public.create_session('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'scenario'), jsonb_build_object('pad', repeat(md5(random()::text), 2000)))$$, '23514');
+select pg_temp.expect_error($$select public.create_session('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'scenario'), '"just a string"'::jsonb, 'en', 14)$$, '23514');
+select pg_temp.expect_error($$select public.create_session('aaaaaaaa-0000-4000-8000-00000000000a', (select id from ids where name = 'scenario'), jsonb_build_object('pad', repeat(md5(random()::text), 2000)), 'en', 14)$$, '23514');
 
 -- ===== at most 4 active sessions per user: the oldest are abandoned
 do $$ declare i int; begin
   for i in 1..6 loop
-    perform public.create_session('bbbbbbbb-0000-4000-8000-00000000000b', (select id from ids where name = 'scenario'), '{"v":1}'::jsonb);
+    perform public.create_session('bbbbbbbb-0000-4000-8000-00000000000b', (select id from ids where name = 'scenario'), '{"v":1}'::jsonb, 'en', 14);
   end loop;
 end $$;
 select pg_temp.assert_eq('B active sessions capped at 4', (select count(*) from public.sessions where user_id = 'bbbbbbbb-0000-4000-8000-00000000000b' and status = 'active'), 4::bigint);

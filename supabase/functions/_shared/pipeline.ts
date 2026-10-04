@@ -15,6 +15,11 @@ export interface Ctx {
 
 export type Guarded = { res: Response } | { ctx: Ctx };
 
+/** Functions that may call the LLM (or start a session that will) share the 'llm' per-minute bucket. Everything else
+ *  (questions, reports, review) has no LLM call and gets its own, higher limit in a separate bucket. */
+const LLM_FNS: readonly LogEntry["fn"][] = ["chat", "grade", "sim", "start_session"];
+export const rateScopeOf = (fn: LogEntry["fn"]): "llm" | "questions" => (LLM_FNS.includes(fn) ? "llm" : "questions");
+
 export function finish(deps: Deps, fn: LogEntry["fn"], t0: number, res: Response, uid?: string, code?: string, extra: Partial<LogEntry> = {}) {
   deps.log({ fn, uid, status: res.status, code, latency_ms: Date.now() - t0, ...extra });
   return res;
@@ -49,7 +54,9 @@ export async function guard(req: Request, deps: Deps, fn: LogEntry["fn"], maxByt
   }
 
   const config = await deps.store.getConfig();
-  if (!(await deps.store.checkRateLimit(uid, config.rateLimitPerMinute))) return reject("rate_limited", uid);
+  const scope = rateScopeOf(fn);
+  const max = scope === "llm" ? config.rateLimitPerMinute : config.questionsRateLimitPerMinute;
+  if (!(await deps.store.checkRateLimit(uid, max, scope))) return reject("rate_limited", uid);
 
   const profile = await deps.store.getProfile(uid);
   if (!profile) return reject("unauthenticated", uid);
@@ -73,4 +80,12 @@ export async function reserve(ctx: Ctx, n: number): Promise<Reserved> {
     };
   }
   return { quota };
+}
+
+/** A 200 JSON response that is never cached. */
+export function jsonOk(cors: Headers, body: unknown): Response {
+  const h = new Headers(cors);
+  h.set("content-type", "application/json");
+  h.set("cache-control", "no-store");
+  return new Response(JSON.stringify(body), { status: 200, headers: h });
 }

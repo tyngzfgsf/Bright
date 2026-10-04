@@ -4,7 +4,7 @@ import { makeGradeHandler } from "./grade.ts";
 import { loadLlmConfig } from "./llm-config.ts";
 import { priceFor } from "./cost.ts";
 import { SAFETY_PRICE } from "./config.ts";
-import { chatBody, FakeStore, makeDeps, post, readSse, SCENARIO_EN, SCENARIO_KO, startFakeLlm, UID_A, UID_B } from "./testkit.ts";
+import { chatBody, FakeStore, makeDeps, post, readSse, SCENARIO_EN, SCENARIO_KO, SESSION_A, SESSION_B, startFakeLlm, UID_A, UID_B } from "./testkit.ts";
 
 async function withChat(
   mode: Parameters<typeof startFakeLlm>[0],
@@ -144,7 +144,7 @@ Deno.test("one user's usage never affects another's quota (wrong-user)", () =>
   withChat("ok", async ({ chat, store }) => {
     await readSse(await chat(post("chat", chatBody(), "tok-A")));
     assertEquals((await chat(post("chat", chatBody(), "tok-A"))).status, 429);
-    const b = await chat(post("chat", chatBody(), "tok-B"));
+    const b = await chat(post("chat", chatBody({ session_id: SESSION_B }), "tok-B"));
     assertEquals(b.status, 200);
     await readSse(b);
     assertEquals(store.used.get(UID_A), 1);
@@ -217,7 +217,7 @@ Deno.test("logs carry metadata only, never message content", () =>
     const res = await chat(post("chat", chatBody({ messages: [{ role: "user", content: secret }] })));
     await readSse(res);
     assertFalse(JSON.stringify(logs).includes(secret));
-    assertEquals(Object.keys(logs.at(-1)!).sort().every((k) => ["fn", "uid", "status", "code", "latency_ms", "input_tokens", "output_tokens", "cost_usd"].includes(k)), true);
+    assertEquals(Object.keys(logs.at(-1)!).sort().every((k) => ["fn", "uid", "status", "code", "turn", "latency_ms", "input_tokens", "output_tokens", "cost_usd"].includes(k)), true);
   }));
 
 Deno.test("grade: score computed server-side from rubric, counts as 2, invented IDs ignored", async () => {
@@ -225,8 +225,9 @@ Deno.test("grade: score computed server-side from rubric, counts as 2, invented 
   const store = new FakeStore(15);
   const { deps } = makeDeps(store, llm.url);
   const grade = makeGradeHandler(deps);
+  store.sessions.get(SESSION_A)!.row.turn_count = 2;
   try {
-    const res = await grade(post("grade", { scenario_id: SCENARIO_EN, language: "en", messages: [{ role: "user", content: "I start compressions" }, { role: "assistant", content: "ok" }] }));
+    const res = await grade(post("grade", { session_id: SESSION_A, messages: [{ role: "user", content: "I start compressions" }, { role: "assistant", content: "ok" }] }));
     assertEquals(res.status, 200);
     const body = await res.json();
     assertEquals(body.score, 75); // 3 of 4 points
@@ -244,8 +245,9 @@ Deno.test("grade: malformed model output -> 502 and quota refunded", async () =>
   const llm = startFakeLlm("bad-grade");
   const store = new FakeStore(15);
   const grade = makeGradeHandler(makeDeps(store, llm.url).deps);
+  store.sessions.get(SESSION_A)!.row.turn_count = 2;
   try {
-    const res = await grade(post("grade", { scenario_id: SCENARIO_EN, language: "en", messages: [{ role: "user", content: "hi" }] }));
+    const res = await grade(post("grade", { session_id: SESSION_A, messages: [{ role: "user", content: "hi" }] }));
     assertEquals(res.status, 502);
     assertEquals(store.used.get(UID_A), 0);
   } finally {
@@ -257,8 +259,9 @@ Deno.test("grade needs 2 quota: limit 1 is refused", async () => {
   const llm = startFakeLlm("grade-ok");
   const store = new FakeStore(1);
   const grade = makeGradeHandler(makeDeps(store, llm.url).deps);
+  store.sessions.get(SESSION_A)!.row.turn_count = 2;
   try {
-    const res = await grade(post("grade", { scenario_id: SCENARIO_EN, language: "en", messages: [{ role: "user", content: "hi" }] }));
+    const res = await grade(post("grade", { session_id: SESSION_A, messages: [{ role: "user", content: "hi" }] }));
     assertEquals(res.status, 429);
     assertEquals(llm.calls(), 0);
   } finally {

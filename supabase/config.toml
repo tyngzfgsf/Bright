@@ -38,6 +38,22 @@ verify_jwt = false
 [functions.sim]
 verify_jwt = false
 
+# Bounded sessions and practice questions: same single, in-function JWKS verification path.
+[functions.start_session]
+verify_jwt = false
+
+[functions.get_questions]
+verify_jwt = false
+
+[functions.answer_question]
+verify_jwt = false
+
+[functions.review_queue]
+verify_jwt = false
+
+[functions.report_question]
+verify_jwt = false
+
 [db.seed]
 enabled = true
 # seed_sim.sql is generated from scenarios/*.json (scripts/gen-sim-seed.ts) and inserts INACTIVE rows.

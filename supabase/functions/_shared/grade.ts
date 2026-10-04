@@ -2,12 +2,13 @@ import { GRADE_MAX_OUTPUT_TOKENS, GRADE_QUOTA_COST, GRADE_TEMPERATURE, MAX_BODY_
 import { costUsd, estimateUsage, extractUsage, reasoningParam } from "./cost.ts";
 import { errorResponse } from "./errors.ts";
 import { llmChat, UpstreamError } from "./llm.ts";
-import { finish, guard, reserve } from "./pipeline.ts";
+import { finish, guard, jsonOk, reserve } from "./pipeline.ts";
 import { buildGradeSystemPrompt, formatTranscript } from "./prompt.ts";
 import { describeEngineLog, parseState } from "./sim/engine.ts";
 import { type RubricTag, tagsOf } from "./sim/rubric.ts";
 import { parseSimConfig } from "./sim/simconfig.ts";
-import type { Deps, RubricItem } from "./types.ts";
+import { isGradeable } from "./session.ts";
+import type { Deps, RubricItem, SessionRow } from "./types.ts";
 import { parseGradeBody, ValidationError } from "./validate.ts";
 
 export interface GradeResult {
@@ -37,6 +38,14 @@ export function validateGrade(raw: any, rubric: RubricItem[]): GradeResult | nul
   };
 }
 
+/** What the client needs about the ended session for the debrief/summary screens. Ids and numbers only. */
+function sessionSummary(s: SessionRow) {
+  return {
+    id: s.id, status: s.status, end_reason: s.end_reason, turn_count: s.turn_count, max_turns: s.max_turns,
+    score: s.score, missed_rubric_ids: s.missed_rubric_ids,
+  };
+}
+
 export function makeGradeHandler(deps: Deps) {
   return async (req: Request): Promise<Response> => {
     const g = await guard(req, deps, "grade", MAX_BODY_BYTES.grade);
@@ -51,20 +60,49 @@ export function makeGradeHandler(deps: Deps) {
       if (!(e instanceof ValidationError)) throw e;
       return finish(deps, "grade", t0, errorResponse("invalid_input", cors), uid, "invalid_input");
     }
-    const scenario = await deps.store.getScenario(input.scenarioId);
-    if (!scenario || scenario.language !== input.language || scenario.rubric.length === 0) {
-      return finish(deps, "grade", t0, errorResponse("invalid_input", cors), uid, "invalid_input");
+    const bad = (code: "invalid_input" | "not_found" | "not_gradeable") =>
+      finish(deps, "grade", t0, errorResponse(code, cors), uid, code);
+
+    // Grading always belongs to a session (scenario + language come from it). Ownership is checked against the
+    // token's user id; another user's session is indistinguishable from a missing one.
+    const now = () => new Date(deps.now());
+    let session = await deps.store.getSession(uid, input.sessionId, now());
+    if (!session) return bad("not_found");
+    const scenario = await deps.store.getScenario(session.scenario_id);
+    if (!scenario || scenario.rubric.length === 0 || (input.scenarioId !== null && input.scenarioId !== scenario.id) ||
+        (input.language !== null && input.language !== scenario.language)) {
+      return bad("invalid_input");
+    }
+    const language = scenario.language;
+
+    // Already graded: return the stored result (score + pass/fail per rubric item). No LLM call, no quota.
+    if (session.graded_at !== null) {
+      const missed = new Set(session.missed_rubric_ids);
+      return finish(deps, "grade", t0, jsonOk(cors, {
+        score: session.score ?? 0,
+        items: scenario.rubric.map((r) => ({ id: r.id, passed: !missed.has(r.id), note: "", tags: tagsOf(r) })),
+        feedback: null,
+        already_graded: true,
+        session: sessionSummary(session),
+      }), uid);
     }
 
-    // Optional simulation session: its engine log becomes trusted grading evidence. Ownership is checked
-    // against the token's user id; another user's session is indistinguishable from a missing one.
+    // Finish & score: grading an active session ends it first. Then only sessions worth grading are graded.
+    if (session.status === "active") {
+      await deps.store.finishSession(uid, session.id, now());
+      session = await deps.store.getSession(uid, session.id, now());
+      if (!session) return bad("not_found");
+    }
+    if (!isGradeable(session)) {
+      return finish(deps, "grade", t0, errorResponse("not_gradeable", cors, { session: sessionSummary(session) }), uid, "not_gradeable");
+    }
+
+    // Simulation session: its engine log becomes trusted grading evidence.
     let engineLog: string | undefined;
-    if (input.sessionId) {
-      const session = await deps.store.getSession(uid, input.sessionId);
-      if (!session) return finish(deps, "grade", t0, errorResponse("not_found", cors), uid, "not_found");
-      const cfg = session.scenario_id === scenario.id ? parseSimConfig(scenario.sim) : null;
+    if (scenario.sim != null) {
+      const cfg = parseSimConfig(scenario.sim);
       const state = cfg ? parseState(session.state, cfg) : null;
-      if (!cfg || !state) return finish(deps, "grade", t0, errorResponse("invalid_input", cors), uid, "invalid_input");
+      if (!cfg || !state) return bad("invalid_input");
       engineLog = describeEngineLog(cfg, state);
     }
 
@@ -74,7 +112,7 @@ export function makeGradeHandler(deps: Deps) {
 
     const model = ctx.profile.tier.grade_model ?? deps.llm().gradeModel;
     const messages = [
-      { role: "system", content: buildGradeSystemPrompt(scenario, input.language, engineLog !== undefined) },
+      { role: "system", content: buildGradeSystemPrompt(scenario, language, engineLog !== undefined) },
       { role: "user", content: formatTranscript(input.messages, engineLog) },
     ];
     const fail = async () => {
@@ -114,12 +152,17 @@ export function makeGradeHandler(deps: Deps) {
       await deps.store.refundQuota(uid, GRADE_QUOTA_COST, quota.day).catch(() => {});
       return finish(deps, "grade", t0, errorResponse("upstream_error", cors), uid, "upstream_error", meta);
     }
-    const h = new Headers(cors);
-    h.set("content-type", "application/json");
-    h.set("cache-control", "no-store");
+    // Store the summary (score + missed rubric ids; never the notes or feedback text) and feed the skill profile.
+    // A parallel grade of the same session may have stored first: that one wins, this result is still returned.
+    await deps.store.recordGrade(uid, session.id, result.score, result.items.map(({ id, passed, tags }) => ({ id, passed, tags })), now());
     return finish(
       deps, "grade", t0,
-      new Response(JSON.stringify({ ...result, remaining: quota.remaining, limit: quota.limit }), { status: 200, headers: h }),
+      jsonOk(cors, {
+        ...result,
+        remaining: quota.remaining,
+        limit: quota.limit,
+        session: sessionSummary({ ...session, score: result.score, missed_rubric_ids: result.items.filter((i) => !i.passed).map((i) => i.id) }),
+      }),
       uid, undefined, meta,
     );
   };

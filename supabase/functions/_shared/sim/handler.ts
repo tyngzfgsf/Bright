@@ -81,7 +81,7 @@ export function makeSimHandler(deps: Deps) {
       const cfg = scenario && scenario.language === body.language ? parseSimConfig(scenario.sim) : null;
       if (!scenario || !cfg) return fin("invalid_input");
       const state = initState(cfg);
-      const sessionId = await deps.store.createSession(uid, scenario.id, state);
+      const sessionId = await deps.store.createSession(uid, scenario.id, state, scenario.language, cfg.max_turns, new Date(deps.now()));
       return finish(deps, "sim", t0, json(cors, {
         session_id: sessionId,
         title: scenario.title,
@@ -100,9 +100,9 @@ export function makeSimHandler(deps: Deps) {
     }
 
     // ---------------------------------------------------------------- turn
-    const session = await deps.store.getSession(uid, body.sessionId);
+    const session = await deps.store.getSession(uid, body.sessionId, new Date(deps.now()));
     if (!session) return fin("not_found");
-    if (session.status !== "active") return fin("session_closed");
+    if (session.status !== "active") return fin("session_ended");
     const scenario = await deps.store.getScenario(session.scenario_id);
     const cfg = scenario ? parseSimConfig(scenario.sim) : null;
     if (!scenario || !cfg) return fin("not_found");
@@ -183,7 +183,7 @@ export function makeSimHandler(deps: Deps) {
       const status = result.ended ? "completed" : "active";
       if (!(await deps.store.commitSessionTurn(uid, session.id, session.turn_count, result.state, status))) {
         await deps.store.refundQuota(uid, 1, quota.day).catch(() => {});
-        return fin("session_closed", meta({ rejected_actions: classified.dropped }));
+        return fin("session_ended", meta({ rejected_actions: classified.dropped }));
       }
       committed = true;
       return finish(deps, "sim", t0, json(cors, {

@@ -5,7 +5,7 @@ set -euo pipefail
 U=44444444-4444-4444-8444-444444444444
 SID=$(psql -qAt -v ON_ERROR_STOP=1 <<SQL
 insert into auth.users (id) values ('$U') on conflict do nothing;
-select public.create_session('$U', (select id from public.scenarios where slug = 'anaphylaxis-sim' and language = 'en'), '{"v":1}'::jsonb);
+select public.create_session('$U', (select id from public.scenarios where slug = 'anaphylaxis-sim' and language = 'en'), '{"v":1}'::jsonb, 'en', 14);
 SQL
 )
 OUT="$(mktemp)"

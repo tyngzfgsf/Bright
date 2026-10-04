@@ -49,9 +49,10 @@ Deno.test("logging is structurally metadata-only: the sim handler only logs thro
   const block = /export interface LogEntry \{([\s\S]*?)\n\}/.exec(types)![1];
   const fields = [...block.matchAll(/^\s*([a-z_]+)\??:\s*([^;]+);/gm)].map((m) => [m[1], m[2].trim()]);
   const allowed: Record<string, string> = {
-    fn: '"chat" | "grade" | "sim"', uid: "string", status: "number", code: "string", latency_ms: "number",
+    fn: '"chat" | "grade" | "sim" | "start_session" | "get_questions" | "answer_question" | "review_queue" | "report_question"',
+    uid: "string", status: "number", code: "string", latency_ms: "number",
     input_tokens: "number", output_tokens: "number", cost_usd: "number", calls: "number", turn: "number",
-    rejected_actions: "number", narration_filtered: "string",
+    rejected_actions: "number", narration_filtered: "string", served: "number", correct: "boolean",
   };
   assertEquals(Object.fromEntries(fields), allowed); // adding any other field (e.g. `message: string`) fails this test on purpose
 });

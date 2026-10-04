@@ -9,8 +9,11 @@ export type ErrorCode =
   | "payload_too_large"
   | "forbidden_origin"
   | "not_found"
-  | "session_closed"
+  | "session_ended"
   | "session_busy"
+  | "not_gradeable"
+  | "not_graded"
+  | "answer_conflict"
   | "upstream_error";
 
 export const STATUS: Record<ErrorCode, number> = {
@@ -23,8 +26,11 @@ export const STATUS: Record<ErrorCode, number> = {
   rate_limited: 429,
   budget_reached: 503,
   not_found: 404,
-  session_closed: 409,
+  session_ended: 409,
   session_busy: 409,
+  not_gradeable: 409,
+  not_graded: 409,
+  answer_conflict: 409,
   upstream_error: 502,
 };
 

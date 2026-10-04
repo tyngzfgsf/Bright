@@ -388,7 +388,7 @@ Deno.test("a made-up or malformed session id is 404/400, never a 500", () =>
     assertEquals((await sim(turn("not-a-uuid"))).status, 400);
   }));
 
-Deno.test("end: completes the session; further turns are refused (409 session_closed); end is idempotent", () =>
+Deno.test("end: completes the session; further turns are refused (409 session_ended); end is idempotent", () =>
   withSim(okScript, async ({ sim, store, llm }) => {
     const { session_id } = await started(sim);
     const e = await sim(post("sim", { action: "end", session_id }));
@@ -396,7 +396,7 @@ Deno.test("end: completes the session; further turns are refused (409 session_cl
     assertEquals((await (await sim(post("sim", { action: "end", session_id }))).json()).status, "completed");
     const t = await sim(turn(session_id));
     assertEquals(t.status, 409);
-    assertEquals((await t.json()).error, "session_closed");
+    assertEquals((await t.json()).error, "session_ended");
     assertEquals(llm.requests.length, 0);
     assertEquals(store.used.get(UID_A) ?? 0, 0);
   }));
@@ -457,6 +457,7 @@ Deno.test("grade: a session for a different scenario, or a broken one, is refuse
     const wrong = await grade(post("grade", { scenario_id: SCENARIO_EN, language: "en", session_id, messages: [{ role: "user", content: "x" }] }));
     assertEquals(wrong.status, 400);
     store.sessions.get(session_id)!.row.state = { v: 1, junk: true };
+    store.sessions.get(session_id)!.row.turn_count = 1; // gradeable, so the state check is what refuses it
     const corrupt = await grade(post("grade", { scenario_id: SIM_EN, language: "en", session_id, messages: [{ role: "user", content: "x" }] }));
     assertEquals(corrupt.status, 400);
     const missing = await grade(post("grade", { scenario_id: SIM_EN, language: "en", session_id: "99999999-9999-4999-8999-999999999999", messages: [{ role: "user", content: "x" }] }));

@@ -24,12 +24,9 @@ function asObject(raw: unknown, keys: string[]): Record<string, unknown> {
   for (const k of Object.keys(o)) if (!keys.includes(k)) fail("unknown key");
   return o;
 }
-function common(o: Record<string, unknown>, maxMessages: number, requireLastUser: boolean) {
-  if (typeof o.scenario_id !== "string" || !UUID.test(o.scenario_id)) fail("scenario_id");
-  const language = oneOf<Lang>(o.language, ["ko", "en"], "en");
-  if (o.language === undefined) fail("language");
-  if (!Array.isArray(o.messages) || o.messages.length === 0) fail("messages");
-  const messages: Msg[] = o.messages.map((m) => {
+function parseMessages(v: unknown, requireLastUser: boolean): Msg[] {
+  if (!Array.isArray(v) || v.length === 0) fail("messages");
+  const messages: Msg[] = v.map((m) => {
     if (typeof m !== "object" || m === null) fail("message");
     const { role, content } = m as Record<string, unknown>;
     if (role !== "user" && role !== "assistant") fail("role"); // 'system' and anything else is rejected
@@ -39,9 +36,22 @@ function common(o: Record<string, unknown>, maxMessages: number, requireLastUser
     return { role, content: text };
   });
   if (requireLastUser && messages[messages.length - 1].role !== "user") fail("last message must be from user");
+  return messages;
+}
+
+/**
+ * Every chat and grade runs inside a server-issued session: the scenario and language come from the session row.
+ * A client may still echo scenario_id / language (older builds did); they are validated and must match the session.
+ */
+function sessionCommon(o: Record<string, unknown>, maxMessages: number, requireLastUser: boolean) {
+  const sessionId = uuid(o.session_id, "session_id");
+  const scenarioId = o.scenario_id === undefined ? null : uuid(o.scenario_id, "scenario_id");
+  if (o.language !== undefined && o.language !== "ko" && o.language !== "en") fail("language");
+  const messages = parseMessages(o.messages, requireLastUser);
   return {
-    scenarioId: o.scenario_id,
-    language,
+    sessionId,
+    scenarioId,
+    language: (o.language ?? null) as Lang | null,
     messages: messages.slice(-maxMessages),
     totalMessages: messages.length,
   };
@@ -49,10 +59,10 @@ function common(o: Record<string, unknown>, maxMessages: number, requireLastUser
 
 export function parseChatBody(raw: unknown) {
   const o = asObject(raw, [
-    "scenario_id", "language", "messages", "difficulty", "trainee_role", "triage_system", "ai_role", "mode",
+    "session_id", "scenario_id", "language", "messages", "difficulty", "trainee_role", "triage_system", "ai_role", "mode",
   ]);
   return {
-    ...common(o, MAX_CHAT_MESSAGES, true),
+    ...sessionCommon(o, MAX_CHAT_MESSAGES, true),
     difficulty: oneOf(o.difficulty, DIFFICULTIES, "intermediate"),
     traineeRole: oneOf(o.trainee_role, TRAINEE_ROLES, "doctor"),
     triageSystem: oneOf(o.triage_system, TRIAGE_SYSTEMS, "ESI"),
@@ -62,11 +72,51 @@ export function parseChatBody(raw: unknown) {
 }
 
 export function parseGradeBody(raw: unknown) {
-  const o = asObject(raw, ["scenario_id", "language", "messages", "session_id"]);
-  const parsed = common(o, MAX_GRADE_MESSAGES, false);
-  // Optional: grade against a simulation session's engine log. An opaque, server-issued handle; ownership is checked server-side.
-  const sessionId = o.session_id === undefined ? null : uuid(o.session_id, "session_id");
-  return { ...parsed, sessionId };
+  const o = asObject(raw, ["session_id", "scenario_id", "language", "messages"]);
+  return sessionCommon(o, MAX_GRADE_MESSAGES, false);
+}
+
+/** start_session: the only place a client names a scenario. */
+export function parseStartBody(raw: unknown): { scenarioId: string; language: Lang } {
+  const o = asObject(raw, ["scenario_id", "language"]);
+  if (o.language !== "ko" && o.language !== "en") fail("language");
+  return { scenarioId: uuid(o.scenario_id, "scenario_id"), language: o.language as Lang };
+}
+
+export function parseGetQuestionsBody(raw: unknown): { sessionId: string } {
+  const o = asObject(raw, ["session_id"]);
+  return { sessionId: uuid(o.session_id, "session_id") };
+}
+
+const OPTION_ID = /^[a-z0-9]{1,8}$/;
+
+/** answer_question: the client sends only what it picked. It can never send correctness, scores or progress. */
+export function parseAnswerBody(raw: unknown): { questionId: string; selectedIds: string[]; context: "debrief" | "review" } {
+  const o = asObject(raw, ["question_id", "selected_ids", "context"]);
+  const questionId = uuid(o.question_id, "question_id");
+  if (!Array.isArray(o.selected_ids) || o.selected_ids.length === 0 || o.selected_ids.length > 8) fail("selected_ids");
+  const selectedIds = (o.selected_ids as unknown[]).map((v) => {
+    if (typeof v !== "string" || !OPTION_ID.test(v)) fail("selected_id");
+    return v as string;
+  });
+  if (new Set(selectedIds).size !== selectedIds.length) fail("duplicate selected_id");
+  return { questionId, selectedIds, context: oneOf(o.context, ["debrief", "review"] as const, "debrief") };
+}
+
+export function parseEmptyBody(raw: unknown): Record<string, never> {
+  asObject(raw, []);
+  return {};
+}
+
+export const MAX_REPORT_REASON_CHARS = 280;
+
+export function parseReportBody(raw: unknown): { questionId: string; reason: string | null } {
+  const o = asObject(raw, ["question_id", "reason"]);
+  const questionId = uuid(o.question_id, "question_id");
+  if (o.reason !== undefined && o.reason !== null && typeof o.reason !== "string") fail("reason");
+  const reason = typeof o.reason === "string" ? o.reason.trim() : "";
+  if (reason.length > MAX_REPORT_REASON_CHARS) fail("reason length");
+  return { questionId, reason: reason.length > 0 ? reason : null };
 }
 
 function uuid(v: unknown, what: string): string {
