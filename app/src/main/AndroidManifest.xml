@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Firebase Analytics merges these in to read the advertising ID (Play services and
          Android's Privacy Sandbox variants) and for ad attribution. Bright shows no ads and
          collects no identifiers beyond Firebase's app-instance ID, so all three are removed. -->
@@ -61,6 +62,18 @@
         <receiver
             android:name="com.bright.app.data.notify.NotificationAlarmReceiver"
             android:exported="false" />
+
+        <!-- Exported only because these system broadcasts come from outside the app; the
+             receiver ignores any other action. -->
+        <receiver
+            android:name=".notify.ReminderRescheduleReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

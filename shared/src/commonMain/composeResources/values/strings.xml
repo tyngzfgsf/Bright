@@ -152,6 +152,10 @@
     <string name="settings_usage_requests">Requests left this minute: %1$d/%2$d</string>
     <string name="settings_usage_tokens">Tokens left this minute: %1$d/%2$d</string>
     <string name="settings_section_data">Data</string>
+    <string name="settings_export_data">Export my data</string>
+    <string name="settings_export_data_desc">Saves your sessions, graded answers and skill profile as a JSON file.</string>
+    <string name="settings_export_saved">Exported. The file is wherever you chose to save it.</string>
+    <string name="settings_export_failed">Couldn't save the file. Please try again.</string>
     <string name="settings_clear_history">Clear all history</string>
     <string name="settings_clear_history_confirm">This deletes every saved session on this device. This can't be undone.</string>
     <string name="settings_section_about">About</string>

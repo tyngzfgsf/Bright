@@ -57,6 +57,8 @@ import com.bright.app.ui.components.BrightButton
 import com.bright.app.ui.components.BrightButtonStyle
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
+import com.bright.app.ui.export.FileSaveResult
+import com.bright.app.ui.export.rememberJsonFileSaver
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +75,7 @@ fun SettingsScreen(
                     app.database.chatDao(),
                     app.userPreferences,
                     app.groqRepository,
+                    app.notifier,
                     app.appVersionName,
                     app.appUpdater,
                     app.analytics
@@ -92,6 +95,9 @@ fun SettingsScreen(
     var manualModelInput by remember(uiState.model) { mutableStateOf(uiState.model) }
     var showManualModelEntry by remember { mutableStateOf(false) }
     var showClearDialog by remember { mutableStateOf(false) }
+    val isPreparingExport by viewModel.isPreparingExport.collectAsState()
+    var exportResult by remember { mutableStateOf<FileSaveResult?>(null) }
+    val saveJsonFile = rememberJsonFileSaver { exportResult = it }
 
     Scaffold(
         topBar = {
@@ -285,6 +291,30 @@ fun SettingsScreen(
 
             SectionLabel(stringResource(Res.string.settings_section_data))
             Spacer(Modifier.height(10.dp))
+            BrightButton(
+                text = stringResource(Res.string.settings_export_data),
+                style = BrightButtonStyle.OUTLINED,
+                loading = isPreparingExport,
+                onClick = {
+                    exportResult = null
+                    viewModel.prepareExport(saveJsonFile)
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = stringResource(
+                    when (exportResult) {
+                        FileSaveResult.SAVED -> Res.string.settings_export_saved
+                        FileSaveResult.FAILED -> Res.string.settings_export_failed
+                        FileSaveResult.CANCELLED, null -> Res.string.settings_export_data_desc
+                    }
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (exportResult == FileSaveResult.FAILED) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 6.dp)
+            )
+            Spacer(Modifier.height(12.dp))
             BrightButton(
                 text = stringResource(Res.string.settings_clear_history),
                 style = BrightButtonStyle.OUTLINED,
