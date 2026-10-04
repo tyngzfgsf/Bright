@@ -4,7 +4,7 @@ import { makeGradeHandler } from "./grade.ts";
 import { loadLlmConfig } from "./llm-config.ts";
 import { priceFor } from "./cost.ts";
 import { SAFETY_PRICE } from "./config.ts";
-import { chatBody, FakeStore, makeDeps, post, readSse, SCENARIO_EN, SCENARIO_KO, SESSION_A, SESSION_B, startFakeLlm, UID_A, UID_B } from "./testkit.ts";
+import { chatBody, FakeStore, makeDeps, post, readSse, SCENARIO_KO, SESSION_A, SESSION_B, startFakeLlm, UID_A, UID_B } from "./testkit.ts";
 
 async function withChat(
   mode: Parameters<typeof startFakeLlm>[0],

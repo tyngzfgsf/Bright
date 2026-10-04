@@ -221,6 +221,7 @@ export class FakeStore implements Store {
     const e = this.entry(uid, id);
     if (e && e.row.turn_count === claimed && e.row.graded_at === null &&
         (e.row.status === "active" || (e.row.status === "completed" && e.row.end_reason === "turn_cap"))) {
+      if (e.row.status === "completed") this.bumpActivity(uid, e.last_activity, (a) => { a.sessions_completed = Math.max(a.sessions_completed - 1, 0); });
       e.row.turn_count--;
       e.row.status = "active";
       e.row.end_reason = null;

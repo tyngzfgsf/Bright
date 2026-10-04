@@ -94,6 +94,7 @@ grant select on public.skill_stats to authenticated;
 grant all on public.skill_stats to service_role;
 
 -- A completed session (with at least one turn) counts toward that local day's streak. Abandoned ones do not.
+-- If a completion is undone (unclaim_chat_turn re-opens a session whose capping turn failed), so is the count.
 create or replace function public.sessions_on_complete() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
@@ -101,6 +102,9 @@ begin
     insert into public.activity_days as a (user_id, day, sessions_completed)
     values (new.user_id, public.local_day(new.user_id, coalesce(new.ended_at, now())), 1)
     on conflict (user_id, day) do update set sessions_completed = a.sessions_completed + 1;
+  elsif old.status = 'completed' and new.status = 'active' and old.turn_count >= 1 then
+    update public.activity_days set sessions_completed = greatest(sessions_completed - 1, 0)
+     where user_id = old.user_id and day = public.local_day(old.user_id, coalesce(old.ended_at, now()));
   end if;
   return new;
 end $$;

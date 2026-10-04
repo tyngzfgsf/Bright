@@ -34,7 +34,7 @@ for f in seed.sql seed_sim.sql; do
 done
 
 fail=0
-for t in tests/rls_and_quota.sql tests/sessions_rls.sql; do
+for t in tests/rls_and_quota.sql tests/sessions_rls.sql tests/questions_rls.sql; do
   [ -f "$t" ] || continue
   echo "== $t"
   psql -q -o /dev/null -v ON_ERROR_STOP=1 -f "$t" && echo "PASS: $t" || fail=1
