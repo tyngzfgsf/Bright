@@ -62,8 +62,15 @@ if [ -z "$SCENARIO_ID" ]; then
 fi
 if [ -n "$SCENARIO_ID" ]; then ok "scenario $SCENARIO_ID"; else bad "no scenario found (did you run supabase/seed.sql?)"; echo "Result: $pass passed, $fail failed"; exit 1; fi
 
-BODY="$(jq -n --arg s "$SCENARIO_ID" --arg l "$LANGUAGE" \
-  '{scenario_id:$s, language:$l, messages:[{role:"user", content:"Begin the session. Ask the first question."}]}')"
+# Every chat runs inside a bounded session (docs/QUESTIONS.md): start one first.
+hdr "$TOKEN"
+jq -n --arg s "$SCENARIO_ID" --arg l "$LANGUAGE" '{scenario_id:$s, language:$l}' \
+  | curl -sS -o "$TMP/start.json" -X POST "$BASE/functions/v1/start_session" -H @"$TMP/h" -H 'content-type: application/json' --data @- || true
+SESSION_ID="$(jq -r '.session_id // empty' "$TMP/start.json" 2>/dev/null)"
+if [ -n "$SESSION_ID" ]; then ok "session $SESSION_ID (max $(jq -r '.max_turns' "$TMP/start.json") turns)"; else bad "start_session failed: $(jq -r '.error // "no response"' "$TMP/start.json" 2>/dev/null)"; echo "Result: $pass passed, $fail failed"; exit 1; fi
+
+BODY="$(jq -n --arg s "$SESSION_ID" \
+  '{session_id:$s, messages:[{role:"user", content:"Begin the session. Ask the first question."}]}')"
 
 call_chat() { # $1 = label, $2 = bearer token or "-" for none; writes $TMP/$1.body / .headers / .meta
   local label="$1" tok="$2"

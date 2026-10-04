@@ -44,3 +44,33 @@ Tests: 133 Deno tests (41 from Phase 1 + 92 new), `scripts/run-sql-tests.sh` (RL
 | 16 | End-to-end against a real Supabase project and a real LLM provider | **NOT VERIFIED** | Everything ran against a fake provider and a local Postgres with a Supabase stub. Manual steps 4 and 7 in `MANUAL_STEPS.md` section 11 cover this. |
 | 17 | Narrator naming a treatment without a dose, or a spelled-out number | **KNOWN GAP** | The prompt forbids it; the code filter only catches dose-shaped phrases, digits and links. |
 | 18 | Trainee claims an action without really doing it | **KNOWN GAP** (by design) | The classifier labels what the trainee *says*; bounded by preconditions, one-off actions and the 4-action cap. The engine does not check doses. |
+
+---
+
+# Bounded sessions, debrief questions and review
+
+Tests: 186 Deno tests (53 new: sessions, question handlers, scheduler, selection), 18 generator tests (offline, recorded
+responses), `scripts/run-sql-tests.sh` (new `questions_rls.sql`, a parallel turn-cap race, and loading the
+generator's SQL into the real schema). A manual mutation check (key leaked through the public shape, client-side
+"always correct", drafts served by SQL, streak expectation) was caught every time.
+
+| # | Rule | Status | Evidence |
+|---|------|--------|----------|
+| 1 | LLM key only as an Edge secret | **PASS** | The new functions make no LLM call at all. The generator reads `LLM_API_KEY` from the developer's shell only, under `--allow-env=LLM_*`, prints only HTTP status codes on errors, and its outputs are git-ignored. |
+| 2 | Publishable key on clients; secret key only in functions; no legacy keys | **PASS** | New store methods use the existing secret-key client; the recursive source guard (no `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` / `auth.getUser(`) still passes. The generator holds **no** database credentials: Deno permissions restrict it to `scripts/questions`, the LLM host and `LLM_*` env vars, and it refuses to start with broader permissions (tested by hand: `deno run -A` → refused). |
+| 3 | Every function verifies the JWT itself; user id from the token | **PASS** | All 5 new functions go through the shared `guard()` (JWKS); `verify_jwt = false` in `config.toml` as for the others. A body `user_id` is an unknown key → 400 (tested on answer_question). |
+| 4 | RLS on every table; read own rows only; writes only through Edge Functions | **PASS** | `questions_rls.sql`: RLS on every public table; `questions` has no policies and no client grants (clients cannot even select `stem`); `question_progress`, `skill_stats`, `activity_days`, `question_reports` have one select-own policy each and no write grants; users A and B each see only their own rows; `anon` sees nothing; every new service function is denied to clients; `set_timezone` writes only the caller's row and rejects invalid zones. |
+| 5 | Client never chooses model, prompt, limits or correctness | **PASS** | Turn cap from `scenarios.max_turns` / the sim config (a `max_turns` body key → 400). Correctness is computed server-side from the key; `correct`, `score` or extra keys → 400; selected ids must be options of that question. Question selection, scheduling, the review cap and the streak are all server-side. |
+| 6 | No raw upstream error bodies | **PASS** | Unchanged paths; the new functions call no upstream. |
+| 7 | No message content in logs | **PASS** | `LogEntry` is still pinned by the structural test (new fields: `served` count, `correct` boolean). A test shows stems, options and report reasons never appear in logs. |
+| 8 | Session in Keystore/Keychain storage | **PENDING** | No client work in this change (backend only, by decision). |
+| 9 | No secrets printed | **PASS** | None read, printed or requested. |
+| 10 | Sessions end and the client cannot bypass it | **PASS** | `chat` requires `session_id`; an ended session → `409 session_ended` before any quota or LLM use (tested). Turn cap: atomic `claim_chat_turn` + `CHECK (turn_count <= max_turns)`; 20 parallel connections → exactly 3 of 3 (SQL) and 10 parallel requests → exactly 3 (handler). Inactivity: 30 minutes on a pinned clock (handler + SQL). A sim session cannot be driven through `chat`. |
+| 11 | Only approved questions served; no key before answering | **PASS** | Every serving/answering SQL function filters `status = 'approved'` (SQL tests with draft and retired rows; a mutant that serves drafts is caught); the function signatures have no key or explanation columns (asserted); `publicQuestion()` allow-list; handler tests assert the response text has no `correct_option_ids` / `explanation`. Draft/retired ids → 404 on answer. |
+| 12 | Questions do not consume quota or budget | **PASS** | No `reserve()` on the question path; handler tests assert zero LLM calls, zero quota, zero usage rows for every question test; SQL asserts no `usage_daily` / `global_usage_daily` rows after answering. Separate `questions` rate-limit bucket (30/min, tested both in SQL and at the handler). |
+| 13 | Ids, tags and scores only in the new tables | **PASS** | `question_progress`, `skill_stats`, `activity_days` have no free-text column (asserted); sessions store `score` + `missed_rubric_ids` only, never the grader's notes or feedback. The one user text field is `question_reports.reason` (optional, ≤ 280 chars, own-row RLS, never logged). |
+| 14 | End-to-end on a real Supabase project / real LLM | **NOT VERIFIED** | Local Postgres 16 with the Supabase stub and fake providers only. See MANUAL_STEPS section 12, step 9. |
+| 15 | Grading trusts the client-supplied transcript | **KNOWN GAP** (pre-existing) | Transcripts are not stored server-side by design, so a user could grade a fabricated transcript. The turn count and the session state are server-side; the streak counts session completion, not the score. |
+| 16 | `sessions.state` (hidden sim state) readable by its owner | **KNOWN GAP** (pre-existing, patient-state work) | The owner can select their own row, including `state`. Not changed here; restrict with a column grant if the hidden flags matter. |
+| 17 | Timezone can be changed by the user | **KNOWN GAP** | Switching zones could shift a day boundary once (a small streak gain). Activity is recorded on the local day at the time of the event, so past days never move. |
+| 18 | Generated questions are medically correct | **NOT AUTOMATABLE** | Mitigated by: sources-only prompt, a deterministic numbers/dose guard, an independent validator call, drafts-only output, `approved` requiring `reviewed_at`, the "Practice question. Check official guidelines." label, and user reports. Jason's review is the control. |

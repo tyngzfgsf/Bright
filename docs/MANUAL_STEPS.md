@@ -140,3 +140,48 @@ Details: `docs/PATIENT_STATE_ENGINE.md`. In this order:
 8. **Not done here (needs your decision / the sign-in work)**: the app does not call `sim` yet. `ChatViewModel.onEngineState(...)` and the monitor panel are ready; wiring needs the Supabase sign-in + secure session storage (rule 8) and BYOK removal.
 9. **Optional data hygiene**: sessions are never deleted automatically. If you want a retention window: `delete from public.sessions where updated_at < now() - interval '30 days';` as a scheduled job.
 10. **Run the local tests** once: `scripts/run-sql-tests.sh` (needs Postgres binaries, `brew install postgresql@17`) and `cd supabase/functions && deno test -A`.
+
+## 12. Bounded sessions, debrief questions and review
+Details and the client contract: `docs/QUESTIONS.md`. In this order:
+
+1. **Base branch.** This work sits on top of the Supabase backend (Phase 1 + patient-state), which was only on the
+   unmerged branches `supabase-backend` / `worktree-prompt1-patient-state-engine`. This branch imports their
+   `supabase/`, `docs/` and SQL-test files onto current `main` (their client WIP was left on those branches). Note that
+   `main`'s app currently signs in through Firebase + `bright-proxy`; decide which backend the app will use before
+   wiring the client.
+2. **Apply the two new migrations** (old ones untouched): `supabase db push`. Then Dashboard -> Advisors -> Security:
+   no new warnings; `questions`, `question_progress`, `skill_stats`, `activity_days`, `question_reports` show RLS on.
+   The migration changes `rate_limits`' primary key and replaces `create_session` / `get_session`, so deploy the
+   functions (next step) right after it.
+3. **Deploy all functions** (shared code changed):
+   `supabase functions deploy chat grade sim start_session get_questions answer_question review_queue report_question`.
+   The new ones have `verify_jwt = false` in `config.toml` on purpose (each verifies the JWT itself), like the others.
+   **Breaking change:** `chat` and `grade` now require `session_id` (from `start_session`); an old client that sends
+   only `scenario_id` gets 400. No released app calls these functions yet.
+4. **Optional per-scenario turn caps** (default 15): `update public.scenarios set max_turns = 12 where slug = '...';`
+   (1–60). The question rate limit is `app_config.questions_rate_limit_per_minute` (30).
+5. **Write the reference notes.** In `scripts/questions/scenarios.json`, fill in `reference_notes` for each scenario
+   and language from a source you trust (Korean notes in Korean). The rubric text in that file mirrors
+   `supabase/seed.sql`; if you change a rubric in the database, change it there too.
+6. **Generate the drafts** (on your machine; needs `brew install deno`):
+   ```bash
+   scripts/generate-questions --dry-run        # expected: 36 drafts (3 scenarios x 6 items x 2 languages)
+   export LLM_API_KEY=...                       # type it in your own terminal
+   scripts/generate-questions --scenario anaphylaxis --lang en
+   ```
+   Optional: `LLM_MODEL` / `LLM_VALIDATOR_MODEL` (default `openai/gpt-oss-120b` via OpenRouter; a different, stronger
+   validator model is better), `LLM_BASE_URL` (https only).
+7. **Review, insert, approve.** Read every question in `scripts/questions/questions_draft.sql` against your sources,
+   delete or fix bad ones in the file, run it in the SQL Editor (it inserts drafts only), then approve the ids you
+   checked with the commented `update ... set status = 'approved', reviewed_at = now()` at the bottom. Nothing is served
+   until approved. Medical review rules from section 11 apply: no dose is "verified" until a clinician has checked it.
+8. **Watch reports**: see the triage query in `docs/QUESTIONS.md`; retire with `set status = 'retired'`.
+9. **Smoke test** on a project with no real users: `start_session` -> a few `chat` turns -> `grade` -> `get_questions`
+   -> `answer_question` -> `review_queue` with a test user's token (step 4b). Check that a 16th message gets
+   `409 session_ended`.
+10. **Client follow-up (not built here).** The KMP app needs Supabase sign-in with Keychain/Keystore session storage
+    (rule 8) before it can call any of this. Then: the turn counter, Finish & score, the "Session complete" state, the
+    debrief screens, Home's Review card + streak, the Progress tab, `set_timezone` on sign-in, and the offline message.
+    The contract is in `docs/QUESTIONS.md` section 4. Existing local Room history stays as it is.
+11. **Run the tests**: `scripts/run-sql-tests.sh`, `cd supabase/functions && deno test --allow-net --allow-env --allow-read`,
+    and `deno test --allow-read=scripts/questions scripts/questions/`.

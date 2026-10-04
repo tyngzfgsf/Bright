@@ -123,3 +123,16 @@ a moat. The moat is what accumulates on top of it:
 8. Store the Supabase session in secure platform storage (Android Keystore-backed, iOS
    Keychain) — never plain SharedPreferences/UserDefaults/DataStore.
 9. Never print environment variables or secrets in command output or summaries.
+
+## Bounded sessions and the question bank — do not weaken
+
+- Every chat runs inside a server-side session (`start_session`); `chat`/`grade` take scenario and language from the
+  session. Turn cap, inactivity (30 min) and "already ended" (409 `session_ended`) are enforced in SQL, not the client.
+- Practice questions are generated **offline** by `scripts/generate-questions` (Jason's machine, `LLM_API_KEY` from the
+  shell, Deno permissions limited to `scripts/questions` + the LLM host; never database credentials), reviewed by a
+  human, then approved in SQL. Never generate questions live per user.
+- Only `status = 'approved'` questions are ever served; clients can never read `questions`; the answer key and
+  explanation leave the server only in `answer_question`'s response; correctness is computed server-side.
+- The question path makes no LLM call and uses no message quota (its own rate-limit bucket).
+- Keep question data format-neutral (structured stem/options/key/explanation, stable ids) so a printable renderer can
+  be added later. Details: `docs/QUESTIONS.md`.
