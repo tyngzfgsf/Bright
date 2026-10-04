@@ -2,15 +2,21 @@ package com.bright.app.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bright.app.data.analytics.Analytics
+import com.bright.app.data.analytics.AnalyticsEvent
+import com.bright.app.data.analytics.NoOpAnalytics
 import com.bright.app.data.auth.AuthService
 import com.bright.app.data.auth.AuthUser
 import com.bright.app.data.auth.SignInResult
 import com.bright.app.data.local.ChatDao
+import com.bright.app.data.notify.LocalNotifier
 import com.bright.app.data.preferences.UserPreferences
 import com.bright.app.data.remote.GroqRepository
 import com.bright.app.data.remote.GroqUsageInfo
 import com.bright.app.data.update.AppUpdateInfo
 import com.bright.app.data.update.AppUpdater
+import com.bright.app.domain.DataExport
+import com.bright.app.domain.syncLocalNotifications
 import com.bright.app.domain.model.Language
 import com.bright.app.domain.model.TriageSystem
 import com.bright.app.util.ApiResult
@@ -36,11 +42,13 @@ class SettingsViewModel(
     private val dao: ChatDao,
     private val preferences: UserPreferences,
     private val groqRepository: GroqRepository,
+    private val notifier: LocalNotifier,
     private val currentVersionName: String,
     /** Null on platforms without sideloaded updates (iOS); the UI hides the section then. */
     private val appUpdater: AppUpdater? = null,
     /** Null on platforms without an auth implementation (iOS); the UI hides the section then. */
-    private val authService: AuthService? = null
+    private val authService: AuthService? = null,
+    private val analytics: Analytics = NoOpAnalytics
 ) : ViewModel() {
 
     /**
@@ -137,7 +145,14 @@ class SettingsViewModel(
 
     fun setApiKey(key: String) {
         viewModelScope.launch {
+            val previous = preferences.groqApiKey.first().orEmpty()
             preferences.setGroqApiKey(key)
+            // Only a real change counts: clearing the key or re-saving the same one isn't "added".
+            // The event carries whether a key was replaced, never the key.
+            val trimmed = key.trim()
+            if (trimmed.isNotEmpty() && trimmed != previous) {
+                analytics.log(AnalyticsEvent.SettingsKeyAdded(replacedExistingKey = previous.isNotEmpty()))
+            }
             fetchModelsAndUsage()
         }
     }
@@ -172,7 +187,27 @@ class SettingsViewModel(
     }
 
     fun clearAllHistory() {
-        viewModelScope.launch { dao.deleteAllSessions() }
+        viewModelScope.launch {
+            dao.deleteAllSessions()
+            // The review queue just emptied — don't leave its reminder pending.
+            syncLocalNotifications(dao, preferences, notifier)
+        }
+    }
+
+    private val _isPreparingExport = MutableStateFlow(false)
+    val isPreparingExport: StateFlow<Boolean> = _isPreparingExport
+
+    /** Builds the export off the UI thread, then hands (fileName, json) to [onReady] to save. */
+    fun prepareExport(onReady: (fileName: String, content: String) -> Unit) {
+        if (_isPreparingExport.value) return
+        viewModelScope.launch {
+            _isPreparingExport.value = true
+            try {
+                onReady(DataExport.fileName(), DataExport.build(dao, preferences, currentVersionName))
+            } finally {
+                _isPreparingExport.value = false
+            }
+        }
     }
 
     fun resetOnboarding() {

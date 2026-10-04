@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,6 +49,7 @@ import com.bright.app.util.formatSessionTimestamp
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
 import com.bright.app.domain.model.stringRes
+import com.bright.app.ui.components.EmptyState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,23 +89,14 @@ fun HistoryScreen(
         }
     ) { padding ->
         if (sessions.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    stringResource(Res.string.history_empty_title),
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    stringResource(Res.string.history_empty_body),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-            }
+            EmptyState(
+                icon = Icons.Filled.History,
+                title = stringResource(Res.string.history_empty_title),
+                body = stringResource(Res.string.history_empty_body),
+                actionLabel = stringResource(Res.string.home_start_session),
+                onAction = onBack,
+                modifier = Modifier.fillMaxSize().padding(padding)
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),

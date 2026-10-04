@@ -21,3 +21,17 @@ expect fun currentLocalEpochDay(): Long
  * locale.
  */
 expect fun formatSessionTimestamp(epochMillis: Long): String
+
+/**
+ * Epoch millis of [hour]:[minute] local time, [daysFromToday] calendar days from today — how
+ * reminders pick "8pm tomorrow" without common code having to know either platform's
+ * epoch-day numbering (see [currentLocalEpochDay]: the two schemes aren't comparable, but a
+ * *difference* of two same-platform day numbers is an exact day count on both).
+ */
+expect fun localTimeMillis(daysFromToday: Long, hour: Int, minute: Int): Long
+
+/** How many local calendar days [epochMillis] falls after today (negative if before). */
+expect fun localDaysFromToday(epochMillis: Long): Long
+
+/** [epochMillis] as an ISO-8601 local date-time with its UTC offset, for the data export. */
+expect fun formatIsoTimestamp(epochMillis: Long): String

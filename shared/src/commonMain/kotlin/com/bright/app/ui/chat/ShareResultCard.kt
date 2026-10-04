@@ -1,5 +1,7 @@
 package com.bright.app.ui.chat
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +37,7 @@ import com.bright.app.resources.app_name
 import com.bright.app.resources.app_slogan
 import com.bright.app.resources.chat_share_result
 import com.bright.app.resources.home_streak_days
+import com.bright.app.ui.theme.BrightMotion
 import com.bright.app.util.toScoreString
 import com.bright.app.util.randomId
 import kotlinx.coroutines.launch
@@ -75,9 +79,13 @@ fun ShareResultCard(
             color = Color.White.copy(alpha = 0.7f)
         )
         Spacer(Modifier.height(8.dp))
+        val animatedScore = remember { Animatable(0f) }
+        LaunchedEffect(score) {
+            animatedScore.animateTo(score.toFloat(), animationSpec = tween(BrightMotion.SLOW))
+        }
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
-                text = score.toScoreString(),
+                text = animatedScore.value.toDouble().toScoreString(),
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

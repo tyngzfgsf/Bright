@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // The whole site — pages and the training app — is one static page on Workers static
+  // assets: no Worker script, nothing billable beyond the free plan. Any path that isn't a
+  // real file (an old /ko/faq link, say) serves that page, which reads the path, shows the
+  // right thing and puts `/` back in the address bar. Build with NEXT_PUBLIC_PROXY_URL set.
+  "name": "bright-web",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "single-page-application"
+  }
+}

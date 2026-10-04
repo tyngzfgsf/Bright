@@ -2,6 +2,9 @@ package com.bright.app.ui.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bright.app.data.analytics.Analytics
+import com.bright.app.data.analytics.AnalyticsEvent
+import com.bright.app.data.analytics.ScenarioLabel
 import com.bright.app.data.local.ChatDao
 import com.bright.app.util.currentLocalEpochDay
 import com.bright.app.util.currentTimeMillis
@@ -55,7 +58,8 @@ class ChatViewModel(
     private val dao: ChatDao,
     private val preferences: UserPreferences,
     private val groqRepository: GroqRepository,
-    private val notifier: LocalNotifier
+    private val notifier: LocalNotifier,
+    private val analytics: Analytics
 ) : ViewModel() {
 
     private val _isSending = MutableStateFlow(false)
@@ -171,6 +175,8 @@ class ChatViewModel(
         val recent = messagesFlow.first()
         val question = recent.lastOrNull { it.role == MessageRole.AI_QUESTION.name } ?: return
         val answer = recent.lastOrNull { it.role == MessageRole.USER.name } ?: return
+        // An answer from before this question belongs to an earlier round — don't pair them.
+        if (answer.timestampMillis < question.timestampMillis) return
         val s = session ?: return
         val now = currentTimeMillis()
 
@@ -239,6 +245,14 @@ class ChatViewModel(
                     )
                     dao.updateSession(updated)
                     session = updated
+                    analytics.log(
+                        AnalyticsEvent.AnswerScored(
+                            scenario = updated.scenarioLabel(),
+                            score = turn.score,
+                            answerNumber = updated.answeredCount,
+                            isReview = updated.reviewOfRecordId != null
+                        )
+                    )
                 }
             }
         }
@@ -257,9 +271,22 @@ class ChatViewModel(
                 val updated = it.copy(isCompleted = true, summary = turn.nextPrompt, lastUpdatedAtMillis = now)
                 dao.updateSession(updated)
                 session = updated
+                analytics.log(
+                    AnalyticsEvent.SessionCompleted(
+                        scenario = updated.scenarioLabel(),
+                        answeredCount = updated.answeredCount,
+                        averageScore = if (updated.answeredCount > 0) {
+                            updated.totalScore.toDouble() / updated.answeredCount
+                        } else {
+                            null
+                        },
+                        isReview = updated.reviewOfRecordId != null
+                    )
+                )
             }
             if (preferences.recordActiveDay(currentLocalEpochDay())) {
                 _streakMilestoneEvent.tryEmit(Unit)
+                analytics.log(AnalyticsEvent.StreakDayReached(preferences.streakState.first().count))
             }
         } else {
             dao.insertMessage(
@@ -421,8 +448,19 @@ class ChatViewModel(
         viewModelScope.launch {
             _isSending.value = true
             _errorMessage.value = null
+            // Ending normally happens with a question still open. The prompt says to grade only
+            // an answer given in this turn, but models grade the open question anyway (0/10,
+            // "you ended early"), which drags the average down and files a review item pairing
+            // that question with the *previous* answer. Nothing was answered, so nothing is graded.
+            val lastExchange = messagesFlow.first().lastOrNull {
+                it.role == MessageRole.AI_QUESTION.name || it.role == MessageRole.USER.name
+            }
+            val hasUngradedAnswer = lastExchange?.role == MessageRole.USER.name
             when (val result = callAi(extraTrailingUserMessage = ScenarioPromptBuilder.endSessionPrompt(currentLanguage()))) {
-                is ApiResult.Success -> applyTurn(result.data.copy(sessionComplete = true))
+                is ApiResult.Success -> applyTurn(
+                    if (hasUngradedAnswer) result.data.copy(sessionComplete = true)
+                    else result.data.copy(score = null, feedback = null, sessionComplete = true)
+                )
                 is ApiResult.Error -> _errorMessage.value = result.message
             }
             _isSending.value = false
@@ -436,6 +474,26 @@ class ChatViewModel(
             session = updated
         }
     }
+
+    /**
+     * Leaving the chat screen clears this ViewModel (a configuration change doesn't), so an
+     * unfinished session at this point was walked away from. Re-opening it from History and
+     * leaving again logs again — that's a second abandonment, not a duplicate.
+     */
+    override fun onCleared() {
+        val s = session ?: return
+        if (!s.isCompleted) {
+            analytics.log(
+                AnalyticsEvent.SessionAbandoned(
+                    scenario = s.scenarioLabel(),
+                    answeredCount = s.answeredCount,
+                    isReview = s.reviewOfRecordId != null
+                )
+            )
+        }
+    }
+
+    private fun SessionEntity.scenarioLabel() = ScenarioLabel.of(scenarioType, customScenario)
 
     private fun MessageEntity.toDomain() = ChatMessage(
         id = id,

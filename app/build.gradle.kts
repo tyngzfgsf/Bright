@@ -107,6 +107,12 @@ dependencies {
     // Task<T>.await(), for bridging Firebase's Play-Services Tasks into suspend functions.
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
+    // --- Firebase Analytics ---
+    // Free on the Spark plan; needs no Blaze upgrade and no Cloud Functions. Android-only, in
+    // :app — the shared code sees only the platform-neutral Analytics interface. Shares the
+    // Firebase BOM declared above.
+    implementation("com.google.firebase:firebase-analytics")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")

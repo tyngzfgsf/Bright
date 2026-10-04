@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import com.bright.app.data.analytics.FirebaseAnalyticsTracker
 import com.bright.app.data.auth.AuthService
 import com.bright.app.data.auth.FirebaseAuthService
 import com.bright.app.data.local.AppDatabase
@@ -99,7 +100,8 @@ class BrightApplication : Application() {
             notifier = notifier,
             appVersionName = BuildConfig.VERSION_NAME,
             appUpdater = AndroidAppUpdater(this),
-            authService = authService
+            authService = authService,
+            analytics = FirebaseAnalyticsTracker(this)
         )
     }
 }

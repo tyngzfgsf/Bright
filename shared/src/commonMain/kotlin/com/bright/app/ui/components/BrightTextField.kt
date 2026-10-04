@@ -32,7 +32,11 @@ fun BrightTextField(
         singleLine = singleLine,
         shape = RoundedCornerShape(16.dp),
         visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = keyboardType),
+        // A password field on the text keyboard still gets autocorrect and suggestions, which
+        // rewrite an API key as it's typed (gsk_ → ggskk_). The password keyboard turns them off.
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+            keyboardType = if (isPassword) KeyboardType.Password else keyboardType
+        ),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = colors.onBackground,
             unfocusedBorderColor = colors.outline,

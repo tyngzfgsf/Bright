@@ -2,6 +2,10 @@ package com.bright.app.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bright.app.data.analytics.Analytics
+import com.bright.app.data.analytics.AnalyticsEvent
+import com.bright.app.data.analytics.AnalyticsEvent.SessionSource
+import com.bright.app.data.analytics.ScenarioLabel
 import com.bright.app.data.local.ChatDao
 import com.bright.app.util.currentTimeMillis
 import com.bright.app.data.local.SessionEntity
@@ -46,7 +50,8 @@ class HomeViewModel(
     currentVersionName: String,
     /** Null where sideloaded updates don't exist (iOS) — no badge is shown then. */
     appUpdater: AppUpdater? = null,
-    private val notifier: LocalNotifier
+    private val notifier: LocalNotifier,
+    private val analytics: Analytics
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -83,7 +88,7 @@ class HomeViewModel(
     /** One-tap "Review now": drills the single most-overdue item. Null if nothing is due. */
     suspend fun startNextReviewSession(): String? {
         val record = dueForReview.value.firstOrNull() ?: return null
-        return startReviewSession(dao, preferences, record)
+        return startReviewSession(dao, preferences, analytics, record)
     }
 
     init {
@@ -135,15 +140,21 @@ class HomeViewModel(
         )
     }
 
-    suspend fun startSession(): String = startSessionInternal(_uiState.value.selectedScenario, _uiState.value.customScenario)
+    suspend fun startSession(): String =
+        startSessionInternal(_uiState.value.selectedScenario, _uiState.value.customScenario, SessionSource.HOME)
 
     /**
      * One-tap weak-spot drill: starts a session on the given scenario type directly,
      * ignoring whatever is selected in the grid, using the user's current role/difficulty.
      */
-    suspend fun startWeakSpotSession(type: ScenarioType): String = startSessionInternal(type, customScenarioOverride = "")
+    suspend fun startWeakSpotSession(type: ScenarioType): String =
+        startSessionInternal(type, customScenarioOverride = "", SessionSource.WEAK_SPOT)
 
-    private suspend fun startSessionInternal(scenario: ScenarioType, customScenarioOverride: String): String {
+    private suspend fun startSessionInternal(
+        scenario: ScenarioType,
+        customScenarioOverride: String,
+        source: SessionSource
+    ): String {
         val state = _uiState.value
         val difficulty = Difficulty.entries.getOrElse(state.difficultyIndex) { Difficulty.INTERMEDIATE }
         val languageCode = preferences.languageCode.first() ?: Language.fromSystemDefault().code
@@ -172,6 +183,14 @@ class HomeViewModel(
                 startedAtMillis = now,
                 lastUpdatedAtMillis = now,
                 isCompleted = false
+            )
+        )
+        analytics.log(
+            AnalyticsEvent.SessionStarted(
+                scenario = ScenarioLabel.of(scenario.name, trimmedCustomScenario),
+                difficulty = difficulty,
+                traineeRole = state.selectedRole,
+                source = source
             )
         )
         return id

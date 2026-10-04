@@ -2,6 +2,7 @@ package com.bright.app.ui.stats
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bright.app.data.analytics.Analytics
 import com.bright.app.data.local.ChatDao
 import com.bright.app.data.local.QuestionRecordEntity
 import com.bright.app.data.preferences.UserPreferences
@@ -27,7 +28,8 @@ data class StatsUiState(
 
 class StatsViewModel(
     private val dao: ChatDao,
-    private val preferences: UserPreferences
+    private val preferences: UserPreferences,
+    private val analytics: Analytics
 ) : ViewModel() {
 
     val uiState: StateFlow<StatsUiState> = combine(
@@ -51,5 +53,5 @@ class StatsViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     suspend fun startReviewSession(record: QuestionRecordEntity): String =
-        startReviewSession(dao, preferences, record)
+        startReviewSession(dao, preferences, analytics, record)
 }
