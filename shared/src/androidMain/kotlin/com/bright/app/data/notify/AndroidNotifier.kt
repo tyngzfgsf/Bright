@@ -7,7 +7,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
-import java.util.Calendar
 
 private const val CHANNEL_ID = "reminders"
 private const val REQUEST_CODE_STREAK = 1001
@@ -16,10 +15,10 @@ private const val REQUEST_CODE_REVIEW = 1002
 /**
  * `setAndAllowWhileIdle` rather than an exact alarm — neither reminder needs to the minute, and
  * this avoids needing the `SCHEDULE_EXACT_ALARM`/`USE_EXACT_ALARM` permission for no real
- * benefit. Alarms don't survive a reboot (`RECEIVE_BOOT_COMPLETED` isn't requested); that's an
- * accepted trade-off — `syncLocalNotifications` reschedules from scratch on every app open, so
- * a reminder that got dropped by a reboot just comes back next time the trainee opens Bright,
- * same as it would if they'd never scheduled it in the first place.
+ * benefit. Alarms don't survive a reboot on their own, and the trainee these reminders exist for
+ * is exactly the one who *won't* open the app to reschedule them — so the app module's
+ * `ReminderRescheduleReceiver` re-runs `syncLocalNotifications` on boot and on clock/timezone
+ * changes (which shift what "8pm local" means).
  */
 class AndroidNotifier(private val context: Context) : LocalNotifier {
 
@@ -39,23 +38,23 @@ class AndroidNotifier(private val context: Context) : LocalNotifier {
     override suspend fun hasPermission(): Boolean =
         NotificationManagerCompat.from(context).areNotificationsEnabled()
 
-    override suspend fun scheduleStreakReminder(hour: Int, minute: Int) =
-        schedule(REQUEST_CODE_STREAK, NotificationAlarmReceiver.TYPE_STREAK, hour, minute)
+    override suspend fun scheduleStreakReminder(atEpochMillis: Long) =
+        schedule(REQUEST_CODE_STREAK, NotificationAlarmReceiver.TYPE_STREAK, atEpochMillis)
 
     override suspend fun cancelStreakReminder() =
         cancel(REQUEST_CODE_STREAK, NotificationAlarmReceiver.TYPE_STREAK)
 
-    override suspend fun scheduleReviewReminder(hour: Int, minute: Int) =
-        schedule(REQUEST_CODE_REVIEW, NotificationAlarmReceiver.TYPE_REVIEW, hour, minute)
+    override suspend fun scheduleReviewReminder(atEpochMillis: Long) =
+        schedule(REQUEST_CODE_REVIEW, NotificationAlarmReceiver.TYPE_REVIEW, atEpochMillis)
 
     override suspend fun cancelReviewReminder() =
         cancel(REQUEST_CODE_REVIEW, NotificationAlarmReceiver.TYPE_REVIEW)
 
-    private fun schedule(requestCode: Int, type: String, hour: Int, minute: Int) {
+    private fun schedule(requestCode: Int, type: String, atEpochMillis: Long) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            nextOccurrenceMillis(hour, minute),
+            atEpochMillis,
             pendingIntentFor(requestCode, type)
         )
     }
@@ -75,19 +74,5 @@ class AndroidNotifier(private val context: Context) : LocalNotifier {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-    }
-
-    private fun nextOccurrenceMillis(hour: Int, minute: Int): Long {
-        val now = Calendar.getInstance()
-        val target = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, minute)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        if (!target.after(now)) {
-            target.add(Calendar.DAY_OF_YEAR, 1)
-        }
-        return target.timeInMillis
     }
 }
