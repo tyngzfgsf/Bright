@@ -40,3 +40,6 @@ supabase/.branches/
 *.keystore
 *.p12
 *.pem
+
+# Node dependencies (any folder)
+node_modules/
