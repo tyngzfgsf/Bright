@@ -43,3 +43,5 @@ supabase/.branches/
 
 # Node dependencies (any folder)
 node_modules/
+*.secret.local
+.secret.local
