@@ -48,16 +48,23 @@ import com.bright.app.data.analytics.AnalyticsEvent
 import com.bright.app.resources.Res
 import com.bright.app.resources.*
 import com.bright.app.domain.model.Language
+import com.bright.app.domain.billing.Pricing
 import com.bright.app.ui.components.BrightButton
+import com.bright.app.ui.components.BrightButtonStyle
 import com.bright.app.ui.components.BrightTextField
 import com.bright.app.ui.components.SelectableChip
 import kotlinx.coroutines.launch
 
 @Composable
-fun OnboardingScreen(onFinished: () -> Unit) {
+fun OnboardingScreen(
+    /** The first session's id when the trainee chose to start one, else null. */
+    onFinished: (String?) -> Unit
+) {
     val app = LocalBrightDependencies.current
     val viewModel: OnboardingViewModel = viewModel(
-        factory = viewModelFactory { initializer { OnboardingViewModel(app.userPreferences, app.analytics) } }
+        factory = viewModelFactory {
+            initializer { OnboardingViewModel(app.userPreferences, app.analytics, app.database.chatDao(), app.authService) }
+        }
     )
 
     var introFinished by rememberSaveable { mutableStateOf(false) }
@@ -126,25 +133,48 @@ private fun CinematicIntro(onFinished: () -> Unit) {
     }
 }
 
-private enum class PageKind { LANGUAGE, API_KEY }
+private enum class PageKind { LANGUAGE, ACCOUNT, FIRST_CASE }
 
 @Composable
-private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Unit) {
-    val pages = remember { listOf(PageKind.LANGUAGE, PageKind.API_KEY) }
+private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: (String?) -> Unit) {
+    val pages = remember { listOf(PageKind.LANGUAGE, PageKind.ACCOUNT, PageKind.FIRST_CASE) }
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val scope = rememberCoroutineScope()
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
+    val isSigningIn by viewModel.isSigningIn.collectAsState()
+    val signInError by viewModel.signInError.collectAsState()
     var apiKeyInput by rememberSaveable { mutableStateOf("") }
-    // Guards a double tap on "Get started" while the prefs writes are in flight.
+    var showKeyField by rememberSaveable { mutableStateOf(!viewModel.canSignIn) }
+    // Guards a double tap on the finishing buttons while the prefs writes are in flight.
     var finishing by remember { mutableStateOf(false) }
+
+    val hasKey = apiKeyInput.isNotBlank()
+    val isConnected = hasKey || currentUser != null
 
     LaunchedEffect(pagerState.currentPage) {
         viewModel.logStep(
             when (pages[pagerState.currentPage]) {
                 PageKind.LANGUAGE -> AnalyticsEvent.OnboardingStep.LANGUAGE
-                PageKind.API_KEY -> AnalyticsEvent.OnboardingStep.KEY_ENTRY
+                PageKind.ACCOUNT -> AnalyticsEvent.OnboardingStep.KEY_ENTRY
+                PageKind.FIRST_CASE -> AnalyticsEvent.OnboardingStep.FIRST_CASE_OFFERED
             }
         )
+    }
+
+    fun finish(startFirstCase: Boolean) {
+        if (finishing) return
+        finishing = true
+        viewModel.logStep(if (hasKey) AnalyticsEvent.OnboardingStep.KEY_SAVED else AnalyticsEvent.OnboardingStep.KEY_SKIPPED)
+        scope.launch {
+            // Starting a case needs a way to run it; signing in is the zero-setup way.
+            val canStart = startFirstCase && (isConnected || viewModel.signIn())
+            if (startFirstCase && !canStart) {
+                finishing = false
+                return@launch
+            }
+            onFinished(viewModel.finishOnboarding(apiKeyInput, startFirstCase = canStart))
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -159,10 +189,22 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
                     selectedLanguage = selectedLanguage,
                     onSelect = { viewModel.selectLanguage(it) }
                 )
-                PageKind.API_KEY -> ApiKeyPage(
-                    value = apiKeyInput,
-                    onValueChange = { apiKeyInput = it }
+                PageKind.ACCOUNT -> AccountPage(
+                    canSignIn = viewModel.canSignIn,
+                    signedInAs = currentUser?.let { it.email ?: it.displayName ?: it.uid },
+                    isSigningIn = isSigningIn,
+                    signInError = signInError,
+                    onSignIn = {
+                        scope.launch {
+                            if (viewModel.signIn()) pagerState.animateScrollToPage(pages.indexOf(PageKind.FIRST_CASE))
+                        }
+                    },
+                    showKeyField = showKeyField,
+                    onShowKeyField = { showKeyField = true },
+                    apiKey = apiKeyInput,
+                    onApiKeyChange = { apiKeyInput = it }
                 )
+                PageKind.FIRST_CASE -> FirstCasePage()
             }
         }
 
@@ -172,38 +214,35 @@ private fun OnboardingPager(viewModel: OnboardingViewModel, onFinished: () -> Un
             modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth()
         )
 
-        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp)) {
-            val isLastPage = pagerState.currentPage == pages.lastIndex
-            val hasKey = apiKeyInput.isNotBlank()
-            BrightButton(
-                // The key is genuinely optional here — sessions gate on it later, with a dialog
-                // offering to jump to Settings. The button used to be hard-disabled until 8+
-                // characters were typed, which made it a wall rather than a skippable step.
-                text = stringResource(
-                    when {
-                        !isLastPage -> Res.string.onboarding_next
-                        hasKey -> Res.string.onboarding_get_started
-                        else -> Res.string.onboarding_skip_key
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 20.dp)) {
+            when (pages[pagerState.currentPage]) {
+                PageKind.FIRST_CASE -> {
+                    BrightButton(
+                        text = stringResource(Res.string.onboarding_first_case_start),
+                        loading = finishing || isSigningIn,
+                        onClick = { finish(startFirstCase = true) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    TextButton(
+                        onClick = { finish(startFirstCase = false) },
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                    ) {
+                        Text(stringResource(Res.string.onboarding_first_case_later))
                     }
-                ),
-                onClick = {
-                    if (isLastPage) {
-                        if (finishing) return@BrightButton
-                        finishing = true
-                        viewModel.logStep(
-                            if (hasKey) AnalyticsEvent.OnboardingStep.KEY_SAVED
-                            else AnalyticsEvent.OnboardingStep.KEY_SKIPPED
-                        )
-                        scope.launch {
-                            viewModel.finishOnboarding(apiKeyInput)
-                            onFinished()
-                        }
-                    } else {
-                        scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+                }
+                else -> {
+                    val onAccountPage = pages[pagerState.currentPage] == PageKind.ACCOUNT
+                    BrightButton(
+                        // Still skippable: drills gate on a key or an account later, not here.
+                        text = stringResource(
+                            if (onAccountPage && !isConnected) Res.string.onboarding_skip_key else Res.string.onboarding_next
+                        ),
+                        style = if (onAccountPage && !isConnected) BrightButtonStyle.OUTLINED else BrightButtonStyle.FILLED,
+                        onClick = { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) } },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
         }
     }
 }
@@ -240,37 +279,105 @@ private fun LanguagePage(selectedLanguage: Language, onSelect: (Language) -> Uni
 }
 
 @Composable
-private fun ApiKeyPage(value: String, onValueChange: (String) -> Unit) {
+private fun AccountPage(
+    canSignIn: Boolean,
+    signedInAs: String?,
+    isSigningIn: Boolean,
+    signInError: String?,
+    onSignIn: () -> Unit,
+    showKeyField: Boolean,
+    onShowKeyField: () -> Unit,
+    apiKey: String,
+    onApiKeyChange: (String) -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            stringResource(Res.string.onboarding_api_key_title),
+            stringResource(if (canSignIn) Res.string.onboarding_account_title else Res.string.onboarding_api_key_title),
             style = MaterialTheme.typography.headlineMedium,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            stringResource(Res.string.onboarding_api_key_subtitle),
+            if (canSignIn) {
+                stringResource(Res.string.onboarding_account_subtitle, Pricing.FREE_DRILLS_PER_MONTH)
+            } else {
+                stringResource(Res.string.onboarding_api_key_subtitle)
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(24.dp))
-        BrightTextField(
-            value = value,
-            onValueChange = onValueChange,
-            placeholder = stringResource(Res.string.onboarding_api_key_hint),
-            isPassword = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.height(10.dp))
+
+        if (canSignIn) {
+            if (signedInAs != null) {
+                Text(
+                    stringResource(Res.string.onboarding_account_signed_in, signedInAs),
+                    style = MaterialTheme.typography.titleSmall,
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                BrightButton(
+                    text = stringResource(Res.string.settings_sign_in),
+                    loading = isSigningIn,
+                    onClick = onSignIn,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            signInError?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+
+        if (showKeyField) {
+            Spacer(Modifier.height(16.dp))
+            BrightTextField(
+                value = apiKey,
+                onValueChange = onApiKeyChange,
+                placeholder = stringResource(Res.string.onboarding_api_key_hint),
+                isPassword = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                stringResource(Res.string.onboarding_api_key_get_one),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else if (signedInAs == null) {
+            Spacer(Modifier.height(8.dp))
+            TextButton(onClick = onShowKeyField) {
+                Text(stringResource(Res.string.onboarding_use_own_key))
+            }
+        }
+    }
+}
+
+@Composable
+private fun FirstCasePage() {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(horizontal = 28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("⏱", style = MaterialTheme.typography.displayMedium)
+        Spacer(Modifier.height(16.dp))
         Text(
-            stringResource(Res.string.onboarding_api_key_get_one),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            stringResource(Res.string.onboarding_first_case_title),
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            stringResource(Res.string.onboarding_first_case_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
         )
     }
 }

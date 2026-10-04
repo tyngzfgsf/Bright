@@ -8,6 +8,17 @@ plugins {
 
 val versionNameOverride = (project.findProperty("versionNameOverride") as String?)?.removePrefix("v")
 
+// Build-time configuration, all public values (none of these are secrets). Set them in
+// ~/.gradle/gradle.properties or pass -P; CI passes them from repository variables.
+//   distribution          "github" (default: the sideloaded APK, which sells through the website)
+//                         or "play" (Google Play Billing via RevenueCat; no website checkout,
+//                         which Google Play forbids).
+//   revenueCatAndroidKey  RevenueCat's public Android SDK key (goog_…). Used by "play" builds only.
+//   brightProxyUrl        bright-proxy's URL, if not the default deployment.
+val revenueCatAndroidKey = (project.findProperty("revenueCatAndroidKey") as String?).orEmpty()
+val distribution = (project.findProperty("distribution") as String?) ?: "github"
+val brightProxyUrl = (project.findProperty("brightProxyUrl") as String?) ?: "https://bright-proxy.jchang2032.workers.dev"
+
 android {
     namespace = "com.bright.app"
     compileSdk = 35
@@ -18,6 +29,10 @@ android {
         targetSdk = 35
         versionCode = 6
         versionName = versionNameOverride ?: "1.5"
+
+        buildConfigField("String", "REVENUECAT_API_KEY", "\"$revenueCatAndroidKey\"")
+        buildConfigField("String", "DISTRIBUTION", "\"$distribution\"")
+        buildConfigField("String", "BRIGHT_PROXY_URL", "\"$brightProxyUrl\"")
 
         vectorDrawables {
             useSupportLibrary = true
@@ -92,6 +107,23 @@ dependencies {
     // :app — the shared code sees only the platform-neutral Analytics interface.
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-analytics")
+    // --- Firebase Auth / Google Sign-In (BACKEND_PLAN.md Phase 1) ---
+    // Android-only on purpose: these live in :app, not :shared, so the KMP iOS targets are
+    // untouched. The shared code sees only the platform-neutral AuthService interface.
+    //
+    // Version comes from the Firebase BOM declared above with Analytics.
+    implementation("com.google.firebase:firebase-auth")
+
+    // Credential Manager is the current Google Sign-In path; the old
+    // com.google.android.gms.auth.api.signin API is deprecated. `credentials-play-services-auth`
+    // is the provider that actually serves Google accounts — without it the request finds no
+    // credentials at runtime even though everything compiles.
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+    // Task<T>.await(), for bridging Firebase's Play-Services Tasks into suspend functions.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")

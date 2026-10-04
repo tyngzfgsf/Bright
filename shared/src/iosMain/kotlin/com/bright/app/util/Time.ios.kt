@@ -5,6 +5,7 @@ import platform.Foundation.NSCalendarUnitDay
 import platform.Foundation.NSDate
 import platform.Foundation.NSDateFormatter
 import platform.Foundation.NSDateFormatterMediumStyle
+import platform.Foundation.NSDateFormatterNoStyle
 import platform.Foundation.NSDateFormatterShortStyle
 import platform.Foundation.NSISO8601DateFormatter
 import platform.Foundation.NSTimeZone
@@ -31,6 +32,14 @@ actual fun formatSessionTimestamp(epochMillis: Long): String {
     val formatter = NSDateFormatter().apply {
         dateStyle = NSDateFormatterMediumStyle
         timeStyle = NSDateFormatterShortStyle
+    }
+    return formatter.stringFromDate(NSDate.dateWithTimeIntervalSince1970(epochMillis / 1000.0))
+}
+
+actual fun formatDate(epochMillis: Long): String {
+    val formatter = NSDateFormatter().apply {
+        dateStyle = NSDateFormatterMediumStyle
+        timeStyle = NSDateFormatterNoStyle
     }
     return formatter.stringFromDate(NSDate.dateWithTimeIntervalSince1970(epochMillis / 1000.0))
 }

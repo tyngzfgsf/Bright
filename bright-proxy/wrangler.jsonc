@@ -10,13 +10,25 @@
     // Firebase Hosting's two domains, the old standalone demo until it is retired, and the
     // local dev server.
     "ALLOWED_ORIGINS": "https://bright-web.jchang2032.workers.dev,https://bright-34c23.web.app,https://bright-34c23.firebaseapp.com,https://bright-demo.jchang2032.workers.dev,http://localhost:3000",
-    "DAILY_TURN_LIMIT": "40"
+    // Billing (see MONETIZATION.md). Paddle price ids are public; fill these in from the
+    // Paddle dashboard. Empty values just leave that integration off.
+    "PADDLE_ENV": "sandbox",
+    "PADDLE_PRICES": "{}",
+    "PADDLE_RETENTION_DISCOUNT_ID": "",
+    "EMAIL_FROM": ""
   },
-  // GROQ_API_KEY is a secret, never a var:  npx wrangler secret put GROQ_API_KEY
-  // For `wrangler dev`, put it in .dev.vars (gitignored).
+  // Secrets, never vars:  npx wrangler secret put <NAME>
+  //   GROQ_API_KEY, RC_SECRET_KEY, RC_WEBHOOK_AUTH, PADDLE_API_KEY, PADDLE_WEBHOOK_SECRET, RESEND_API_KEY
+  // For `wrangler dev`, put them in .dev.vars (gitignored).
   "durable_objects": {
-    "bindings": [{ "name": "QUOTA", "class_name": "QuotaCounter" }]
+    "bindings": [
+      { "name": "QUOTA", "class_name": "QuotaCounter" },
+      { "name": "ACCOUNT", "class_name": "Account" }
+    ]
   },
   // new_sqlite_classes: SQLite-backed Durable Objects are the kind the free plan allows.
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["QuotaCounter"] }]
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["QuotaCounter"] },
+    { "tag": "v2", "new_sqlite_classes": ["Account"] }
+  ]
 }

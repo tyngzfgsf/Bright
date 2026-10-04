@@ -9,6 +9,7 @@ plugins {
     id("androidx.room") version "2.7.0" apply false
     // Reads app/google-services.json and generates the Firebase config into resources. Applied
     // only by the :app module — :shared stays Firebase-free so the iOS targets keep building.
+    // See BACKEND_PLAN.md Phase 1.
     id("com.google.gms.google-services") version "4.4.2" apply false
     // Compose Multiplatform. Deliberately an older-than-latest release: a library built with a
     // NEWER Kotlin than the project's can't be consumed (the klib ABI failure that forced Ktor

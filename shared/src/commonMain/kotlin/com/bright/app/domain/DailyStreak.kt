@@ -35,4 +35,29 @@ object DailyStreak {
         val gap = todayEpochDay - state.lastActiveEpochDay
         return if (gap in 0L..1L) state.count else 0
     }
+
+    /** [state] after a completion, and how many streak freezes it took to keep the streak alive. */
+    data class FreezeResult(val state: State, val freezesConsumed: Int)
+
+    /**
+     * [recordActiveDay], but missed days can be covered by streak freezes (a paid add-on, and a
+     * monthly Pro perk). Each freeze covers exactly one missed day; if there aren't enough to
+     * cover the whole gap, none are spent and the streak restarts — spending freezes on a streak
+     * that breaks anyway would just burn something the trainee paid for.
+     */
+    fun recordActiveDayWithFreezes(previous: State, todayEpochDay: Long, freezesAvailable: Int): FreezeResult {
+        val missedDays = todayEpochDay - previous.lastActiveEpochDay - 1
+        val canBridge = previous.lastActiveEpochDay > 0 && missedDays in 1..freezesAvailable.toLong()
+        return if (canBridge) {
+            FreezeResult(State(count = previous.count + 1, lastActiveEpochDay = todayEpochDay), missedDays.toInt())
+        } else {
+            FreezeResult(recordActiveDay(previous, todayEpochDay), freezesConsumed = 0)
+        }
+    }
+
+    /** [displayedCount], treating a gap that available freezes would bridge as still alive. */
+    fun displayedCount(state: State, todayEpochDay: Long, freezesAvailable: Int): Int {
+        val gap = todayEpochDay - state.lastActiveEpochDay
+        return if (gap in 0L..(1L + freezesAvailable.coerceAtLeast(0))) state.count else 0
+    }
 }

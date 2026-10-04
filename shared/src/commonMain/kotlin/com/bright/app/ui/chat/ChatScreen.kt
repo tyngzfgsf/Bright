@@ -46,6 +46,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bright.app.LocalBrightDependencies
+import com.bright.app.data.billing.PaywallReason
+import com.bright.app.domain.billing.Feature
+import com.bright.app.ui.billing.DrillLimitNudge
+import com.bright.app.ui.components.BrightButton
+import com.bright.app.ui.components.BrightButtonStyle
 import com.bright.app.resources.Res
 import com.bright.app.util.toScoreString
 import com.bright.app.resources.*
@@ -60,18 +65,21 @@ import com.bright.app.ui.notify.RequestNotificationPermissionEffect
 @Composable
 fun ChatScreen(
     sessionId: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenPaywall: (PaywallReason) -> Unit = {}
 ) {
     val app = LocalBrightDependencies.current
     val viewModel: ChatViewModel = viewModel(
         factory = viewModelFactory {
             initializer {
-                ChatViewModel(sessionId, app.database.chatDao(), app.userPreferences, app.groqRepository, app.notifier, app.analytics)
+                ChatViewModel(sessionId, app.database.chatDao(), app.userPreferences, app.aiGateway, app.billing, app.notifier, app.analytics)
             }
         }
     )
 
     val uiState by viewModel.uiState.collectAsState()
+    val entitlement by viewModel.entitlement.collectAsState()
+    val isHosted by viewModel.isHosted.collectAsState()
     var input by remember { mutableStateOf("") }
     var showEndDialog by remember { mutableStateOf(false) }
     var isAskMode by remember { mutableStateOf(false) }
@@ -92,6 +100,10 @@ fun ChatScreen(
         if (last?.role == MessageRole.AI_FEEDBACK && last.score != null) {
             haptic.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
         }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.paywallEvent.collect { reason -> onOpenPaywall(reason) }
     }
 
     LaunchedEffect(Unit) {
@@ -232,6 +244,31 @@ fun ChatScreen(
                     }
                 }
             } else {
+                // Upgrade prompts at the natural moment: right after a case lands, when the value
+                // is freshest. The debrief button doubles as Pro's feature-gated prompt.
+                val debriefDelivered = uiState.messages.lastOrNull()?.role == MessageRole.AI_ANSWER
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (!debriefDelivered) {
+                        BrightButton(
+                            text = stringResource(
+                                if (entitlement.has(Feature.EXPERT_DEBRIEF)) Res.string.debrief_button
+                                else Res.string.debrief_locked
+                            ),
+                            onClick = { viewModel.requestExpertDebrief() },
+                            style = BrightButtonStyle.OUTLINED,
+                            loading = uiState.isSending,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    DrillLimitNudge(
+                        entitlement = entitlement,
+                        isHosted = isHosted,
+                        onGoUnlimited = { onOpenPaywall(PaywallReason.DRILL_LIMIT) }
+                    )
+                }
                 uiState.averageScore?.let { avg ->
                     val scenarioLabel = uiState.scenarioType
                         ?.let { runCatching { ScenarioType.valueOf(it) }.getOrNull() }

@@ -14,6 +14,9 @@ actual fun formatSessionTimestamp(epochMillis: Long): String =
 
 actual fun currentLocalEpochDay(): Long = LocalDate.now().toEpochDay()
 
+actual fun formatDate(epochMillis: Long): String =
+    DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(epochMillis))
+
 actual fun localTimeMillis(daysFromToday: Long, hour: Int, minute: Int): Long =
     LocalDate.now().plusDays(daysFromToday).atTime(hour, minute)
         .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()

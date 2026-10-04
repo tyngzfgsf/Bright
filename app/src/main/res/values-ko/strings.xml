@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Android-only strings. Everything the Compose UI shows now lives in
      shared/src/commonMain/composeResources/ so it can be used from commonMain.
-     These three must stay here: app_name is referenced by AndroidManifest.xml, and the
-     two update strings are read via Context.getString() from SettingsViewModel (a
-     non-composable context, for the Android-only APK update flow). -->
+     These must stay here: app_name is referenced by AndroidManifest.xml, the two update
+     strings are read via Context.getString() from SettingsViewModel (a non-composable
+     context, for the Android-only APK update flow), and the auth_error_* strings are read
+     the same way from FirebaseAuthService, which is Android-only by nature. -->
 <resources>
     <string name="app_name">Bright</string>
     <string name="settings_update_no_apk">최신 릴리스에서 APK 파일을 찾을 수 없어요.</string>
     <string name="settings_update_download_failed">다운로드에 실패했어요. 연결 상태를 확인하고 다시 시도해 주세요.</string>
+    <string name="auth_error_no_google_account">이 기기에 Google 계정이 없어요. Android 설정에서 계정을 추가한 뒤 다시 시도해 주세요.</string>
+    <string name="auth_error_no_activity">로그인 화면을 열 수 없었어요. 다시 시도해 주세요.</string>
+    <string name="auth_error_generic">로그인에 실패했어요. 연결 상태를 확인하고 다시 시도해 주세요.</string>
+
 </resources>

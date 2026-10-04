@@ -36,14 +36,19 @@ sealed class AnalyticsEvent(val name: String) {
         LANGUAGE("language"),
         KEY_ENTRY("key_entry"),
         KEY_SAVED("key_saved"),
-        KEY_SKIPPED("key_skipped")
+        KEY_SKIPPED("key_skipped"),
+        SIGNED_IN("signed_in"),
+        FIRST_CASE_OFFERED("first_case_offered"),
+        FIRST_CASE_STARTED("first_case_started"),
+        FIRST_CASE_SKIPPED("first_case_skipped")
     }
 
     /** How a session was started — review sessions also log [ReviewSessionStarted]. */
     enum class SessionSource(val label: String) {
         HOME("home"),
         WEAK_SPOT("weak_spot"),
-        REVIEW("review")
+        REVIEW("review"),
+        ONBOARDING("onboarding")
     }
 
     data class OnboardingStepReached(val step: OnboardingStep) : AnalyticsEvent("onboarding_step") {

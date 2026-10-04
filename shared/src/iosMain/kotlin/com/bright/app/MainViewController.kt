@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.ComposeUIViewController
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import com.bright.app.data.links.IosExternalLinks
 import com.bright.app.data.local.buildDatabase
 import com.bright.app.data.local.getDatabaseBuilder
 import com.bright.app.data.preferences.UserPreferences
@@ -26,6 +27,9 @@ import okio.Path.Companion.toPath
 import platform.Foundation.NSBundle
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSLocale
+import platform.Foundation.countryCode
+import platform.Foundation.currentLocale
 import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 import platform.UIKit.UIViewController
@@ -67,7 +71,12 @@ private fun buildDependencies(): BrightDependencies {
             "CFBundleShortVersionString"
         ) as? String ?: "1.0",
         appUpdater = IosAppUpdater(),
-        languageChangeRequiresRestart = true
+        languageChangeRequiresRestart = true,
+        // No store billing on iOS yet (needs iOS sign-in and an App Store implementation of
+        // StoreBilling — see MONETIZATION.md), and no website checkout either: App Store rules
+        // forbid steering buyers to outside payment for subscriptions.
+        externalLinks = IosExternalLinks(),
+        regionCountryCode = { NSLocale.currentLocale.countryCode }
     )
 }
 

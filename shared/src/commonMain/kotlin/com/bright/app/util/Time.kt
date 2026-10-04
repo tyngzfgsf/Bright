@@ -22,6 +22,9 @@ expect fun currentLocalEpochDay(): Long
  */
 expect fun formatSessionTimestamp(epochMillis: Long): String
 
+/** A date only (e.g. "Oct 10, 2026"), for renewal and trial-end dates. Same reasoning as above. */
+expect fun formatDate(epochMillis: Long): String
+
 /**
  * Epoch millis of [hour]:[minute] local time, [daysFromToday] calendar days from today — how
  * reminders pick "8pm tomorrow" without common code having to know either platform's

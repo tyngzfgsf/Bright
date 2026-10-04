@@ -82,6 +82,11 @@ kotlin {
             implementation("androidx.appcompat:appcompat:1.7.0")
             // rememberLauncherForActivityResult, for the POST_NOTIFICATIONS runtime prompt.
             implementation("androidx.activity:activity-compose:1.10.0")
+
+            // RevenueCat (Google Play Billing). Android-only for now: on iOS this SDK line pins
+            // RevenueCat iOS 5.67.1, which fails to compile on Xcode 27 / Swift 6.4, and 3.x needs
+            // Kotlin 2.3. 2.x is the newest line built with a Kotlin this project can consume.
+            implementation("com.revenuecat.purchases:purchases-kmp-core:2.10.2+17.55.1")
         }
         iosMain.dependencies {
             // Darwin engine — NSURLSession under the hood, the native choice on iOS.

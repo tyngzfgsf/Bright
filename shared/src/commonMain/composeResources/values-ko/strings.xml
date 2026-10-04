@@ -151,6 +151,12 @@
     <string name="settings_model_no_key">모델을 가져오려면 먼저 API 키를 저장하세요.</string>
     <string name="settings_usage_requests">이번 분 남은 요청 수: %1$d/%2$d</string>
     <string name="settings_usage_tokens">이번 분 남은 토큰 수: %1$d/%2$d</string>
+    <!-- Settings: account (BACKEND_PLAN.md Phase 1) -->
+    <string name="settings_section_account">계정</string>
+    <string name="settings_account_signed_out_note">로그인하면 API 키 없이 매월 무료 연습 10회를 이용할 수 있어요. 개인 Groq 키도 그대로 사용할 수 있으며, 횟수가 차감되지 않습니다.</string>
+    <string name="settings_sign_in">Google로 로그인</string>
+    <string name="settings_sign_out">로그아웃</string>
+    <string name="settings_account_signed_in_as">%1$s(으)로 로그인됨</string>
     <string name="settings_section_data">데이터</string>
     <string name="settings_export_data">내 데이터 내보내기</string>
     <string name="settings_export_data_desc">세션 기록, 채점된 답변, 실력 프로필을 JSON 파일로 저장해요.</string>
@@ -176,4 +182,116 @@
     <string name="common_delete">삭제</string>
     <string name="common_done">완료</string>
     <string name="common_back">뒤로</string>
+
+    <!-- ===== Monetization (MONETIZATION.md) ===== -->
+
+    <!-- Paywall -->
+    <string name="paywall_title_browse">다음 응급 상황, 이미 알고 들어가세요</string>
+    <string name="paywall_title_drill_limit">이번 달 무료 연습을 모두 사용했어요</string>
+    <string name="paywall_subtitle_drill_limit">연속 기록과 흐름을 이어가세요. 무제한으로 연습하세요.</string>
+    <string name="paywall_title_custom">걱정되는 그 케이스를 미리 연습하세요</string>
+    <string name="paywall_title_debrief">전문가라면 무엇을 다르게 했을지 정확히 확인하세요</string>
+    <string name="paywall_subtitle_default">목표에 맞는 요금제를 고르세요.</string>
+    <string name="paywall_period_monthly">월간</string>
+    <string name="paywall_period_annual">연간</string>
+    <string name="paywall_annual_badge">%1$d개월 무료</string>
+    <string name="paywall_badge_recommended">가장 인기</string>
+    <string name="paywall_plan_free">무료</string>
+    <string name="paywall_plan_plus">Plus</string>
+    <string name="paywall_plan_pro">Pro</string>
+    <string name="paywall_free_outcome">매일 연습하는 습관 만들기</string>
+    <string name="paywall_plus_outcome">어떤 케이스든, 매일, 제한 없이</string>
+    <string name="paywall_pro_outcome">케이스마다 고칠 점을 정확히</string>
+    <string name="paywall_free_bullet_1">매월 AI 연습 %1$d회</string>
+    <string name="paywall_free_bullet_2">틀린 케이스는 자동으로 복습</string>
+    <string name="paywall_free_bullet_3">연속 기록과 실력 프로필</string>
+    <string name="paywall_plus_bullet_1">무제한 AI 연습, 근무 전마다 한 케이스씩</string>
+    <string name="paywall_plus_bullet_2">직접 시나리오를 작성해 걱정되는 케이스를 연습</string>
+    <string name="paywall_plus_bullet_3">무료 요금제의 모든 기능</string>
+    <string name="paywall_pro_bullet_1">케이스마다 전문가 디브리핑: 놓친 점과 그 이유</string>
+    <string name="paywall_pro_bullet_2">매달 연속 기록 보호권 3개, 야간 근무에도 기록 유지</string>
+    <string name="paywall_pro_bullet_3">Plus의 모든 기능</string>
+    <string name="paywall_price_per_month">월 %1$s</string>
+    <string name="paywall_billed_annually">월 %1$s, 연 %2$s 일괄 결제</string>
+    <string name="paywall_billed_annually_short">연 %1$s 일괄 결제</string>
+    <string name="paywall_cta_trial">%1$d일 무료 체험 시작</string>
+    <string name="paywall_cta_subscribe">%1$s 계속하기</string>
+    <string name="paywall_cta_switch">%1$s(으)로 변경</string>
+    <string name="paywall_cta_current">현재 요금제</string>
+    <string name="paywall_cta_free">무료로 계속 사용</string>
+    <string name="paywall_trial_note">%1$d일 무료, 이후 %2$s. 그 전에 해지하면 요금이 청구되지 않습니다. 체험 종료 3일 전에 이메일로 알려드려요.</string>
+    <string name="paywall_footer">설정에서 언제든 해지할 수 있습니다. 가격 단위: %1$s</string>
+    <string name="paywall_unavailable">이 기기에서는 아직 구매할 수 없습니다.</string>
+    <string name="paywall_sign_in_required">구독하려면 로그인하세요. 요금제는 계정에 연결됩니다.</string>
+    <string name="paywall_success">이제 %1$s 회원입니다. 바로 케이스를 시작해 보세요.</string>
+    <string name="paywall_pending">결제가 완료되었습니다. 잠시 후 요금제가 반영됩니다.</string>
+    <string name="paywall_footer_store">언제든 해지할 수 있습니다. 표시된 가격은 앱스토어에서 청구되는 금액입니다.</string>
+    <string name="paywall_restore">구매 복원</string>
+    <string name="paywall_restored_nothing">이 계정으로 복원할 구매 내역이 없습니다.</string>
+    <string name="paywall_cta_web">웹사이트에서 계속하기</string>
+    <string name="checkout_trial_then">%1$d일 무료, 이후 %2$s</string>
+    <string name="billing_managed_in_store_note">이 요금제의 해지와 결제 정보는 %1$s에서 관리됩니다.</string>
+
+    <!-- Checkout -->
+    <string name="checkout_title">주문 내역</string>
+    <string name="checkout_addons_title">함께 구매하기</string>
+    <string name="addon_drill_pack_title">연습 +%1$d회</string>
+    <string name="addon_drill_pack_body">기한 없음. 시험 주간에 딱 좋아요.</string>
+    <string name="addon_streak_freezes_title">연속 기록 보호권 %1$d개</string>
+    <string name="addon_streak_freezes_body">하루 쉬어도 연속 기록이 유지돼요.</string>
+    <string name="checkout_pay">Google Pay 또는 카드로 결제</string>
+    <string name="checkout_start_trial">무료 체험 시작</string>
+
+    <!-- Plan & billing (Settings) -->
+    <string name="billing_section">요금제 및 결제</string>
+    <string name="billing_status_trial">%1$s까지 무료 체험</string>
+    <string name="billing_status_renews">%1$s에 갱신</string>
+    <string name="billing_status_cancels">%1$s에 종료</string>
+    <string name="billing_status_past_due">최근 결제가 처리되지 않았습니다. 자동으로 다시 시도하며, 그동안에도 모든 기능을 이용할 수 있습니다.</string>
+    <string name="billing_update_payment">결제 수단 업데이트</string>
+    <string name="billing_drills_used">이번 달 무료 연습 %2$d회 중 %1$d회 사용</string>
+    <string name="billing_bonus_drills">보너스 연습 +%1$d회</string>
+    <string name="billing_streak_freezes">연속 기록 보호권 %1$d개 보유</string>
+    <string name="billing_see_plans">요금제 보기</string>
+    <string name="billing_change_plan">요금제 변경</string>
+    <string name="billing_cancel">구독 해지</string>
+    <string name="billing_resume">구독 유지하기</string>
+    <string name="billing_discount_active">할인 적용 중</string>
+    <string name="billing_buy_drills">연습 +%1$d회 구매 · %2$s</string>
+    <string name="billing_buy_freezes">연속 기록 보호권 %1$d개 구매 · %2$s</string>
+    <string name="billing_byok_note">개인 Groq 키를 사용 중이라 연습 횟수가 차감되지 않습니다.</string>
+    <string name="billing_signed_out_note">로그인하면 매월 무료 연습 %1$d회. API 키가 필요 없어요.</string>
+    <string name="billing_purchase_done">계정에 추가되었습니다.</string>
+
+    <!-- Exit offer -->
+    <string name="exit_offer_title">잠깐만요, 떠나기 전에</string>
+    <string name="exit_offer_body">남아 주시면 다음 %2$d개월간 %1$d% 할인해 드려요. 연속 기록, 실력 프로필, 복습 목록도 그대로 유지됩니다.</string>
+    <string name="exit_offer_accept">%1$d% 할인받고 계속하기</string>
+    <string name="exit_offer_decline">그래도 해지하기</string>
+    <string name="exit_offer_applied">완료! 다음 %2$d개월간 %1$d% 할인이 적용됩니다.</string>
+    <string name="cancel_confirm_title">요금제를 해지할까요?</string>
+    <string name="cancel_confirm_body">%2$s까지 %1$s 혜택이 유지되고, 이후 매월 %3$d회 연습이 가능한 무료 요금제로 전환됩니다.</string>
+    <string name="cancel_confirm_yes">해지하기</string>
+    <string name="cancel_confirm_no">유지하기</string>
+
+    <!-- Upgrade prompts -->
+    <string name="nudge_drills_left">이번 달 남은 무료 연습 %1$d회</string>
+    <string name="nudge_out_of_drills">이번 달 무료 연습을 모두 사용했어요</string>
+    <string name="nudge_go_unlimited">무제한으로 연습하기</string>
+    <string name="home_free_drills_left">이번 달 무료 연습 %2$d회 중 %1$d회 남음</string>
+    <string name="lock_custom_scenario">직접 시나리오 작성 · Plus</string>
+    <string name="debrief_button">전문가 디브리핑 받기</string>
+    <string name="debrief_locked">전문가 디브리핑 · Pro</string>
+    <string name="chat_not_connected">케이스를 시작하려면 로그인해 무료 연습을 받거나, 설정에서 개인 Groq 키를 추가하세요.</string>
+    <string name="chat_out_of_drills">이번 달 무료 연습을 모두 사용했어요.</string>
+
+    <!-- Onboarding: account + first case -->
+    <string name="onboarding_account_title">몇 초 만에 연습 시작</string>
+    <string name="onboarding_account_subtitle">Google로 로그인하면 매월 무료 연습 %1$d회. API 키도, 설정도 필요 없어요.</string>
+    <string name="onboarding_account_signed_in">%1$s(으)로 로그인됨</string>
+    <string name="onboarding_use_own_key">개인 Groq 키가 있어요</string>
+    <string name="onboarding_first_case_title">첫 케이스는 2분이면 충분해요</string>
+    <string name="onboarding_first_case_subtitle">초급 심정지 케이스입니다. 실제 침상 옆에서처럼 답하면 단계마다 점수와 피드백을 받아요.</string>
+    <string name="onboarding_first_case_start">첫 케이스 시작하기</string>
+    <string name="onboarding_first_case_later">먼저 둘러볼게요</string>
 </resources>
