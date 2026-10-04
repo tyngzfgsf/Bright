@@ -8,7 +8,14 @@ import com.bright.app.resources.notif_streak_title
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jetbrains.compose.resources.getString
-import platform.Foundation.NSDateComponents
+import platform.Foundation.NSCalendar
+import platform.Foundation.NSCalendarUnitDay
+import platform.Foundation.NSCalendarUnitHour
+import platform.Foundation.NSCalendarUnitMinute
+import platform.Foundation.NSCalendarUnitMonth
+import platform.Foundation.NSCalendarUnitYear
+import platform.Foundation.NSDate
+import platform.Foundation.dateWithTimeIntervalSince1970
 import platform.UserNotifications.UNAuthorizationStatusAuthorized
 import platform.UserNotifications.UNCalendarNotificationTrigger
 import platform.UserNotifications.UNMutableNotificationContent
@@ -36,33 +43,35 @@ class IosNotifier : LocalNotifier {
         }
     }
 
-    override suspend fun scheduleStreakReminder(hour: Int, minute: Int) {
-        schedule(ID_STREAK, hour, minute, getString(Res.string.notif_streak_title), getString(Res.string.notif_streak_body))
+    override suspend fun scheduleStreakReminder(atEpochMillis: Long) {
+        schedule(ID_STREAK, atEpochMillis, getString(Res.string.notif_streak_title), getString(Res.string.notif_streak_body))
     }
 
     override suspend fun cancelStreakReminder() {
         center.removePendingNotificationRequestsWithIdentifiers(listOf(ID_STREAK))
     }
 
-    override suspend fun scheduleReviewReminder(hour: Int, minute: Int) {
-        schedule(ID_REVIEW, hour, minute, getString(Res.string.notif_review_title), getString(Res.string.notif_review_body))
+    override suspend fun scheduleReviewReminder(atEpochMillis: Long) {
+        schedule(ID_REVIEW, atEpochMillis, getString(Res.string.notif_review_title), getString(Res.string.notif_review_body))
     }
 
     override suspend fun cancelReviewReminder() {
         center.removePendingNotificationRequestsWithIdentifiers(listOf(ID_REVIEW))
     }
 
-    private suspend fun schedule(id: String, hour: Int, minute: Int, title: String, body: String) {
+    private suspend fun schedule(id: String, atEpochMillis: Long, title: String, body: String) {
         val content = UNMutableNotificationContent().apply {
             setTitle(title)
             setBody(body)
         }
-        val dateComponents = NSDateComponents().apply {
-            setHour(hour.toLong())
-            setMinute(minute.toLong())
-        }
-        // repeats=false with only hour/minute set: fires once, at the next clock match — the
-        // same "next occurrence of this local time" semantics as AndroidNotifier's Calendar math.
+        // Full date components (not just hour/minute) pin the exact day the caller chose, and a
+        // calendar trigger — unlike a time-interval one — still fires at that local wall-clock
+        // time if the device's clock or timezone changes in between.
+        val calendar = NSCalendar.currentCalendar
+        val dateComponents = calendar.components(
+            NSCalendarUnitYear or NSCalendarUnitMonth or NSCalendarUnitDay or NSCalendarUnitHour or NSCalendarUnitMinute,
+            fromDate = NSDate.dateWithTimeIntervalSince1970(atEpochMillis / 1000.0)
+        )
         val trigger = UNCalendarNotificationTrigger.triggerWithDateMatchingComponents(
             dateComponents = dateComponents,
             repeats = false

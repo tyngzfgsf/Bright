@@ -58,4 +58,19 @@ interface ChatDao {
     /** The review queue: items due now, most overdue (soonest due date) first. */
     @Query("SELECT * FROM question_records WHERE dueAtMillis <= :nowMillis ORDER BY dueAtMillis ASC")
     fun observeDueQuestionRecords(nowMillis: Long): Flow<List<QuestionRecordEntity>>
+
+    /** When the next review comes (or came) due — null when nothing has ever been graded. */
+    @Query("SELECT MIN(dueAtMillis) FROM question_records")
+    suspend fun getEarliestDueAtMillis(): Long?
+
+    // One-shot reads for the data export — everything on the device, oldest first.
+
+    @Query("SELECT * FROM sessions ORDER BY startedAtMillis ASC")
+    suspend fun getAllSessions(): List<SessionEntity>
+
+    @Query("SELECT * FROM messages ORDER BY timestampMillis ASC")
+    suspend fun getAllMessages(): List<MessageEntity>
+
+    @Query("SELECT * FROM question_records ORDER BY timestampMillis ASC")
+    suspend fun getAllQuestionRecords(): List<QuestionRecordEntity>
 }
