@@ -2,6 +2,32 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
+/* Tokens for the training app's utility classes; their values are scoped to .app-root in app.css. */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-line-subtle: var(--line-subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --shadow-soft: var(--shadow-sm);
+  --shadow-raise: var(--shadow-md);
+  --shadow-float: var(--shadow-lg);
+
+  --font-sans:
+    var(--font-sans-latin), "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
+    "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    var(--font-mono-latin), ui-monospace, SFMono-Regular, "SF Mono", Menlo,
+    Consolas, monospace;
+}
+
 :root { --bg: #f8f8f6; --fg: #11110f; --muted: #777773; --line: #d9d9d4; --soft: #efefeb; --red: #d66b68; }
 .dark { --bg: #11110f; --fg: #f4f4ef; --muted: #999994; --line: #343431; --soft: #1c1c19; }
 * { box-sizing: border-box; }
@@ -79,3 +105,7 @@ a { transition: color .25s var(--ease-out), opacity .25s var(--ease-out); }
 
 /* login */
 .login-box { animation: rise .9s var(--ease-out) both; }
+
+/* Language / sign-in controls are buttons now (one URL, no routes). */
+.lang button, .nav-signin { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+.lang button.active { color: var(--fg); }
